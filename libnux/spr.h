@@ -1,9 +1,9 @@
 #ifndef SPR_H__
 #define SPR_H__
 
-#include <attrib.h>
 #include <stdint.h>
 
+#include "libnux/attrib.h"
 
 #define SPR_SETTER(name, code) \
 ATTRIB_UNUSED static void name (const uint32_t v) \

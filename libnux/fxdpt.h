@@ -2,7 +2,8 @@
 #define FXDPT_H__
 
 #include <stdint.h>
-#include <attrib.h>
+
+#include "libnux/attrib.h"
 
 /** INV_SCALE 0x10000 is the 16.16 fixedpoint representation
  * MAX:       65536

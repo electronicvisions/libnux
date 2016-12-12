@@ -1,9 +1,6 @@
-//#include <stdlib.h>
-//#include <stdio.h>
-//#include <math.h>
-
-#include <fxdpt.h>
 #include <stdint.h>
+
+#include "libnux/fxdpt.h"
 
 /** calculate the first 6 terms of the series expansion of the exponential
  * function.

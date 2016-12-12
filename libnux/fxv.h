@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <constants.h>
+
+#include "libnux/constants.h"
 
 
 //--------------------------------------------------------------------------------

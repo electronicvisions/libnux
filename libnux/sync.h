@@ -1,6 +1,6 @@
 #pragma once
 
-#include <attrib.h>
+#include "libnux/attrib.h"
 
 ATTRIB_UNUSED static void sync() {
 	asm volatile("sync");

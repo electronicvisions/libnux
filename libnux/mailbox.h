@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <attrib.h>
+
+#include "libnux/attrib.h"
 
 extern uint8_t mailbox_base;
 extern uint8_t mailbox_end;

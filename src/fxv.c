@@ -1,8 +1,8 @@
-#include "fxv.h"
-
-#include "constants.h"
-#include "sync.h"
 #include <stdint.h>
+
+#include "libnux/fxv.h"
+#include "libnux/constants.h"
+#include "libnux/sync.h"
 
 void fxv_zero_vrf() {
 	int i;
