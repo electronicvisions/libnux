@@ -48,7 +48,7 @@ SPR_SETTER(set_dec, "mtdec %0")
 SPR_GETTER(get_dec, "mfdec %0")
 
 SPR_SETTER(set_decar, "mtspr 54, %0")
-SPR_GETTER(get_decar, "mfspr 54, %0")
+SPR_GETTER(get_decar, "mfspr %0, 54")
 
 #define TCR_DIE (0x04000000)
 #define TCR_FIE (0x00800000)
