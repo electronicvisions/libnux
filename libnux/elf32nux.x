@@ -13,7 +13,7 @@ SECTIONS {
 	.text : {
         _isr_undefined = .;
 
-        *cshell.o(.text)
+        *crt.s.[0-9].o(.text)
         *(.text)
 
         PROVIDE(isr_einput = _isr_undefined);
