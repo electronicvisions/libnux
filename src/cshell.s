@@ -14,9 +14,13 @@
 
 .extern stack_ptr_init
 
-#.section system, "ax", @progbits
+# External callable functions
+.globl stop
+.type stop, @function
+
+# Code section
 .text
-.extern _start:
+
 reset:
 	b __init
 
@@ -41,6 +45,7 @@ __init:
 	# start actual program
 	bl start
 
+stop:
 end_loop:
 	wait
 	b end_loop
