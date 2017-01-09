@@ -12,7 +12,7 @@ def build(bld):
 
     bld.stlib(
         target = 'nux',
-        source = ['src/exp.c', 'src/fxv.c'],
+        source = ['src/exp.c', 'src/fxv.c', 'src/mailbox.c'],
         use = ['nux_inc'],
     )
 
