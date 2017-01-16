@@ -3,26 +3,24 @@
 static uint32_t write_head_offset = 0;
 
 char* itoa(uint32_t value, uint32_t const base) {
-	static char buffer[32] = {0};
+	/* Reserve buffer for 32 digits + null byte */
+	static char buffer[33] = {0};
+	char* ret = buffer + 32;
 
 	/* Check for valid base */
 	if((base > 16) || (base < 2)) {
 		/* TODO set errno EDOM as soon as implemented */
-		buffer[0] = 0;
-		return buffer;
+		return ret;
 	}
 
 	/* Number system conversion */
-	uint32_t index = 0;
 	do {
-		buffer[index] = "0123456789abcdef"[value % base];
-		index++;
+		ret--;
+		*ret = "0123456789abcdef"[value % base];
 		value /= base;
 	} while (value != 0);
 
-	/* Return null terminated string */
-	buffer[index] = 0;
-	return buffer;
+	return ret;
 }
 
 uint32_t mailbox_write(uint32_t const offset, uint8_t const * src, uint32_t const size) {
