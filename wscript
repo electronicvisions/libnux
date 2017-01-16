@@ -28,3 +28,9 @@ def build(bld):
         source = ['src/crt.s'],
         use = ['asm'],
     )
+
+    bld.program(
+        target = 'test_unittest',
+        source = ['test/test_unittest.c'],
+        use = ['nux', 'nux_runtime'],
+    )
