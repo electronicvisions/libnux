@@ -34,3 +34,9 @@ def build(bld):
         source = ['test/test_unittest.c'],
         use = ['nux', 'nux_runtime'],
     )
+
+    bld.program(
+        target = 'test_vector',
+        source = ['test/test_vector.c'],
+        use = ['nux', 'nux_runtime'],
+    )
