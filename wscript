@@ -60,4 +60,18 @@ def build(bld):
         install_path = None,
     )
 
-    bld(source="test_unittest.bin test_vector.bin test_fxvsel.bin".split())
+    bld.program(
+        target = "test_synram_rw_v2.bin",
+        source = "test/test_synram_rw_v2.c",
+        use = ["nux", "nux_runtime"],
+        install_path = None,
+    )
+
+    bld(
+        source=[
+                "test_unittest.bin",
+                "test_vector.bin",
+                "test_fxvsel.bin",
+                "test_synram_rw_v2.bin"
+                ]
+    )
