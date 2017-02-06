@@ -40,3 +40,9 @@ def build(bld):
         source = ['test/test_vector.c'],
         use = ['nux', 'nux_runtime'],
     )
+
+    bld.program(
+        target = "test_fxvsel",
+        source = ["test/test_fxvsel.c"],
+        use = ["nux", "nux_runtime"],
+    )
