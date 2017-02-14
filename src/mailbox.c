@@ -45,6 +45,23 @@ uint32_t mailbox_read(uint8_t * dest, uint32_t const offset, uint32_t const size
 	return ptr - &mailbox_base + offset;
 }
 
+uint8_t libnux_mailbox_read_u8(uint32_t const offset) {
+	if (&mailbox_base + offset < &mailbox_end) {
+		return *(&mailbox_base + offset);
+	} else {
+		/* TODO set errno ERANGE as soon as implemented */
+		return 0;
+	}
+}
+
+void libnux_mailbox_write_u8(uint32_t const offset, uint8_t const byte) {
+	if (&mailbox_base + offset < &mailbox_end) {
+		*(&mailbox_base + offset) = byte;
+	} else {
+		/* TODO set errno ERANGE as soon as implemented */
+	}
+}
+
 uint32_t libnux_mailbox_write_string(char const * str) {
 	char const * ptr = str;
 	for (; (*ptr != 0); write_head_offset++, ptr++) {
