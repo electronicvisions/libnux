@@ -26,8 +26,10 @@ uint32_t const dls_decoder_mask = 0x3f;
 /* Omnibus addresses
  * The omnibus addressing from the PPU is shifted by 2 bits compared to the
  * addressing from the FPGA, plus setting the most significant bit. For the
- * addresses refer to Hartel 2017, 6.2.1. The MSB selects between addressing
- * the SRAM or the bus.
+ * addresses refer to Schemmel & Hartel 2017 (Specitifcation of the Hicann-DLS,
+ * repository hicann-dls-private, doc folder), 6.6. It can be downloaded from
+ * https://brainscales-r.kip.uni-heidelberg.de:11443/job/doc_hicann-dls-doc.
+ * The MSB selects between addressing the SRAM or the bus.
  * Reading and writing to the omnibus should be done by dereferencing 32 bit
  * pointers. Therefore, all omnibus addresses should be placed here in the
  * format
