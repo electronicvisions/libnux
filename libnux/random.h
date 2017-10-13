@@ -1,8 +1,8 @@
 #pragma once
 
-static int random_lcg(int *seed) {
+static uint32_t random_lcg(uint32_t *seed) {
 	// constants from Numerical Recipes via Wikipedia
-	int rv = 1664525 * (*seed) + 1013904223;
+	uint32_t rv = 1664525 * (*seed) + 1013904223;
 	*seed = rv;
 	return rv;
 }
