@@ -22,7 +22,7 @@ void test_vector_addbfs() {
 	{
 		vector int8_t lhs = vec_splat_s8(0);
 		vector int8_t rhs = vec_splat_s8(1);
-		vector int8_t res = fxv_addbfs(lhs, rhs);
+		vector int8_t res = fxv_addbfs_c(lhs, rhs, 0);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(lhs[index], (int8_t)(0));
 			libnux_test_equal(rhs[index], (int8_t)(1));
@@ -33,7 +33,7 @@ void test_vector_addbfs() {
 	{
 		vector int8_t lhs = vec_splat_s8(127);
 		vector int8_t rhs = vec_splat_s8(1);
-		vector int8_t res = fxv_addbfs(lhs, rhs);
+		vector int8_t res = fxv_addbfs_c(lhs, rhs, 0);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], (int8_t)(127));
 		}
@@ -42,7 +42,7 @@ void test_vector_addbfs() {
 	{
 		vector int8_t lhs = vec_splat_s8(2);
 		vector int8_t rhs = vec_splat_s8(-1);
-		vector int8_t res = fxv_addbfs(lhs, rhs);
+		vector int8_t res = fxv_addbfs_c(lhs, rhs, 0);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], (int8_t)(1));
 		}
@@ -51,7 +51,7 @@ void test_vector_addbfs() {
 	{
 		vector int8_t lhs = vec_splat_s8(-128);
 		vector int8_t rhs = vec_splat_s8(-1);
-		vector int8_t res = fxv_addbfs(lhs, rhs);
+		vector int8_t res = fxv_addbfs_c(lhs, rhs, 0);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], (int8_t)(-128));
 		}
