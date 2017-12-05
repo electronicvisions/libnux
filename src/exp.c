@@ -94,9 +94,9 @@ int32_t exp_6b(int32_t x)
 
 int32_t exp_n(int32_t x, const uint32_t n)
 {
-	int32_t i;
+	uint32_t i;
 	int32_t xto;
-	int32_t coeff;
+	uint32_t coeff;
 	int32_t rv;
 
 	rv = FP(1.0) + x; 
@@ -104,7 +104,7 @@ int32_t exp_n(int32_t x, const uint32_t n)
 	xto = x;
 
 	for(i=2; i<n; i++) {
-		coeff = (i * coeff);  // faculty of i
+		coeff = (i * coeff);  // factorial of i
 		
 		if( (x < FP(1.0)) && (x > FP(-1.0)) )
 			xto = (xto * x) / INV_SCALE;
