@@ -3,11 +3,16 @@ MEMORY {
 }
 
 
-/*mailbox_size = 256;*/
 mailbox_size = 4096;
 mailbox_end = 0x4000;
 mailbox_base = mailbox_end - mailbox_size;
-stack_ptr_init = mailbox_base - 8;
+/* In the PowerPC EABI calling convention the link register is saved in the
+calling function's stack frame at SP+4. Therefore, the base pointer needs to be
+shifted by at least 8 bytes from the mailbox to capture the saved link
+register. For debugging purposes -- in particular easier examination of the
+stack frames -- the stack base is shifted by 16 bytes for an improved
+alignment. */
+stack_ptr_init = mailbox_base - 16;
 
 SECTIONS {
 	.text : {

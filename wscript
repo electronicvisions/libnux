@@ -33,6 +33,14 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
+        target = 'test_returncode.bin',
+        source = ['test/test_returncode.c'],
+        use = ['nux', 'nux_runtime'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
         target = 'test_unittest.bin',
         source = ['test/test_unittest.c'],
         use = ['nux', 'nux_runtime'],
