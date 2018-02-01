@@ -1,6 +1,5 @@
-#ifndef LIBNUX_SYSTEM_H_
-#define LIBNUX_SYSTEM_H_
+#pragma once
 
-void stop(void);
+#include <stdint.h>
 
-#endif /* LIBNUX_SYSTEM_H_ */
+void exit(uint32_t code);

@@ -17,7 +17,7 @@ void libnux_test_init(void) {
 }
 
 void libnux_test_shutdown(void) {
-	stop();
+	exit(num_testcases_failed != 0);
 }
 
 uint32_t libnux_test_get_passed(void) {

@@ -15,8 +15,8 @@
 .extern stack_ptr_init
 
 # External callable functions
-.globl stop
-.type stop, @function
+.globl exit
+.type exit, @function
 
 # Code section
 .text
@@ -44,6 +44,8 @@ __init:
 	addi 1, 1, stack_ptr_init@l
 	# start actual program
 	bl start
+
+exit:
 	# load stack base into r11 and save the current stack pointer to the
 	# stack base
 	lis 11, stack_ptr_init@h
