@@ -182,6 +182,15 @@ def build(bld):
         env = bld.all_envs['nux'], )
 
     bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = "test_many_vectors.bin",
+        source = "test/test_many_vectors.c",
+        use = ["nux", "nux_runtime"],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
         features = 'c objcopy check_size',
         check_size_max = 348,
         objcopy_bfdname = 'binary',
