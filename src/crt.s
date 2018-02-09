@@ -42,8 +42,12 @@ __init:
 	# set the stack pointer
 	lis 1, stack_ptr_init@h
 	addi 1, 1, stack_ptr_init@l
+	# construct global things
+	bl __call_constructors
 	# start actual program
 	bl start
+	# destruct global things
+	bl __call_destructors
 
 exit:
 	# load stack base into r11 and save the current stack pointer to the

@@ -1,9 +1,15 @@
+from waflib.TaskGen import feature, after_method
+from waflib.extras import test_base
+from waflib.extras.test_base import summary
+
 def options(opt):
     opt.load('nux_compiler')
+    opt.load('test_base')
 
 def configure(conf):
     conf.load('nux_compiler')
     conf.load('objcopy')
+    conf.load('test_base')
 
 def build(bld):
     bld(
@@ -24,10 +30,30 @@ def build(bld):
     )
 
     bld(
+        features = 'c',
+        name = 'initdeinit_obj',
+        source = 'src/initdeinit.c',
+    )
+
+    bld(
+        features = 'c',
+        name = 'cxa_pure_virtual_obj',
+        source = 'src/cxa_pure_virtual.c',
+        use = 'nux_inc',
+    )
+
+    bld(
         name = 'nux_runtime',
         target = 'crt.o',
         source = ['src/crt.s'],
-        use = ['asm'],
+        use = ['asm', 'initdeinit_obj'],
+    )
+
+    bld(
+        name = 'nux_runtime_cpp',
+        target = 'crt.o',
+        source = ['src/crt.s'],
+        use = ['asm', 'initdeinit_obj', 'cxa_pure_virtual_obj'],
     )
 
     bld.program(
@@ -55,6 +81,14 @@ def build(bld):
     )
 
     bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_vector_cc.bin',
+        source = ['test/test_vector.cc'],
+        use = ['nux', 'nux_runtime_cpp'],
+    )
+
+    bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
         target = "test_fxvsel.bin",
@@ -69,3 +103,52 @@ def build(bld):
         source = "test/test_synram_rw_v2.c",
         use = ["nux", "nux_runtime"],
     )
+
+    bld.program(
+        features = 'c objcopy check_size',
+        check_size_max = 348,
+        objcopy_bfdname = 'binary',
+        target = 'test_empty.bin',
+        source = ['test/test_empty.c'],
+        use = ['nux', 'nux_runtime'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_malloc.bin',
+        source = ['test/test_malloc.c'],
+        use = ['nux', 'nux_runtime_cpp'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy check_size',
+        check_size_max = 400,
+        objcopy_bfdname = 'binary',
+        target = 'test_empty_cc.bin',
+        source = ['test/test_empty.cc'],
+        use = ['nux', 'nux_runtime_cpp'],
+    )
+
+    bld.add_post_fun(summary)
+
+
+class check_size(test_base.TestBase):
+    def run(self):
+        test = self.inputs[0]
+        test_abspath = test.abspath()
+        xmlfile_abspath = self.getXMLFile(test).abspath()
+        max_size = self.generator.check_size_max
+        cmd = ['python test/test_obj_size.py {} {} {}'.format(
+            test_abspath, xmlfile_abspath, max_size)]
+        self.runTest(test, cmd)
+
+
+@feature('check_size')
+@after_method('apply_link', 'process_use', 'propagate_uselib_vars')
+def check_size_run_test(self):
+    if self.testsDisabled():
+        return
+    if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
+        t = self.create_task('check_size', self.link_task.outputs)
+        t.init(self)
