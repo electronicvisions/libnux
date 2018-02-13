@@ -141,6 +141,15 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
+        target = 'test_vector_sync.bin',
+        source = ['test/test_vector_sync.c'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
         target = 'failing_test_returncode.bin',
         source = ['test/test_returncode.c'],
         use = ['nux', 'nux_runtime'],
