@@ -131,6 +131,15 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
+        target = 'test_vector_alignment.bin',
+        source = ['test/test_vector_alignment.c'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
         target = 'test_neuron_counter.bin',
         source = ['test/test_neuron_counter.c'],
         use = ['nux', 'nux_runtime', 'counter'],
