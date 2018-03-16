@@ -28,7 +28,7 @@ node {
 		}
 
 		stage("Build") {
-			srun_jenkins("waf configure install --test-execnone")
+			srun_jenkins("waf configure install --dls-version=3 --test-execnone")
 		}
 
 		withEnv([

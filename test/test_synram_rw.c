@@ -1,5 +1,5 @@
 #include <s2pp.h>
-#include "libnux/dls_v2.h"
+#include "libnux/dls.h"
 #include "libnux/unittest.h"
 #include "libnux/random.h"
 
@@ -9,7 +9,7 @@ void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_
 	vector uint8_t data[dls_num_synapse_vectors];
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		for (uint32_t component = 0; component < sizeof(vector uint8_t); component++) {
-			data[index][component] = random_lcg(&seed) & mask;
+			data[index][component] = xorshift32(&seed) & mask;
 		}
 	}
 
@@ -51,7 +51,7 @@ void test_weight_read(uint32_t seed) {
 				  [addr] "r" (&data)
 				: /* no clobbers */);
 		for (uint32_t j = 0; j < sizeof(vector uint8_t); j++) {
-			libnux_test_equal(data[j], random_lcg(&seed) & dls_weight_mask);
+			libnux_test_equal(data[j], xorshift32(&seed) & dls_weight_mask);
 		}
 	}
 
@@ -76,7 +76,7 @@ void test_decoder_read(uint32_t seed) {
 				  [addr] "r" (&data)
 				: /* no clobbers */);
 		for (uint32_t j = 0; j < sizeof(vector uint8_t); j++) {
-			libnux_test_equal(data[j], random_lcg(&seed) & dls_decoder_mask);
+			libnux_test_equal(data[j], xorshift32(&seed) & dls_decoder_mask);
 		}
 	}
 

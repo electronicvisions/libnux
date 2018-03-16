@@ -2,13 +2,21 @@ from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
 
+
 def options(opt):
     opt.load('nux_compiler')
     opt.load('test_base')
+    opt.add_option("--dls-version",
+                   choices=["2", "3"],
+                   help="DLS version to use (2 or 3).")
+
 
 def configure(conf):
     env = conf.env
     conf.setenv('nux')
+    if not conf.options.dls_version:
+        raise RuntimeError("Please specify DLS version to use (2 or 3).")
+    conf.define("LIBNUX_DLS_VERSION", int(conf.options.dls_version))
     conf.load('nux_compiler')
     conf.load('objcopy')
     conf.load('test_base')
@@ -66,6 +74,51 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld.objects(
+        features='c',
+        target='spikes',
+        name='spikes',
+        source=['libnux/spikes.c'],
+        use=['nux'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.objects(
+        features='c',
+        target='random',
+        name='random',
+        source=['libnux/random.c'],
+        use=['nux'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.objects(
+        features='c',
+        target='time',
+        name='time',
+        source=['libnux/time.c'],
+        use=['nux'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.objects(
+        features='c',
+        target='counter',
+        name='counter',
+        source=['libnux/counter.c'],
+        use=['nux'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.objects(
+        features='c',
+        target='correlation',
+        name='correlation',
+        source=['libnux/correlation.c'],
+        use=['nux'],
+        env = bld.all_envs['nux'],
+    )
+
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
@@ -112,13 +165,12 @@ def build(bld):
     )
 
     bld.program(
-        features = 'c objcopy',
-        objcopy_bfdname = 'binary',
-        target = "test_synram_rw_v2.bin",
-        source = "test/test_synram_rw_v2.c",
-        use = ["nux", "nux_runtime"],
-        env = bld.all_envs['nux'],
-    )
+        features='c objcopy',
+        objcopy_bfdname='binary',
+        target="test_synram_rw.bin",
+        source="test/test_synram_rw.c",
+        use=["nux", "nux_runtime", "random"],
+        env = bld.all_envs['nux'], )
 
     bld.program(
         features = 'c objcopy check_size',
