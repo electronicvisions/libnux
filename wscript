@@ -7,14 +7,19 @@ def options(opt):
     opt.load('test_base')
 
 def configure(conf):
+    env = conf.env
+    conf.setenv('nux')
     conf.load('nux_compiler')
     conf.load('objcopy')
     conf.load('test_base')
+    # restore env
+    conf.setenv('', env=env)
 
 def build(bld):
     bld(
         target = 'nux_inc',
         export_includes = ['.'],
+        env = bld.all_envs['nux'],
     )
 
     bld.stlib(
@@ -27,12 +32,14 @@ def build(bld):
                 'src/unittest_mailbox.c',
                 ],
         use = ['nux_inc'],
+        env = bld.all_envs['nux'],
     )
 
     bld(
         features = 'c',
         name = 'initdeinit_obj',
         source = 'src/initdeinit.c',
+        env = bld.all_envs['nux'],
     )
 
     bld(
@@ -40,6 +47,7 @@ def build(bld):
         name = 'cxa_pure_virtual_obj',
         source = 'src/cxa_pure_virtual.c',
         use = 'nux_inc',
+        env = bld.all_envs['nux'],
     )
 
     bld(
@@ -47,6 +55,7 @@ def build(bld):
         target = 'crt.o',
         source = ['src/crt.s'],
         use = ['asm', 'initdeinit_obj'],
+        env = bld.all_envs['nux'],
     )
 
     bld(
@@ -54,6 +63,7 @@ def build(bld):
         target = 'crt.o',
         source = ['src/crt.s'],
         use = ['asm', 'initdeinit_obj', 'cxa_pure_virtual_obj'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -62,6 +72,7 @@ def build(bld):
         target = 'test_returncode.bin',
         source = ['test/test_returncode.c'],
         use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -70,6 +81,7 @@ def build(bld):
         target = 'test_unittest.bin',
         source = ['test/test_unittest.c'],
         use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -78,6 +90,7 @@ def build(bld):
         target = 'test_vector.bin',
         source = ['test/test_vector.c'],
         use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -86,6 +99,7 @@ def build(bld):
         target = 'test_vector_cc.bin',
         source = ['test/test_vector.cc'],
         use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -94,6 +108,7 @@ def build(bld):
         target = "test_fxvsel.bin",
         source = ["test/test_fxvsel.c"],
         use = ["nux", "nux_runtime"],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -102,6 +117,7 @@ def build(bld):
         target = "test_synram_rw_v2.bin",
         source = "test/test_synram_rw_v2.c",
         use = ["nux", "nux_runtime"],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -111,6 +127,7 @@ def build(bld):
         target = 'test_empty.bin',
         source = ['test/test_empty.c'],
         use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -119,6 +136,7 @@ def build(bld):
         target = 'test_malloc.bin',
         source = ['test/test_malloc.c'],
         use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
     )
 
     bld.program(
@@ -128,6 +146,7 @@ def build(bld):
         target = 'test_empty_cc.bin',
         source = ['test/test_empty.cc'],
         use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
     )
 
     bld.add_post_fun(summary)
@@ -151,4 +170,5 @@ def check_size_run_test(self):
         return
     if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
         t = self.create_task('check_size', self.link_task.outputs)
+        self.bld.env = self.env
         t.init(self)
