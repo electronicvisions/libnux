@@ -331,6 +331,15 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_measure_time.bin',
+        source = ['test/test_measure_time.cc'],
+        use = ['nux', 'nux_runtime_cpp', 'time'],
+        env = bld.all_envs['nux'],
+    )
+
     bld.add_post_fun(summary)
 
 
