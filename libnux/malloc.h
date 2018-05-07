@@ -1,6 +1,4 @@
-#ifndef MALLOC_DEBUG
-#define MALLOC_DEBUG 0
-#endif
+#pragma once
 
 #define NULL 0
 typedef unsigned int size_t;
@@ -14,7 +12,7 @@ void* malloc(size_t size) {
 	char* this_alloc = next_alloc;
 	intptr_t dist = (intptr_t)&heap_end - (intptr_t)this_alloc;
 	void* p = 0;
-#if MALLOC_DEBUG != 0
+#ifdef MALLOC_DEBUG
 	libnux_mailbox_write_string(" heap_base = ");
 	libnux_mailbox_write_int((int)&heap_base);
 	libnux_mailbox_write_string(" this_alloc = ");
