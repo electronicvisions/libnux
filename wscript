@@ -32,6 +32,13 @@ def options(opt):
                    action='store_true',
                    dest='disable_mailbox',
                    help="Disable mailbox memory region.")
+    opt.add_option("--time64",
+                   default=False,
+                   action='store_true',
+                   help="Use 64 bit time type (instead of 32 bit).")
+    opt.add_option("--time-shift",
+                   default=0,
+                   help="Bits to shift time resolution.")
 
 
 def configure(conf):
@@ -63,6 +70,9 @@ def configure(conf):
     if(not conf.options.disable_mailbox):
         conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
+    if(conf.options.time64):
+        conf.define("LIBNUX_TIME64", 1)
+    conf.define("LIBNUX_TIME_RESOLUTION_SHIFT", int(conf.options.time_shift))
     # specialize for v2
     conf.setenv('nux_v2', env=conf.all_envs['nux'])
     conf.define('LIBNUX_DLS_VERSION_V2', True)
@@ -144,6 +154,7 @@ def build(bld):
             'examples/stdp.cpp',
             'test/test_cstring.cpp',
             'test/test_ctors.cpp',
+            #'examples/scheduling.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
             'test/test_fxvadd.cpp',
@@ -169,12 +180,34 @@ def build(bld):
             'test/test_vector_register_reusage.cpp',
             'test/test_vector_splat.cpp',
             'test/test_vector_sync.cpp',
+	    'test/test_plasticity_rule_constant.cpp',
+            'test/test_neuron_counter.cpp',
+            'test/test_queue.cpp',
+            #'test/test_scheduler.cpp',
+            'test/test_service.cpp',
+            'test/test_timer.cpp',
+            'test/test_timer_oneshot.cpp',
         ]
 
         if dls_version != 'vx':
             # These tests don't work for HX, see Issue #3365
             program_list += [
                 'test/test_xorshift_vector.cpp', # HX does not yet implement xorshift_vector
+                'examples/stdp_mask.cpp',
+                'test/test_fxvadd.cpp',
+                'test/test_fxvsel.cpp',
+                'test/test_inline_vector_argument.cpp',
+                'test/test_many_vectors.cpp',
+                'test/test_noinline_vector_argument.cpp',
+                'test/test_omnibus.cpp',
+                'test/test_return_vector.cpp',
+                'test/test_synram_rw.cpp',
+                'test/test_vector.cpp',
+                'test/test_vector_alignment.cpp',
+                'test/test_vector_cc.cpp',
+                'test/test_vector_sync.cpp',
+                'test/test_xorshift_vector.cpp',
+                'test/test_plasticity_rule_constant.cpp',
             ]
         else:
             # These tests only work for HX
