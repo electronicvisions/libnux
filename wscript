@@ -151,6 +151,7 @@ def build(bld):
         )
 
         program_list = [
+	    'examples/stdp_mask.cpp',
             'examples/stdp.cpp',
             'test/test_cstring.cpp',
             'test/test_ctors.cpp',
