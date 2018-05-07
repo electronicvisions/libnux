@@ -1,9 +1,9 @@
 #include "libnux/vx/dls.h"
 #include "libnux/vx/location.h"
-#include "libnux/vx/unittest.h"
 #include "libnux/vx/omnibus.h"
 #include "libnux/vx/syn.h"
 #include "libnux/vx/sync.h"
+#include "libnux/vx/unittest.h"
 
 using namespace libnux::vx;
 

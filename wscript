@@ -43,6 +43,13 @@ def options(opt):
                      help="Disable mailbox memory region.")
     hopts.add_withoption('libnux-test-hostcode', default=True,
                          help='Toggle the generation and build of with_hostcode tests')
+    hopts.add_option("--time64",
+                   default=False,
+                   action='store_true',
+                   help="Use 64 bit time type (instead of 32 bit).")
+    hopts.add_option("--time-shift",
+                   default=0,
+                   help="Bits to shift time resolution.")
 
 
 def configure(conf):
@@ -81,6 +88,9 @@ def configure(conf):
     if(not conf.options.disable_mailbox):
         conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
+    if(conf.options.time64):
+        conf.define("LIBNUX_TIME64", 1)
+    conf.define("LIBNUX_TIME_RESOLUTION_SHIFT", int(conf.options.time_shift))
 
     # specialize for vx
     conf.setenv('nux_vx', env=conf.all_envs['nux'])
@@ -142,7 +152,7 @@ def build(bld):
 
         bld.install_files(
             dest = '${PREFIX}/include/',
-            files = bld.path.ant_glob(f'libnux/vx/v{chip_version_number}/**/*.(h|tcc)'),
+            files = bld.path.ant_glob(f'libnux/vx/v{chip_version_number}/**/*.(h|tcc|hpp)'),
             name = f"nux_vx_v{chip_version_number}_header",
             depends_on = ["nux_vx_header"],
             relative_trick = True
