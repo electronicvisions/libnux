@@ -193,6 +193,26 @@ def build(bld):
     )
 
     bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_noinline_vector_argument.bin',
+        source = ['test/test_noinline_vector_argument.cc'],
+        use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
+        cxxflags = ['-O2'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'failing_test_inline_vector_argument.bin',
+        source = ['test/test_inline_vector_argument.cc'],
+        use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
+        cxxflags = ['-O2'],
+    )
+
+    bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
         target = "test_fxvsel.bin",
