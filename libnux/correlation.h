@@ -58,7 +58,7 @@ static inline void get_causal_correlation(
 static inline void reset_correlation(uint8_t row)
 {
 	vector uint8_t reset_vec;
-	reset_vec = fxv_splatb(dls_correlation_reset);
+	reset_vec = vec_splat_u8(dls_correlation_reset);
 	asm volatile(
 		// clang-format off
 		"fxvoutx %[select], %[ca_base], %[index_first]\n"
