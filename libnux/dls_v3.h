@@ -43,6 +43,10 @@ static uint32_t const dls_randgen_base = 0xe000;
  * format
  * */
 
+/* Addressing of rate counters */
+static uint32_t* const dls_rates_base = (uint32_t*) ((0x12000800 << 2) | (1 << 31));
+static uint32_t* const dls_rates_reset = (uint32_t*) (((0x12000800 | (1 << 10)) << 2) | (1 << 31));
+
 /* Address of synapse driver configuration */
 static uint32_t* const dls_syndrv_base = (uint32_t*) ((0x14000000 << 2) | (1 << 31));
 
