@@ -1,6 +1,10 @@
 #!/usr/bin/env groovy
 
 node {
+
+	// Default to false to ensure failure messages are sent
+	GERRIT_BUILD = false
+
 	try {
 		cleanWs()
 
@@ -23,7 +27,6 @@ node {
 						"--project libnux " +
 						"--project hicann-dls-scripts " +
 						"--clone-depth 1 " as String)
-				GERRIT_BUILD = false
 			}
 		}
 
