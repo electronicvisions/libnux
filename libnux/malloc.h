@@ -1,7 +1,9 @@
 #pragma once
+#include <stddef.h>
 
-#define NULL 0
-typedef unsigned int size_t;
+#ifdef MALLOC_DEBUG
+#include "libnux/mailbox.h"
+#endif
 
 extern int heap_base;
 extern int heap_end;
