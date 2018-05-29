@@ -72,5 +72,7 @@ SECTIONS {
 	_end = .;
 }
 
+ASSERT( . < mailbox_base, "Filled mailbox ram region, aborting.");
+
 heap_base = .;
 heap_end = mailbox_base - 8;
