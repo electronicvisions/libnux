@@ -70,6 +70,7 @@ SPR_GETTER(get_tsr, "mfspr %0, 336")
 SPR_SETTER(set_msr, "mtmsr %0")
 SPR_GETTER(get_msr, "mfmsr %0")
 
+SPR_GETTER(get_esr, "mfesr %0")
 
 	//typedef struct packed {
 		//logic[31:20] reserved_2;
