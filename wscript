@@ -246,6 +246,15 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'example_stdp.bin',
+        source = ['examples/stdp.c'],
+        use = ['nux', 'nux_runtime', 'correlation'],
+        env = bld.all_envs['nux'],
+    )
+
     bld.add_post_fun(summary)
 
 
