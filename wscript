@@ -159,7 +159,7 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_vector_cc.bin',
-        source = ['test/test_vector.cc'],
+        source = ['test/test_vector_cc.cc'],
         use = ['nux', 'nux_runtime_cpp'],
         env = bld.all_envs['nux'],
     )
@@ -205,7 +205,7 @@ def build(bld):
         check_size_max = 400,
         objcopy_bfdname = 'binary',
         target = 'test_empty_cc.bin',
-        source = ['test/test_empty.cc'],
+        source = ['test/test_empty_cc.cc'],
         use = ['nux', 'nux_runtime_cpp'],
         env = bld.all_envs['nux'],
     )
