@@ -19,7 +19,7 @@
 .type exit, @function
 
 # Code section
-.text
+.section .text.crt
 
 reset:
 	b __init

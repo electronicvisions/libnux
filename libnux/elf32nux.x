@@ -26,6 +26,9 @@ SECTIONS {
 		/* put the C runtime first */
 		*crt.s.[0-9].o(.text)
 		*(.text)
+		KEEP(*(.text.crt*));
+		KEEP(*(.text.__cxa_pure_virtual*));
+		KEEP(*(.text.start*));
 
 		/* map all undefined isr_* to isr_undefined */
 		PROVIDE(isr_einput = _isr_undefined);
