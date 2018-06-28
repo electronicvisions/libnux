@@ -36,7 +36,9 @@ node {
 
 		withEnv([
 				'HW_TESTBOARD_ID=B291673',
-				'HW_TESTBOARD_SOCKET=3']) {            // Switchable socket the setup is plugged into
+				'HW_TESTBOARD_SOCKET=3',            // Switchable socket the setup is plugged into
+				'LD_LIBRARY_PATH+WHATEVER=./lib',   // Add libs to LD_LIBRARY_PATH
+				'PYTHONPATH+WHATEVER=./lib']) {     // Add libs to PYTHONPATH
 
 			stage("Hardware Tests") {
 				run_ppu_tests(".*/test_.*\\.binary")
@@ -89,7 +91,7 @@ void run_ppu_tests(String regex) {
 	run_with_board_allocation(
 			powercycle_fpga_command("129.206.176.148", "${HW_TESTBOARD_SOCKET}" as int) \
                                    + " && " \
-                                   + "srun bash ./hicann-dls-scripts/helper/pll_config_bypass.sh" \
+                                   + "srun python ./hicann-dls-scripts/helper/pll_init.py" \
                                    + " && " \
                                    + "find firmware -regex \"${regex}\" -print0 | xargs -n 1 -0 srun python hicann-dls-scripts/run_program.py --as_string" as String)
 }
