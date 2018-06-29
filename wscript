@@ -188,7 +188,8 @@ def build(bld):
         target="test_synram_rw.bin",
         source="test/test_synram_rw.c",
         use=["nux", "nux_runtime", "random"],
-        env = bld.all_envs['nux'], )
+        env = bld.all_envs['nux'],
+    )
 
     bld.program(
         features = 'c objcopy',
@@ -201,7 +202,7 @@ def build(bld):
 
     bld.program(
         features = 'c objcopy check_size',
-        check_size_max = 348,
+        check_size_max = 352,
         objcopy_bfdname = 'binary',
         target = 'test_empty.bin',
         source = ['test/test_empty.c'],

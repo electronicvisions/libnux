@@ -74,6 +74,7 @@ SECTIONS {
 	/* global symbol marking the end */
 	_end = .;
 }
+. = ALIGN(16);
 
 ASSERT( . < mailbox_base, "Filled mailbox ram region, aborting.");
 
