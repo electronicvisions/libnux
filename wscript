@@ -9,6 +9,16 @@ def options(opt):
     opt.add_option("--dls-version",
                    choices=["2", "3"],
                    help="DLS version to use (2 or 3).")
+    opt.add_option("--enable-stack-protector",
+                   default=False,
+                   action='store_true',
+                   dest='stack_protector',
+                   help="Enable stack frame overflow check.")
+    opt.add_option("--enable-stack-redzone",
+                   default=False,
+                   action='store_true',
+                   dest='stack_redzone',
+                   help="Enable stack redzone check towards the program memory region.")
 
 
 def configure(conf):
@@ -20,6 +30,14 @@ def configure(conf):
     conf.load('nux_compiler')
     conf.load('objcopy')
     conf.load('test_base')
+    if(conf.options.stack_protector):
+        conf.define("LIBNUX_STACK_PROTECTOR", True)
+        conf.env.append_value('CFLAGS', '-fstack-protector-all')
+        conf.env.append_value('CXXFLAGS', '-fstack-protector-all')
+    if(conf.options.stack_redzone):
+        conf.define("LIBNUX_STACK_REDZONE", True)
+        conf.env.append_value('CFLAGS', '-fstack-limit-symbol=stack_redzone')
+        conf.env.append_value('CXXFLAGS', '-fstack-limit-symbol=stack_redzone')
     # restore env
     conf.setenv('', env=env)
 
@@ -38,6 +56,7 @@ def build(bld):
                 'src/mailbox.c',
                 'src/unittest.c',
                 'src/unittest_mailbox.c',
+                'src/stack_guards.c',
                 ],
         use = ['nux_inc'],
         env = bld.all_envs['nux'],
@@ -206,6 +225,24 @@ def build(bld):
         objcopy_bfdname = 'binary',
         target = 'test_empty.bin',
         source = ['test/test_empty.c'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'failing_test_stack_redzone.bin',
+        source = ['test/test_stack_redzone.c'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'failing_test_stack_guard.bin',
+        source = ['test/test_stack_guard.c'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )

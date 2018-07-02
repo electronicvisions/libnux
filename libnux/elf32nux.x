@@ -76,6 +76,13 @@ SECTIONS {
 }
 . = ALIGN(16);
 
+/*
+    With -fstack-limit-symbol=stack_redzone, function entries get checked, if
+    stack pointer is below stack_redzone + 48 bytes.
+    This offset maybe subject to change with a different compiler version.
+*/
+stack_redzone = .;
+
 ASSERT( . < mailbox_base, "Filled mailbox ram region, aborting.");
 
 heap_base = .;
