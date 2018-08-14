@@ -24,9 +24,8 @@ SECTIONS {
 		_isr_undefined = .;
 
 		/* put the C runtime first */
-		*crt.s.[0-9].o(.text)
-		*(.text)
 		KEEP(*(.text.crt*));
+		*(.text)
 		KEEP(*(.text.__cxa_pure_virtual*));
 		KEEP(*(.text.start*));
 
