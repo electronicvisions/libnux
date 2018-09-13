@@ -22,6 +22,11 @@ def options(opt):
                    action='store_true',
                    dest='stack_redzone',
                    help="Enable stack redzone check towards the program memory region.")
+    opt.add_option("--disable-mailbox",
+                   default=False,
+                   action='store_true',
+                   dest='disable_mailbox',
+                   help="Disable mailbox memory region.")
 
 
 def configure(conf):
@@ -51,6 +56,8 @@ def configure(conf):
         conf.env.append_value('CXXFLAGS', '-fstack-limit-symbol=stack_redzone')
     else:
         conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'False')
+    if(not conf.options.disable_mailbox):
+        conf.env.append_value('LINKFLAGS', '-Wl,--defsym=__mailbox__=1')
     # restore env
     conf.setenv('', env=env)
 
