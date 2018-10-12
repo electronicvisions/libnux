@@ -35,7 +35,7 @@ node {
 		}
 
 		stage("Hardware Tests") {
-			run_ppu_tests("07", ".*/test_.*\\.binary")
+			run_ppu_tests("B291656", ".*/test_.*\\.binary")
 		}
 
 	} catch (Exception e) {
