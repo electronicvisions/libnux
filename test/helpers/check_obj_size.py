@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     # extract the heap_base symbol from the linked file; that's the first
     # address after the linked data area, i.e. the program size
-    cmd = 'nm -td {} | sed -n -n \'s/\([^ ]\+\) T heap_base$/\\1/p\''.format(
+    cmd = 'nm -td {} | sed -n -n \'s/\([^ ]\+\) [TD] heap_base$/\\1/p\''.format(
         args.test_abspath)
     out = subprocess.check_output(cmd, shell=True).strip()
     size = int(out)

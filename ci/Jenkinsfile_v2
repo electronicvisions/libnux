@@ -31,11 +31,11 @@ node {
 		}
 
 		stage("Build") {
-			srun_jenkins("waf configure install --dls-version=2 --test-execnone")
+			srun_jenkins("waf configure install --dls-version=2 --enable-stack-protector --enable-stack-redzone --test-execnone --test-timeout=240")
 		}
 
 		stage("Hardware Tests") {
-			run_ppu_tests("B291656", ".*/test_.*\\.binary")
+			run_ppu_tests("B291656")
 		}
 
 	} catch (Exception e) {
@@ -71,10 +71,8 @@ void run_with_board_allocation(String board_id, String command) {
 	run_with_modules("echo \"${command}\" | salloc -p dls --gres=${board_id}" as String)
 }
 
-void run_ppu_tests(String board_id, String regex) {
-	run_with_board_allocation(board_id,
-			"find firmware -regex \"${regex}\" -print0 | xargs -n 1 -0 srun python hicann-dls-scripts/run_program.py --as_string" as String
-	)
+void run_ppu_tests(String board_id) {
+	run_with_board_allocation(board_id, "srun waf install -j1 --test-execall")
 }
 
 void post_all_build_action() {
@@ -93,6 +91,21 @@ void post_all_build_action() {
 			unstableTotalHigh: '0',
 			unstableTotalLow: '0',
 			unstableTotalNormal: '0'
+
+	// Evaluate test results
+	step([$class       : 'XUnitBuilder',
+	      thresholdMode: 1,
+	      thresholds   : [[$class           : 'FailedThreshold',
+	                       unstableThreshold: '0'],
+	      ],
+	      tools        : [[$class               : 'GoogleTestType',
+	                       deleteOutputFiles    : true,
+	                       failIfNotNew         : true,
+	                       pattern              : "build/test_results/**/*.xml",
+	                       skipNoTestFiles      : false,
+	                       stopProcessingIfError: true]
+	      ]
+	])
 
 	// Always clean the workspace
 	cleanWs()

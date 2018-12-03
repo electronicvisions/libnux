@@ -1,3 +1,5 @@
+import os
+
 from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
@@ -6,6 +8,7 @@ from waflib.extras.test_base import summary
 def options(opt):
     opt.load('nux_compiler')
     opt.load('test_base')
+    opt.load('pytest')
     opt.add_option("--dls-version",
                    choices=["2", "3"],
                    help="DLS version to use (2 or 3).")
@@ -22,6 +25,10 @@ def options(opt):
 
 
 def configure(conf):
+    # host-based python stuff also needed for cross-env tests
+    conf.load('pytest')
+
+    # now configure for nux cross compiler
     env = conf.env
     conf.setenv('nux')
     if not conf.options.dls_version:
@@ -32,12 +39,18 @@ def configure(conf):
     conf.load('test_base')
     if(conf.options.stack_protector):
         conf.define("LIBNUX_STACK_PROTECTOR", True)
+        conf.env.append_value('LIBNUX_STACK_PROTECTOR_ENABLED', 'True')
         conf.env.append_value('CFLAGS', '-fstack-protector-all')
         conf.env.append_value('CXXFLAGS', '-fstack-protector-all')
+    else:
+        conf.env.append_value('LIBNUX_STACK_PROTECTOR_ENABLED', 'False')
     if(conf.options.stack_redzone):
         conf.define("LIBNUX_STACK_REDZONE", True)
+        conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'True')
         conf.env.append_value('CFLAGS', '-fstack-limit-symbol=stack_redzone')
         conf.env.append_value('CXXFLAGS', '-fstack-limit-symbol=stack_redzone')
+    else:
+        conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'False')
     # restore env
     conf.setenv('', env=env)
 
@@ -150,7 +163,7 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
-        target = 'failing_test_returncode.bin',
+        target = 'test_returncode.bin',
         source = ['test/test_returncode.c'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
@@ -177,7 +190,7 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
-        target = 'failing_test_unittest.bin',
+        target = 'test_unittest.bin',
         source = ['test/test_unittest.c'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
@@ -214,7 +227,7 @@ def build(bld):
     bld.program(
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
-        target = 'failing_test_inline_vector_argument.bin',
+        target = 'test_inline_vector_argument.bin',
         source = ['test/test_inline_vector_argument.cc'],
         use = ['nux', 'nux_runtime_cpp'],
         env = bld.all_envs['nux'],
@@ -248,9 +261,25 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    def max_size_empty():
+        stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
+        stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+
+        if not stack_protector and not stack_redzone:
+            return 352
+
+        if stack_protector and not stack_redzone:
+            return 624
+
+        if not stack_protector and stack_redzone:
+            return 416
+
+        if stack_protector and stack_redzone:
+            return 752
+
     bld.program(
         features = 'c objcopy check_size',
-        check_size_max = 352,
+        check_size_max = max_size_empty(),
         objcopy_bfdname = 'binary',
         target = 'test_empty.bin',
         source = ['test/test_empty.c'],
@@ -261,7 +290,7 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
-        target = 'failing_test_stack_redzone.bin',
+        target = 'test_stack_redzone.bin',
         source = ['test/test_stack_redzone.c'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
@@ -270,7 +299,7 @@ def build(bld):
     bld.program(
         features = 'c objcopy',
         objcopy_bfdname = 'binary',
-        target = 'failing_test_stack_guard.bin',
+        target = 'test_stack_guard.bin',
         source = ['test/test_stack_guard.c'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
@@ -285,9 +314,25 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    def max_size_empty_cc():
+        stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
+        stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+
+        if not stack_protector and not stack_redzone:
+            return 416
+
+        if stack_protector and not stack_redzone:
+            return 720
+
+        if not stack_protector and stack_redzone:
+            return 480
+
+        if stack_protector and stack_redzone:
+            return 848
+
     bld.program(
         features = 'cxx objcopy check_size',
-        check_size_max = 400,
+        check_size_max = max_size_empty_cc(),
         objcopy_bfdname = 'binary',
         target = 'test_empty_cc.bin',
         source = ['test/test_empty_cc.cc'],
@@ -340,6 +385,19 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld(
+        name='libnux_hwtests',
+        tests='test/test_hwtests.py',
+        features='use pytest',
+        use='hdls-scripts_runprogram',
+        install_path='${PREFIX}/bin/tests',
+        skip_run=False,
+        env = bld.all_envs[''],
+        test_environ = dict(STACK_PROTECTION=bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                            STACK_REDZONE=bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0],
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'))
+    )
+
     bld.add_post_fun(summary)
 
 
@@ -349,7 +407,7 @@ class check_size(test_base.TestBase):
         test_abspath = test.abspath()
         xmlfile_abspath = self.getXMLFile(test).abspath()
         max_size = self.generator.check_size_max
-        cmd = ['python test/test_obj_size.py {} {} {}'.format(
+        cmd = ['python test/helpers/check_obj_size.py {} {} {}'.format(
             test_abspath, xmlfile_abspath, max_size)]
         self.runTest(test, cmd)
 

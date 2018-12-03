@@ -31,7 +31,7 @@ node {
 		}
 
 		stage("Build") {
-			srun_jenkins("waf configure install --dls-version=3 --test-execnone")
+			srun_jenkins("waf configure install --dls-version=3 --enable-stack-protector --enable-stack-redzone --test-execnone --test-timeout=240")
 		}
 
 		withEnv([
@@ -41,7 +41,7 @@ node {
 				'PYTHONPATH+WHATEVER=./lib']) {     // Add libs to PYTHONPATH
 
 			stage("Hardware Tests") {
-				run_ppu_tests(".*/test_.*\\.binary")
+				run_ppu_tests()
 			}
 		}
 
@@ -87,13 +87,13 @@ static String powercycle_fpga_command(String ip, int socket_number) {
 			"sleep 5"                                                               // FPGA powerup
 }
 
-void run_ppu_tests(String regex) {
+void run_ppu_tests() {
 	run_with_board_allocation(
 			powercycle_fpga_command("129.206.176.148", "${HW_TESTBOARD_SOCKET}" as int) \
                                    + " && " \
                                    + "srun python ./hicann-dls-scripts/helper/pll_init.py" \
                                    + " && " \
-                                   + "find firmware -regex \"${regex}\" -print0 | xargs -n 1 -0 srun python hicann-dls-scripts/run_program.py --as_string" as String)
+                                   + "srun waf install -j1 --test-execall")
 }
 
 void post_all_build_action() {
@@ -113,6 +113,20 @@ void post_all_build_action() {
 			unstableTotalLow: '0',
 			unstableTotalNormal: '0'
 
+	// Evaluate test results
+	step([$class       : 'XUnitBuilder',
+	      thresholdMode: 1,
+	      thresholds   : [[$class           : 'FailedThreshold',
+	                       unstableThreshold: '0'],
+	      ],
+	      tools        : [[$class               : 'GoogleTestType',
+	                       deleteOutputFiles    : true,
+	                       failIfNotNew         : true,
+	                       pattern              : "build/test_results/**/*.xml",
+	                       skipNoTestFiles      : false,
+	                       stopProcessingIfError: true]
+	      ]
+	])
 	// Always clean the workspace
 	cleanWs()
 }
