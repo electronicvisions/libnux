@@ -77,3 +77,15 @@ uint32_t libnux_mailbox_write_string(char const * str) {
 uint32_t libnux_mailbox_write_int(uint32_t const n) {
 	return libnux_mailbox_write_string(itoa(n, 10));
 }
+
+uint32_t libnux_mailbox_write_signed_int(int32_t const n) {
+	if (n < 0) {
+		uint32_t ret = libnux_mailbox_write_string("-");
+		if (n == INT32_MIN) {
+			return ret + libnux_mailbox_write_string("2147483648");
+		} else {
+			return ret + libnux_mailbox_write_int(-n);
+		}
+	}
+	return libnux_mailbox_write_int(n);
+}

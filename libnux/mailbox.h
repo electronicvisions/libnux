@@ -13,3 +13,4 @@ void libnux_mailbox_write_u8(uint32_t const offset, uint8_t byte);
 
 uint32_t libnux_mailbox_write_string(char const * str);
 uint32_t libnux_mailbox_write_int(uint32_t const n);
+uint32_t libnux_mailbox_write_signed_int(int32_t const n);
