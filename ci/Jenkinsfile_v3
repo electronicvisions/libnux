@@ -122,7 +122,7 @@ void post_error_build_action() {
 		mattermostSend(channel: "#dls-software",
 				text: "@channel Jenkins build `${env.JOB_NAME}` has failed!",
 				message: "${env.BUILD_URL}",
-				endpoint: "https://brainscales-r.kip.uni-heidelberg.de:6443/hooks/qrn4j3tx8jfe3dio6esut65tpr")
+				endpoint: "https://chat.bioai.eu/hooks/qrn4j3tx8jfe3dio6esut65tpr")
 	}
 }
 
