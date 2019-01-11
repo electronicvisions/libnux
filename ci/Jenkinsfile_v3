@@ -66,6 +66,7 @@ void run_with_modules(String command) {
 	sh "module purge && " +
 			"module load spack_visionary-defaults/autobuild && " +
 			"module load waf && " +
+			"module load xilinx/143 && " +
 			"module load gcc-nux && " +
 			"module load frickel-dls_v3testing/current && ${command}"
 }
