@@ -4,12 +4,13 @@
 */
 int start(void)
 {
-	__attribute__((unused)) int a[2];
+	__attribute__((unused)) int volatile a[2];
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 	/* Write out of bounds into array, overwriting stack-guard magic value. */
-	for (int i = 0; i < 3; ++i) {
-		a[i] = 5;
-	}
+	a[2] = 5;
+#pragma GCC diagnostic pop
 
 	return 0;
 }
