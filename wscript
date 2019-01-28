@@ -264,12 +264,19 @@ def build(bld):
     def max_size_empty():
         stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
         stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+        build_profile = bld.options.build_profile
 
         if not stack_protector and not stack_redzone:
-            return 352
+            if build_profile == 'release':
+                return 368
+            else:
+                return 352
 
         if stack_protector and not stack_redzone:
-            return 624
+            if build_profile == 'release':
+                return 656
+            else:
+                return 624
 
         if not stack_protector and stack_redzone:
             return 416
