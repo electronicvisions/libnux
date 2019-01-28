@@ -5,7 +5,7 @@
 */
 int start(void)
 {
-	__attribute__((unused)) int i = 5;
+	__attribute__((unused)) int volatile i = 5;
 	start();
 	return 0;
 }
