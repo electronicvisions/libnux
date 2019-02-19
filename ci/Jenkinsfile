@@ -1,0 +1,4 @@
+#!/usr/bin/env groovy
+
+# This Jenkinsfile has been superseeded by the ppu-toolchain Jenkinsfile found in the
+# repository 'oppulance'.
