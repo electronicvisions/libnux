@@ -13,8 +13,8 @@
 
 void test_size()
 {
-	libnux_testcase_begin("size == 4B");
-	libnux_test_equal(sizeof(bool), 4);
+	libnux_testcase_begin("size == 1B");
+	libnux_test_equal(sizeof(bool), 1);
 	libnux_testcase_end();
 }
 
