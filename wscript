@@ -84,6 +84,7 @@ def build(bld):
     bld.stlib(
         target = 'nux',
         source = [
+                'src/bitformatting.c',
                 'src/exp.c',
                 'src/fxv.c',
                 'src/mailbox.c',
@@ -279,6 +280,15 @@ def build(bld):
         objcopy_bfdname = 'binary',
         target = "test_many_vectors.bin",
         source = "test/test_many_vectors.c",
+        use = ["nux", "nux_runtime"],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = "test_bitformatting.bin",
+        source = "test/test_bitformatting.c",
         use = ["nux", "nux_runtime"],
         env = bld.all_envs['nux'],
     )
