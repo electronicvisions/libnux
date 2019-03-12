@@ -293,6 +293,15 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_helper.bin',
+        source = ['test/test_helper.cc'],
+        use = ['nux', 'nux_runtime_cpp'],
+        env = bld.all_envs['nux'],
+    )
+
     def max_size_empty():
         stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
         stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
