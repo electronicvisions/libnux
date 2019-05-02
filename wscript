@@ -399,6 +399,15 @@ def build(bld):
         env = bld.all_envs['nux'],
     )
 
+    bld.program(
+        features = 'c objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_fxvadd.bin',
+        source = ['test/test_fxvadd.c'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
     bld(
         name='libnux_hwtests',
         tests='test/test_hwtests.py',
