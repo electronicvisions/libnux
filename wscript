@@ -5,6 +5,17 @@ from waflib.extras import test_base
 from waflib.extras.test_base import summary
 
 
+def depends(dep):
+    if not dep.options.dls_version:
+        raise RuntimeError("Please specify DLS version to use (2 or 3).")
+
+    if int(dep.options.dls_version) == 2:
+        dep("hicann-dls-scripts")
+
+    if int(dep.options.dls_version) == 3:
+        dep("hicann-dls-scripts", branch="v3testing")
+
+
 def options(opt):
     opt.load('nux_compiler')
     opt.load('test_base')
