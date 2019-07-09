@@ -112,7 +112,8 @@ def build(bld):
         name = 'nux_runtime',
         target = 'crt.o',
         source = ['src/crt.s'],
-        use = ['asm', 'initdeinit_obj'],
+        features = 'use asm',
+        use = ['initdeinit_obj'],
         env = bld.all_envs['nux'],
     )
 
@@ -120,7 +121,8 @@ def build(bld):
         name = 'nux_runtime_cpp',
         target = 'crt.o',
         source = ['src/crt.s'],
-        use = ['asm', 'initdeinit_obj', 'cxa_pure_virtual_obj'],
+        features = 'use asm',
+        use = ['initdeinit_obj', 'cxa_pure_virtual_obj'],
         env = bld.all_envs['nux'],
     )
 
