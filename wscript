@@ -17,6 +17,7 @@ def depends(dep):
 
 
 def options(opt):
+    opt.load('nux_assembler')
     opt.load('nux_compiler')
     opt.load('test_base')
     opt.load('pytest')
@@ -50,6 +51,7 @@ def configure(conf):
     if not conf.options.dls_version:
         raise RuntimeError("Please specify DLS version to use (2 or 3).")
     conf.define("LIBNUX_DLS_VERSION", int(conf.options.dls_version))
+    conf.load('nux_assembler')
     conf.load('nux_compiler')
     conf.load('objcopy')
     conf.load('test_base')
