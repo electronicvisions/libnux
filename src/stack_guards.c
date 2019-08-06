@@ -19,21 +19,22 @@ void __stack_chk_fail(void)
 
 extern uint32_t stack_redzone;
 
-void __attribute__((naked)) isr_program(void)
-{
-	// clang-format off
-	asm volatile(
-		"cmplw cr7, %0, %%sp\n"
-		// return ENOMEM=12 on stack overflow
-		"li %%r3, 12\n"
-		"blt cr7, exit\n"
-		// return 1 otherwise
-		"li %%r3, 1\n"
-		"bl exit\n"
-		// fstack-limit-symbol=sym limits at sym+48
-		:: "r"(stack_redzone + 48) :
-	);
-	// clang-format on
-}
+// clang-format off
+// "naked" function
+asm(".globl isr_program\n"
+	"isr_program:\n"
+	// fstack-limit-symbol=sym limits at sym+48
+	"lis 9, stack_redzone@h\n"
+	"addi 9, 9, stack_redzone@l\n"
+	"addi 9, 9, 48\n"
+	"cmplw cr7, 1, 9\n"
+	// return ENOMEM=12 on stack overflow
+	"li 3, 12\n"
+	"blt cr7, exit\n"
+	// return 1 otherwise
+	"li 3, 1\n"
+	"bl exit\n"
+);
+// clang-format on
 
 #endif
