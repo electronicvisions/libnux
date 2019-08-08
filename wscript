@@ -311,19 +311,25 @@ def build(bld):
             if build_profile == 'release':
                 return 368
             else:
-                return 352
+                return 320
 
         if stack_protector and not stack_redzone:
             if build_profile == 'release':
                 return 656
             else:
-                return 624
+                return 576
 
         if not stack_protector and stack_redzone:
-            return 416
+            if build_profile == 'release':
+                return 464
+            else:
+                return 400
 
         if stack_protector and stack_redzone:
-            return 752
+            if build_profile == 'release':
+                return 768
+            else:
+                return 656
 
     bld.program(
         features = 'c objcopy check_size',
@@ -365,18 +371,28 @@ def build(bld):
     def max_size_empty_cc():
         stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
         stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+        build_profile = bld.options.build_profile
 
         if not stack_protector and not stack_redzone:
-            return 416
+            if build_profile == 'release':
+                return 368
+            else:
+                return 384
 
         if stack_protector and not stack_redzone:
-            return 720
+            if build_profile == 'release':
+                return 720
+            else:
+                return 688
 
         if not stack_protector and stack_redzone:
-            return 480
+            return 464
 
         if stack_protector and stack_redzone:
-            return 848
+            if build_profile == 'release':
+                return 832
+            else:
+                return 784
 
     bld.program(
         features = 'cxx objcopy check_size',
