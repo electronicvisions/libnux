@@ -44,18 +44,19 @@ static uint32_t const dls_randgen_base = 0xe000;
  * */
 
 /* Addressing of rate counters */
-static uint32_t* const dls_rates_base = (uint32_t*) ((0x12000800 << 2) | (1 << 31));
-static uint32_t* const dls_rates_reset = (uint32_t*) (((0x12000800 | (1 << 10)) << 2) | (1 << 31));
+static uint32_t* const dls_rates_base = (uint32_t*) ((0x12000800ul << 2) | (1ul << 31));
+static uint32_t* const dls_rates_reset =
+    (uint32_t*) (((0x12000800ul | (1ul << 10)) << 2) | (1ul << 31));
 
 /* Address of synapse driver configuration */
-static uint32_t* const dls_syndrv_base = (uint32_t*) ((0x14000000 << 2) | (1 << 31));
+static uint32_t* const dls_syndrv_base = (uint32_t*) ((0x14000000ul << 2) | (1ul << 31));
 
 /* Address of capacitive memory configuration */
-static uint32_t* const dls_capmem_config_base = (uint32_t*) ((0x10010000 << 2) | (1 << 31));
-static uint32_t* const dls_capmem_cell_base = (uint32_t*) ((0x10000000 << 2) | (1 << 31));
+static uint32_t* const dls_capmem_config_base = (uint32_t*) ((0x10010000ul << 2) | (1ul << 31));
+static uint32_t* const dls_capmem_cell_base = (uint32_t*) ((0x10000000ul << 2) | (1ul << 31));
 
 /* Address for spike injection */
-static uint32_t* const dls_spike_base = (uint32_t*) ((0x15000000 << 2) | (1 << 31));
+static uint32_t* const dls_spike_base = (uint32_t*) ((0x15000000ul << 2) | (1ul << 31));
 
 /* FIXME: What is this for */
-static uint32_t* const dls_nrn_digital_mod = (uint32_t*) ((0x12000000 << 2) | (1 << 31));
+static uint32_t* const dls_nrn_digital_mod = (uint32_t*) ((0x12000000ul << 2) | (1ul << 31));
