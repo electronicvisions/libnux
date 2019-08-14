@@ -2,7 +2,10 @@
 
 #include <stdint.h>
 #include "dls.h"
+#include "omnibus.h"
 #include "time.h"
+
+using namespace libnux;
 
 typedef struct
 {
@@ -12,8 +15,7 @@ typedef struct
 
 static inline void send_spike(spike_t* sp)
 {
-	volatile uint32_t* ptr = (uint32_t*) (dls_spike_base + (sp->addr));
-	*ptr = sp->row_mask;
+	omnibus_write(dls_spike_base + (sp->addr), sp->row_mask);
 }
 
 void send_uniform_spiketrain(spike_t* single_spike, uint32_t number, uint32_t isi_usec);

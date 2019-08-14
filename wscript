@@ -159,6 +159,7 @@ def build(bld):
                 'test/test_inline_vector_argument.cpp',
                 'test/test_many_vectors.cpp',
                 'test/test_noinline_vector_argument.cpp',
+                'test/test_omnibus.cpp',
                 'test/test_return_vector.cpp',
                 'test/test_synram_rw.cpp',
                 'test/test_vector.cpp',

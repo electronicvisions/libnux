@@ -2,6 +2,10 @@
 
 #include <stdint.h>
 
+#include "omnibus.h"
+
+using namespace libnux;
+
 /* Size of synram */
 static uint32_t const dls_num_rows = 32;
 static uint32_t const dls_num_columns = 32;
@@ -31,23 +35,17 @@ static uint32_t const dls_decoder_mask = 0x3f;
 static uint32_t const dls_buffer_enable_mask = 0x200000;
 static uint32_t const dls_test_mask = 0x100000;
 
-/* Omnibus addresses
- * The omnibus addressing from the PPU is shifted by 2 bits compared to the
- * addressing from the FPGA, plus setting the most significant bit. For the
- * addresses refer to Schemmel & Hartel 2017 (Specification of the Hicann-DLS,
- * repository hicann-dls-private, doc folder), 6.6. It can be downloaded from
- * https://brainscales-r.kip.uni-heidelberg.de:11443/job/doc_hicann-dls-doc.
- * The MSB selects between addressing the SRAM or the bus.
- * Reading and writing to the omnibus should be done by dereferencing 32 bit
- * pointers. Therefore, all omnibus addresses should be placed here in the
- * format
- * */
+/*
+ * Omnibus addresses
+ * The following omnibus addresses are in the "FPGA omnibus tree format". To be used
+ * on the PPU, the need to be modified using get_omnibus_pointer (see omnibus.h for details).
+ */
 
 /* Addressing of rate counters */
-static uint32_t* const dls_rates_base = (uint32_t*) ((0x1e000000ul << 2) | (1ul << 31));
+static constexpr omnibus_address_t dls_rates_base = 0x1e000000ul;
 
 /* Address of synapse driver configuration */
-static uint32_t* const dls_syndrv_base = (uint32_t*) ((0x1c000000ul << 2) | (1ul << 31));
+static constexpr omnibus_address_t dls_syndrv_base = 0x1c000000ul;
 
 /* Address for spike injection */
-static uint32_t* const dls_spike_base = (uint32_t*) ((0x1c000040ul << 2) | (1ul << 31));
+static constexpr omnibus_address_t dls_spike_base = 0x1c000040ul;
