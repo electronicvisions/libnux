@@ -133,18 +133,4 @@ void testcase_end(void);
 
 void test_summary(void);
 
-/* not needed outside */
-
-#undef LIBNUX_TEST_STRINGIFY
-#undef LIBNUX_TEST_TO_STRING
-#undef LIBNUX_TEST_WRITE_PASSED
-#undef LIBNUX_TEST_WRITE_FAILED
-#undef LIBNUX_TEST_FAILED
-#undef LIBNUX_TEST_PASSED
-#undef LIBNUX_TEST
-#undef LIBNUX_TEST_EQUAL
-#undef LIBNUX_TEST_TRUE
-#undef LIBNUX_TEST_NULL
-#undef LIBNUX_TEST_NOT_NULL
-
 } // namespace libnux::vx
