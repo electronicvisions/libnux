@@ -40,7 +40,7 @@ void test_weight_read(uint32_t seed) {
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
 		vector uint8_t data;
-		register vector uint8_t temp;
+		vector uint8_t temp;
 		asm volatile (
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
@@ -65,7 +65,7 @@ void test_decoder_read(uint32_t seed) {
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
 		vector uint8_t data;
-		register vector uint8_t temp;
+		vector uint8_t temp;
 		asm volatile (
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"

@@ -1,9 +1,7 @@
 #include "libnux/attrib.h"
-extern "C" {
+#include "libnux/helper.h"
+#include "libnux/time.h"
 #include "libnux/unittest.h"
-}
-#include "libnux/helpers.hpp"
-#include "libnux/time.hpp"
 
 template <size_t N>
 void test_sleep_cycles(char const* msg, times<N>& t, time_base_t sleep_time, time_base_t max_time)
@@ -59,7 +57,7 @@ void measure_int_multiply_not_optimized_away(char const* msg, times<N>& t)
 	print_measurement(msg, t);
 }
 
-extern "C" int start()
+int start()
 {
 	libnux_test_init();
 

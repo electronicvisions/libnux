@@ -1,9 +1,7 @@
-extern "C" {
 #include <s2pp.h>
-#include "libnux/unittest.h"
 #include "libnux/mailbox.h"
-}
-#include "libnux/new.hpp"
+#include "libnux/new.h"
+#include "libnux/unittest.h"
 
 template<typename T>
 struct CRTP {
@@ -149,7 +147,6 @@ void print_memory_layout() {
 	libnux_mailbox_write_string("\n");
 }
 
-extern "C" {
 void start(void) {
 	VectorTestNEW* test5 = new VectorTestNEW("VectorTestNEW");
 	delete(test5);
@@ -177,5 +174,4 @@ void start(void) {
 
 
 	test4.test(); // non-working output (mailbox ordering...)
-}
 }

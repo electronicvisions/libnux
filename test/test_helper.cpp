@@ -1,10 +1,8 @@
 #include <array>
 
-#include "libnux/helper.hpp"
-extern "C" {
 #include <s2pp.h>
+#include "libnux/helper.h"
 #include "libnux/unittest.h"
-}
 
 void test_abs_diff()
 {
@@ -38,7 +36,6 @@ void test_find_max_amount()
 	libnux_test_equal(find_max_amount(array_2), 1600);
 }
 
-extern "C" {
 void start()
 {
 	libnux_test_init();
@@ -46,5 +43,4 @@ void start()
 	test_find_max_amount();
 	libnux_test_summary();
 	libnux_test_shutdown();
-}
 }

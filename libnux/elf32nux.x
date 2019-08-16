@@ -27,7 +27,7 @@ SECTIONS {
 		KEEP(*(.text.crt*));
 		*(.text)
 		KEEP(*(.text.__cxa_pure_virtual*));
-		KEEP(*(.text.start*));
+		KEEP(*(.text._start*));
 
 		/* map all undefined isr_* to isr_undefined */
 		PROVIDE(isr_einput = _isr_undefined);

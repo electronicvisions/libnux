@@ -4,11 +4,11 @@
 
 #define STACK_GUARD_MAGIC 0xdeadbeef
 
-extern void exit(uint32_t);
+extern "C" void exit(uint32_t);
 
 uintptr_t __stack_chk_guard = STACK_GUARD_MAGIC;
 
-void __stack_chk_fail(void)
+extern "C" void __stack_chk_fail(void)
 {
 	exit(STACK_GUARD_MAGIC);
 }

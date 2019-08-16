@@ -84,29 +84,41 @@ def build(bld):
     bld.stlib(
         target = 'nux',
         source = [
-                'src/bitformatting.c',
-                'src/exp.c',
-                'src/fxv.c',
-                'src/mailbox.c',
-                'src/unittest.c',
-                'src/unittest_mailbox.c',
-                'src/stack_guards.c',
+                'src/bitformatting.cpp',
+                'src/exp.cpp',
+                'src/fxv.cpp',
+                'src/mailbox.cpp',
+                'src/unittest.cpp',
+                'src/unittest_mailbox.cpp',
+                'src/stack_guards.cpp',
+                'src/spikes.cpp',
+                'src/random.cpp',
+                'src/time.cpp',
+                'src/counter.cpp',
+                'src/correlation.cpp',
                 ],
         use = ['nux_inc'],
         env = bld.all_envs['nux'],
     )
 
     bld(
-        features = 'c',
-        name = 'initdeinit_obj',
-        source = 'src/initdeinit.c',
+        features = 'cxx',
+        name = 'start_obj',
+        source = 'src/start.cpp',
         env = bld.all_envs['nux'],
     )
 
     bld(
-        features = 'c',
+        features = 'cxx',
+        name = 'initdeinit_obj',
+        source = 'src/initdeinit.cpp',
+        env = bld.all_envs['nux'],
+    )
+
+    bld(
+        features = 'cxx',
         name = 'cxa_pure_virtual_obj',
-        source = 'src/cxa_pure_virtual.c',
+        source = 'src/cxa_pure_virtual.cpp',
         use = 'nux_inc',
         env = bld.all_envs['nux'],
     )
@@ -116,114 +128,59 @@ def build(bld):
         target = 'crt.o',
         source = ['src/crt.s'],
         features = 'use asm',
-        use = ['initdeinit_obj'],
+        use = ['initdeinit_obj', 'cxa_pure_virtual_obj', 'start_obj'],
         env = bld.all_envs['nux'],
     )
-
-    bld(
-        name = 'nux_runtime_cpp',
-        target = 'crt.o',
-        source = ['src/crt.s'],
-        features = 'use asm',
-        use = ['initdeinit_obj', 'cxa_pure_virtual_obj'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.objects(
-        features='c',
-        target='spikes',
-        name='spikes',
-        source=['libnux/spikes.c'],
-        use=['nux'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.objects(
-        features='c',
-        target='random',
-        name='random',
-        source=['libnux/random.c'],
-        use=['nux'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.objects(
-        features='c',
-        target='time',
-        name='time',
-        source=['libnux/time.c'],
-        use=['nux'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.objects(
-        features='c',
-        target='counter',
-        name='counter',
-        source=['libnux/counter.c'],
-        use=['nux'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.objects(
-        features='c',
-        target='correlation',
-        name='correlation',
-        source=['libnux/correlation.c'],
-        use=['nux'],
-        env = bld.all_envs['nux'],
-    )
-
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_vector_sync.bin',
-        source = ['test/test_vector_sync.c'],
+        source = ['test/test_vector_sync.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_returncode.bin',
-        source = ['test/test_returncode.c'],
+        source = ['test/test_returncode.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_vector_alignment.bin',
-        source = ['test/test_vector_alignment.c'],
+        source = ['test/test_vector_alignment.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_neuron_counter.bin',
-        source = ['test/test_neuron_counter.c'],
-        use = ['nux', 'nux_runtime', 'counter'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'c objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_unittest.bin',
-        source = ['test/test_unittest.c'],
+        source = ['test/test_neuron_counter.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_unittest.bin',
+        source = ['test/test_unittest.cpp'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_vector.bin',
-        source = ['test/test_vector.c'],
+        source = ['test/test_vector.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
@@ -232,8 +189,8 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_vector_cc.bin',
-        source = ['test/test_vector_cc.cc'],
-        use = ['nux', 'nux_runtime_cpp'],
+        source = ['test/test_vector_cc.cpp'],
+        use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
@@ -241,8 +198,8 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_noinline_vector_argument.bin',
-        source = ['test/test_noinline_vector_argument.cc'],
-        use = ['nux', 'nux_runtime_cpp'],
+        source = ['test/test_noinline_vector_argument.cpp'],
+        use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
         cxxflags = ['-O2'],
     )
@@ -251,44 +208,44 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_inline_vector_argument.bin',
-        source = ['test/test_inline_vector_argument.cc'],
-        use = ['nux', 'nux_runtime_cpp'],
+        source = ['test/test_inline_vector_argument.cpp'],
+        use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
         cxxflags = ['-O2'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = "test_fxvsel.bin",
-        source = ["test/test_fxvsel.c"],
+        source = ["test/test_fxvsel.cpp"],
         use = ["nux", "nux_runtime"],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features='c objcopy',
+        features='cxx objcopy',
         objcopy_bfdname='binary',
         target="test_synram_rw.bin",
-        source="test/test_synram_rw.c",
+        source="test/test_synram_rw.cpp",
         use=["nux", "nux_runtime", "random"],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = "test_many_vectors.bin",
-        source = "test/test_many_vectors.c",
+        source = "test/test_many_vectors.cpp",
         use = ["nux", "nux_runtime"],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = "test_bitformatting.bin",
-        source = "test/test_bitformatting.c",
+        source = "test/test_bitformatting.cpp",
         use = ["nux", "nux_runtime"],
         env = bld.all_envs['nux'],
     )
@@ -297,8 +254,35 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_helper.bin',
-        source = ['test/test_helper.cc'],
-        use = ['nux', 'nux_runtime_cpp'],
+        source = ['test/test_helper.cpp'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_stack_redzone.bin',
+        source = ['test/test_stack_redzone.cpp'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_stack_guard.bin',
+        source = ['test/test_stack_guard.cpp'],
+        use = ['nux', 'nux_runtime'],
+        env = bld.all_envs['nux'],
+    )
+
+    bld.program(
+        features = 'cxx objcopy',
+        objcopy_bfdname = 'binary',
+        target = 'test_malloc.bin',
+        source = ['test/test_malloc.cpp'],
+        use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
@@ -309,133 +293,70 @@ def build(bld):
 
         if not stack_protector and not stack_redzone:
             if build_profile == 'release':
-                return 368
-            else:
-                return 320
-
-        if stack_protector and not stack_redzone:
-            if build_profile == 'release':
-                return 656
-            else:
-                return 576
-
-        if not stack_protector and stack_redzone:
-            if build_profile == 'release':
-                return 464
-            else:
                 return 400
-
-        if stack_protector and stack_redzone:
-            if build_profile == 'release':
-                return 768
             else:
-                return 656
-
-    bld.program(
-        features = 'c objcopy check_size',
-        check_size_max = max_size_empty(),
-        objcopy_bfdname = 'binary',
-        target = 'test_empty.bin',
-        source = ['test/test_empty.c'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'c objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_stack_redzone.bin',
-        source = ['test/test_stack_redzone.c'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'c objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_stack_guard.bin',
-        source = ['test/test_stack_guard.c'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'c objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_malloc.bin',
-        source = ['test/test_malloc.c'],
-        use = ['nux', 'nux_runtime_cpp'],
-        env = bld.all_envs['nux'],
-    )
-
-    def max_size_empty_cc():
-        stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
-        stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
-        build_profile = bld.options.build_profile
-
-        if not stack_protector and not stack_redzone:
-            if build_profile == 'release':
-                return 368
-            else:
-                return 384
+                return 512
 
         if stack_protector and not stack_redzone:
             if build_profile == 'release':
-                return 720
+                return 784
             else:
-                return 688
+                return 864
 
         if not stack_protector and stack_redzone:
-            return 464
+            if build_profile == 'release':
+                return 496
+            else:
+                return 608
 
         if stack_protector and stack_redzone:
             if build_profile == 'release':
-                return 832
+                return 928
             else:
-                return 784
+                return 976
 
     bld.program(
         features = 'cxx objcopy check_size',
-        check_size_max = max_size_empty_cc(),
+        check_size_max = max_size_empty(),
         objcopy_bfdname = 'binary',
-        target = 'test_empty_cc.bin',
-        source = ['test/test_empty_cc.cc'],
-        use = ['nux', 'nux_runtime_cpp'],
+        target = 'test_empty.bin',
+        source = ['test/test_empty.cpp'],
+        use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_xorshift_vector.bin',
-        source = ['test/test_xorshift_vector.c'],
+        source = ['test/test_xorshift_vector.cpp'],
         use = ['random','nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_return_vector.bin',
-        source = ['test/test_return_vector.c'],
+        source = ['test/test_return_vector.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'example_stdp.bin',
-        source = ['examples/stdp.c'],
+        source = ['examples/stdp.cpp'],
         use = ['nux', 'nux_runtime', 'correlation'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_bool.bin',
-        source = ['test/test_bool.c'],
+        source = ['test/test_bool.cpp'],
         use = ['random','nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )
@@ -444,16 +365,16 @@ def build(bld):
         features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_measure_time.bin',
-        source = ['test/test_measure_time.cc'],
-        use = ['nux', 'nux_runtime_cpp', 'time'],
+        source = ['test/test_measure_time.cpp'],
+        use = ['nux', 'nux_runtime', 'time'],
         env = bld.all_envs['nux'],
     )
 
     bld.program(
-        features = 'c objcopy',
+        features = 'cxx objcopy',
         objcopy_bfdname = 'binary',
         target = 'test_fxvadd.bin',
-        source = ['test/test_fxvadd.c'],
+        source = ['test/test_fxvadd.cpp'],
         use = ['nux', 'nux_runtime'],
         env = bld.all_envs['nux'],
     )

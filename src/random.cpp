@@ -1,4 +1,4 @@
-#include "random.h"
+#include "libnux/random.h"
 
 uint32_t xorshift32(uint32_t* seed)
 {
@@ -28,7 +28,7 @@ void xorshift_vector(const vector uint8_t* seed)
 {
 	// Check if vector is 16B long. Otherwise xorshift_vector won't work
 	// because it assumes exactly 4 uint32_t to fit in a vector.
-	_Static_assert(
+	static_assert(
 		sizeof(vector uint8_t) == 16, "vector size is not 16B, xorshift_vector will not work.");
 
 	// xorshift128

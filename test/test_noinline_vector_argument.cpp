@@ -23,10 +23,8 @@ void test_noinline()
 	foo_noinline(y);
 }
 
-extern "C" {
-uint32_t start(void)
+int32_t start(void)
 {
 	test_noinline();
 	return 0;
-}
 }

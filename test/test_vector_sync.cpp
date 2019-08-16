@@ -101,7 +101,7 @@ void test_write_v_after_read_g(void)
 	libnux_testcase_end();
 }
 
-uint32_t start(void)
+int32_t start(void)
 {
 	libnux_test_init();
 	test_read_g_after_write_v();

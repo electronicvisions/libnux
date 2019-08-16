@@ -1,5 +1,5 @@
 #include "libnux/system.h"
 
-void __cxa_pure_virtual() {
+extern "C" void __cxa_pure_virtual() {
 	exit(1);
 }

@@ -1,7 +1,5 @@
 #pragma once
-extern "C" {
 #include "libnux/malloc.h"
-}
 
 namespace std {
 typedef size_t size_t;

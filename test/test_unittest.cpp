@@ -3,7 +3,7 @@
 void basic_test(void) {
 	libnux_testcase_begin("basic_checks");
 
-	char* s = (void*)(0);
+	char* s = reinterpret_cast<char*>(0);
 	int a = 0;
 	int b = 0;
 	int c = 0;

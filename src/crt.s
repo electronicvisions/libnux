@@ -2,7 +2,7 @@
  * This program runs all the programs generated with the C-compiler
  * */
 
-.extern start 
+.extern _start
 .extern reset
 .extern _isr_undefined
 .extern isr_einput
@@ -45,7 +45,7 @@ __init:
 	# construct global things
 	bl __call_constructors
 	# start actual program
-	bl start
+	bl _start
 	# destruct global things
 	bl __call_destructors
 

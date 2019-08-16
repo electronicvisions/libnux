@@ -2,4 +2,4 @@
 
 #include <stdint.h>
 
-void exit(uint32_t code);
+extern "C" void exit(int32_t code);

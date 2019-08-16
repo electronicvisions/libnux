@@ -1,4 +1,4 @@
-#include "correlation.h"
+#include "libnux/correlation.h"
 
 
 void reset_all_correlations()

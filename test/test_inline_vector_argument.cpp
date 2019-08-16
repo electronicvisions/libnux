@@ -23,10 +23,8 @@ void test_inline()
 	foo_inline(y);
 }
 
-extern "C" {
 uint32_t start(void)
 {
 	test_inline();
 	return 0;
-}
 }

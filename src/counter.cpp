@@ -1,13 +1,13 @@
-#include "counter.h"
-#include "dls.h"
+#include "libnux/counter.h"
+#include "libnux/dls.h"
 
 
 #if (LIBNUX_DLS_VERSION == 2)
-#include "counter_v2.c"
+#include "counter_v2.cpp"
 #endif
 
 #if (LIBNUX_DLS_VERSION == 3)
-#include "counter_v3.c"
+#include "counter_v3.cpp"
 #endif
 
 void reset_all_neuron_counters()

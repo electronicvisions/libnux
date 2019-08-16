@@ -1,4 +1,4 @@
-#include "spikes.h"
+#include "libnux/spikes.h"
 
 void send_uniform_spiketrain(spike_t* single_spike, uint32_t number, uint32_t isi_usec)
 {
