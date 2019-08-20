@@ -2,7 +2,7 @@ import unittest
 import os
 from os.path import join
 import re
-from run_program import run_program, PPUTimeoutError
+from run_ppu_program import run_program, PPUTimeoutError
 
 # --- Parse the env --- #
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -10,6 +10,7 @@ COMPILED_TESTS_PATH = os.environ.get(
     "TEST_BINARY_PATH", join(THIS_DIR, os.pardir, os.pardir, "build", "libnux"))
 STACK_PROTECTION = os.environ.get("STACK_PROTECTION", "false").lower() == "true"
 STACK_REDZONE = os.environ.get("STACK_REDZONE", "false").lower() == "true"
+TEST_DLS_VERSION = os.environ.get("TEST_DLS_VERSION")
 
 if not os.path.isdir(COMPILED_TESTS_PATH):
     raise RuntimeError("Libnux test binary folder (%s) does not exist!" %
@@ -44,10 +45,10 @@ class LibnuxHWTests(unittest.TestCase):
     # This list will be completed by whatever is found in an arbitrary search
     # path once `LibnuxHWTests.find_binaries()` is called.
     TESTS = [
-        PpuHwTest("test_unittest.binary", 1),
-        PpuHwTest("test_returncode.binary", -559038737),
-        PpuHwTest("test_stack_guard.binary", STACK_PROTECTION * -559038737),
-        PpuHwTest("test_stack_redzone.binary",
+        PpuHwTest("test_unittest_" + TEST_DLS_VERSION + ".binary", 1),
+        PpuHwTest("test_returncode_" + TEST_DLS_VERSION + ".binary", -559038737),
+        PpuHwTest("test_stack_guard_" + TEST_DLS_VERSION + ".binary", STACK_PROTECTION * -559038737),
+        PpuHwTest("test_stack_redzone_" + TEST_DLS_VERSION + ".binary",
                   expected_exit_code=STACK_REDZONE * 12,
                   expect_timeout=not STACK_REDZONE)
     ]
@@ -88,7 +89,7 @@ class LibnuxHWTests(unittest.TestCase):
         :param search_path: Path to search for binaries
         :type search_path: str
         """
-        test_regex = re.compile(r'(?:\b|_)[Tt]est.*\.binary')
+        test_regex = re.compile(r'(?:\b|_)[Tt]est.*' + TEST_DLS_VERSION + '\.binary')
         for path, directories, files in os.walk(search_path):
             for f in files:
                 if test_regex.search(f):

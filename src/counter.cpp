@@ -2,14 +2,15 @@
 #include "libnux/dls.h"
 
 
-#if (LIBNUX_DLS_VERSION == 2)
+#ifdef LIBNUX_DLS_VERSION_V2
 #include "counter_v2.cpp"
 #endif
 
-#if (LIBNUX_DLS_VERSION == 3)
+#ifdef LIBNUX_DLS_VERSION_V3
 #include "counter_v3.cpp"
 #endif
 
+#if defined(LIBNUX_DLS_VERSION_V2) || defined(LIBNUX_DLS_VERSION_V3)
 void reset_all_neuron_counters()
 {
 	uint8_t neuron;
@@ -17,3 +18,4 @@ void reset_all_neuron_counters()
 		reset_neuron_counter(neuron);
 	}
 }
+#endif

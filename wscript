@@ -6,14 +6,8 @@ from waflib.extras.test_base import summary
 
 
 def depends(dep):
-    if not dep.options.dls_version:
-        raise RuntimeError("Please specify DLS version to use (2 or 3).")
-
-    if int(dep.options.dls_version) == 2:
-        dep("hicann-dls-scripts")
-
-    if int(dep.options.dls_version) == 3:
-        dep("hicann-dls-scripts", branch="v3testing")
+    dep("hicann-dls-scripts", branch="v3testing")
+    dep("haldls")
 
 
 def options(opt):
@@ -21,9 +15,6 @@ def options(opt):
     opt.load('nux_compiler')
     opt.load('test_base')
     opt.load('pytest')
-    opt.add_option("--dls-version",
-                   choices=["2", "3"],
-                   help="DLS version to use (2 or 3).")
     opt.add_option("--enable-stack-protector",
                    default=False,
                    action='store_true',
@@ -48,9 +39,6 @@ def configure(conf):
     # now configure for nux cross compiler
     env = conf.env
     conf.setenv('nux')
-    if not conf.options.dls_version:
-        raise RuntimeError("Please specify DLS version to use (2 or 3).")
-    conf.define("LIBNUX_DLS_VERSION", int(conf.options.dls_version))
     conf.load('nux_assembler')
     conf.load('nux_compiler')
     conf.load('objcopy')
@@ -71,325 +59,198 @@ def configure(conf):
         conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'False')
     if(not conf.options.disable_mailbox):
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=__mailbox__=1')
+    # specialize for v2
+    conf.setenv('nux_v2', env=conf.all_envs['nux'])
+    conf.define('LIBNUX_DLS_VERSION_V2', True)
+
+    # specialize for v3
+    conf.setenv('nux_v3', env=conf.all_envs['nux'])
+    conf.define('LIBNUX_DLS_VERSION_V3', True)
+
+    # specialize for vx
+    conf.setenv('nux_vx', env=conf.all_envs['nux'])
+    conf.define('LIBNUX_DLS_VERSION_VX', True)
+
     # restore env
     conf.setenv('', env=env)
 
 def build(bld):
+    bld.env.dls_partition = "dls" == os.environ.get("SLURM_JOB_PARTITION")
+    bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
+    if (bld.env.dls_partition):
+        # FIXME should come from env or hwdb, see Issue #3366
+        bld.env.dls_test_version = ["2", "3"][(int("B291673" in os.environ.get("SLURM_FLYSPI_ID")))]
+
+    for dls_version in ['v2', 'v3', 'vx']:
+        env = bld.all_envs['nux_' + dls_version]
+
+        bld(
+            target = 'nux_inc_' + dls_version,
+            export_includes = ['.'],
+            env = env,
+        )
+
+        nux_sources = [
+            'src/bitformatting.cpp',
+            'src/correlation.cpp',
+            'src/counter.cpp',
+            'src/exp.cpp',
+            'src/fxv.cpp',
+            'src/mailbox.cpp',
+            'src/random.cpp',
+            'src/stack_guards.cpp',
+            'src/spikes.cpp',
+            'src/time.cpp',
+            'src/unittest.cpp',
+            'src/unittest_mailbox.cpp',
+        ]
+
+        bld.stlib(
+            target = 'nux_' + dls_version,
+            source = nux_sources,
+            use = ['nux_inc_' + dls_version],
+            env = env,
+        )
+
+        bld(
+            features = 'cxx',
+            name = 'nux_runtime_obj_' + dls_version,
+            source = ['src/start.cpp',
+                      'src/initdeinit.cpp',
+                      'src/cxa_pure_virtual.cpp'],
+            use = 'nux_inc_' + dls_version,
+            env = env,
+        )
+
+        bld(
+            name = 'nux_runtime_' + dls_version,
+            target = 'crt.o',
+            source = ['src/crt.s'],
+            features = 'use asm',
+            use = ['nux_runtime_obj_' + dls_version],
+            env = env,
+        )
+
+        program_list = [
+            'examples/stdp.cpp',
+            'test/test_bitformatting.cpp',
+            'test/test_bool.cpp',
+            'test/test_helper.cpp',
+            'test/test_malloc.cpp',
+            'test/test_measure_time.cpp',
+            'test/test_neuron_counter.cpp',
+            'test/test_returncode.cpp',
+            'test/test_stack_guard.cpp',
+            'test/test_stack_redzone.cpp',
+            'test/test_unittest.cpp',
+        ]
+
+        if dls_version != 'vx':
+            # These tests don't work for HX, see Issue #3365
+            program_list += [
+                'test/test_fxvadd.cpp',
+                'test/test_fxvsel.cpp',
+                'test/test_inline_vector_argument.cpp',
+                'test/test_many_vectors.cpp',
+                'test/test_noinline_vector_argument.cpp',
+                'test/test_return_vector.cpp',
+                'test/test_synram_rw.cpp',
+                'test/test_vector.cpp',
+                'test/test_vector_alignment.cpp',
+                'test/test_vector_cc.cpp',
+                'test/test_vector_sync.cpp',
+                'test/test_xorshift_vector.cpp',
+            ]
+
+        for program in program_list:
+            bld.program(
+                features = 'cxx objcopy',
+                objcopy_bfdname = 'binary',
+                target = program.replace('.cpp', '') + '_' + dls_version + '.bin',
+                source = [program],
+                use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
+                env = bld.all_envs['nux_' + dls_version],
+            )
+
+        def max_size_empty():
+            stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
+            stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+            build_profile = bld.options.build_profile
+
+            if not stack_protector and not stack_redzone:
+                if build_profile == 'release':
+                    return 400
+                else:
+                    return 512
+
+            if stack_protector and not stack_redzone:
+                if build_profile == 'release':
+                    return 784
+                else:
+                    return 864
+
+            if not stack_protector and stack_redzone:
+                if build_profile == 'release':
+                    return 496
+                else:
+                    return 608
+
+            if stack_protector and stack_redzone:
+                if build_profile == 'release':
+                    return 928
+                else:
+                    return 976
+
+        bld.program(
+            features = 'cxx objcopy check_size',
+            check_size_max = max_size_empty(),
+            objcopy_bfdname = 'binary',
+            target = 'test_empty_' + dls_version + '.bin',
+            source = ['test/test_empty.cpp'],
+            use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
+            env = env,
+        )
+
     bld(
-        target = 'nux_inc',
-        export_includes = ['.'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.stlib(
-        target = 'nux',
-        source = [
-                'src/bitformatting.cpp',
-                'src/exp.cpp',
-                'src/fxv.cpp',
-                'src/mailbox.cpp',
-                'src/unittest.cpp',
-                'src/unittest_mailbox.cpp',
-                'src/stack_guards.cpp',
-                'src/spikes.cpp',
-                'src/random.cpp',
-                'src/time.cpp',
-                'src/counter.cpp',
-                'src/correlation.cpp',
-                ],
-        use = ['nux_inc'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld(
-        features = 'cxx',
-        name = 'start_obj',
-        source = 'src/start.cpp',
-        env = bld.all_envs['nux'],
-    )
-
-    bld(
-        features = 'cxx',
-        name = 'initdeinit_obj',
-        source = 'src/initdeinit.cpp',
-        env = bld.all_envs['nux'],
-    )
-
-    bld(
-        features = 'cxx',
-        name = 'cxa_pure_virtual_obj',
-        source = 'src/cxa_pure_virtual.cpp',
-        use = 'nux_inc',
-        env = bld.all_envs['nux'],
-    )
-
-    bld(
-        name = 'nux_runtime',
-        target = 'crt.o',
-        source = ['src/crt.s'],
-        features = 'use asm',
-        use = ['initdeinit_obj', 'cxa_pure_virtual_obj', 'start_obj'],
-        env = bld.all_envs['nux'],
-    )
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_vector_sync.bin',
-        source = ['test/test_vector_sync.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_returncode.bin',
-        source = ['test/test_returncode.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_vector_alignment.bin',
-        source = ['test/test_vector_alignment.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_neuron_counter.bin',
-        source = ['test/test_neuron_counter.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_unittest.bin',
-        source = ['test/test_unittest.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_vector.bin',
-        source = ['test/test_vector.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_vector_cc.bin',
-        source = ['test/test_vector_cc.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_noinline_vector_argument.bin',
-        source = ['test/test_noinline_vector_argument.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-        cxxflags = ['-O2'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_inline_vector_argument.bin',
-        source = ['test/test_inline_vector_argument.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-        cxxflags = ['-O2'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = "test_fxvsel.bin",
-        source = ["test/test_fxvsel.cpp"],
-        use = ["nux", "nux_runtime"],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features='cxx objcopy',
-        objcopy_bfdname='binary',
-        target="test_synram_rw.bin",
-        source="test/test_synram_rw.cpp",
-        use=["nux", "nux_runtime", "random"],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = "test_many_vectors.bin",
-        source = "test/test_many_vectors.cpp",
-        use = ["nux", "nux_runtime"],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = "test_bitformatting.bin",
-        source = "test/test_bitformatting.cpp",
-        use = ["nux", "nux_runtime"],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_helper.bin',
-        source = ['test/test_helper.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_stack_redzone.bin',
-        source = ['test/test_stack_redzone.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_stack_guard.bin',
-        source = ['test/test_stack_guard.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_malloc.bin',
-        source = ['test/test_malloc.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    def max_size_empty():
-        stack_protector = bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
-        stack_redzone = bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
-        build_profile = bld.options.build_profile
-
-        if not stack_protector and not stack_redzone:
-            if build_profile == 'release':
-                return 400
-            else:
-                return 512
-
-        if stack_protector and not stack_redzone:
-            if build_profile == 'release':
-                return 784
-            else:
-                return 864
-
-        if not stack_protector and stack_redzone:
-            if build_profile == 'release':
-                return 496
-            else:
-                return 608
-
-        if stack_protector and stack_redzone:
-            if build_profile == 'release':
-                return 928
-            else:
-                return 976
-
-    bld.program(
-        features = 'cxx objcopy check_size',
-        check_size_max = max_size_empty(),
-        objcopy_bfdname = 'binary',
-        target = 'test_empty.bin',
-        source = ['test/test_empty.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_xorshift_vector.bin',
-        source = ['test/test_xorshift_vector.cpp'],
-        use = ['random','nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_return_vector.bin',
-        source = ['test/test_return_vector.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'example_stdp.bin',
-        source = ['examples/stdp.cpp'],
-        use = ['nux', 'nux_runtime', 'correlation'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_bool.bin',
-        source = ['test/test_bool.cpp'],
-        use = ['random','nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_measure_time.bin',
-        source = ['test/test_measure_time.cpp'],
-        use = ['nux', 'nux_runtime', 'time'],
-        env = bld.all_envs['nux'],
-    )
-
-    bld.program(
-        features = 'cxx objcopy',
-        objcopy_bfdname = 'binary',
-        target = 'test_fxvadd.bin',
-        source = ['test/test_fxvadd.cpp'],
-        use = ['nux', 'nux_runtime'],
-        env = bld.all_envs['nux'],
+        name='libnux_hwtests_vx',
+        tests='test/test_hwtests.py',
+        features='use pytest',
+        use='run_ppu_program_vx_py',
+        install_path='${PREFIX}/bin/tests',
+        skip_run=not bld.env.cube_partition,
+        env = bld.all_envs[''],
+        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
+                            TEST_DLS_VERSION="vx")
     )
 
     bld(
-        name='libnux_hwtests',
+        name='libnux_hwtests_v2',
+        tests='test/test_hwtests.py',
+        features='use pytest',
+        use='run_ppu_program_v2_py',
+        install_path='${PREFIX}/bin/tests',
+        skip_run=not (bld.env.dls_partition and bld.env.dls_test_version == "2"),
+        env = bld.all_envs[''],
+        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
+                            TEST_DLS_VERSION="v2")
+    )
+
+    bld(
+        name='libnux_hwtests_v3',
         tests='test/test_hwtests.py',
         features='use pytest',
         use='hdls-scripts_runprogram',
         install_path='${PREFIX}/bin/tests',
-        skip_run=False,
+        skip_run=not (bld.env.dls_partition and bld.env.dls_test_version == "3"),
         env = bld.all_envs[''],
-        test_environ = dict(STACK_PROTECTION=bld.all_envs['nux'].LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                            STACK_REDZONE=bld.all_envs['nux'].LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'))
+        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
+                            TEST_DLS_VERSION="v3")
     )
 
     bld.add_post_fun(summary)

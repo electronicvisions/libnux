@@ -2,6 +2,7 @@
 #include "libnux/dls.h"
 #include "libnux/counter.h"
 
+#if defined(LIBNUX_DLS_VERSION_V2) || defined(LIBNUX_DLS_VERSION_V3)
 
 void test_counter_reset()
 {
@@ -16,7 +17,7 @@ void test_counter_reset()
     libnux_testcase_end();
 }
 
-#if (LIBNUX_DLS_VERSION == 2)
+#ifdef LIBNUX_DLS_VERSION_V2
 void test_disable_counters()
 {
     uint32_t disable_mask = 0;
@@ -58,15 +59,18 @@ void test_counter_config()
     libnux_testcase_end();
 }
 #endif
+#endif
 
 void start()
 {
     libnux_test_init();
-    test_counter_reset();
-#if (LIBNUX_DLS_VERSION == 2)
-    test_disable_counters();
+#if defined(LIBNUX_DLS_VERSION_V2) || defined(LIBNUX_DLS_VERSION_V3)
+	test_counter_reset();
+#ifdef LIBNUX_DLS_VERSION_V2
+	test_disable_counters();
     test_enable_counters();
     test_counter_config();
+#endif
 #endif
     libnux_test_shutdown();
 }

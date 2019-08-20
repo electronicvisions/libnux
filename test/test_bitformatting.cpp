@@ -13,6 +13,7 @@ void test_reverse_byte()
 	libnux_test_equal(reverse_byte(byte_3), 0);
 }
 
+#ifndef LIBNUX_DLS_VERSION_VX
 void test_vector_reverse_bytes()
 {
 	vector uint8_t test_vector;
@@ -27,12 +28,15 @@ void test_vector_reverse_bytes()
 		libnux_test_equal(test_vector[i], reverse_byte(i));
 	}
 }
+#endif
 
 void start()
 {
 	libnux_test_init();
 	test_reverse_byte();
+#ifndef LIBNUX_DLS_VERSION_VX
 	test_vector_reverse_bytes();
+#endif
 	libnux_test_summary();
 	libnux_test_shutdown();
 }
