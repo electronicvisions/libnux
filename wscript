@@ -97,6 +97,7 @@ def build(bld):
             'src/exp.cpp',
             'src/fxv.cpp',
             'src/mailbox.cpp',
+            'src/malloc.cpp',
             'src/random.cpp',
             'src/stack_guards.cpp',
             'src/spikes.cpp',
