@@ -138,7 +138,6 @@ def build(bld):
             'test/test_helper.cpp',
             'test/test_malloc.cpp',
             'test/test_measure_time.cpp',
-            'test/test_neuron_counter.cpp',
             'test/test_returncode.cpp',
             'test/test_stack_guard.cpp',
             'test/test_stack_redzone.cpp',
@@ -160,6 +159,12 @@ def build(bld):
                 'test/test_vector_cc.cpp',
                 'test/test_vector_sync.cpp',
                 'test/test_xorshift_vector.cpp',
+            ]
+
+        if dls_version != 'v3':
+            # This test doesn't work on the v3 setup
+            program_list += [
+                'test/test_neuron_counter.cpp',
             ]
 
         for program in program_list:
