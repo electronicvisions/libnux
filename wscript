@@ -1,8 +1,10 @@
 import os
+from os.path import join
 
 from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
+from waflib.extras.symwaf2ic import get_toplevel_path
 
 
 def depends(dep):
@@ -218,22 +220,23 @@ def build(bld):
         )
 
     bld(
-        name='libnux_hwtests_vx',
-        tests='test/test_hwtests.py',
-        features='use pytest',
+        name='libnux_hwsimtests_vx',
+        tests='test/test_hwsimtests_vx.py',
+        features='use pytest pylint pycodestyle',
         use='run_ppu_program_vx_py',
         install_path='${PREFIX}/bin/tests',
-        skip_run=not bld.env.cube_partition,
+        skip_run=not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
         env = bld.all_envs[''],
         test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                             STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
-                            TEST_DLS_VERSION="vx")
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux')),
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle")
     )
 
     bld(
         name='libnux_hwtests_v2',
-        tests='test/test_hwtests.py',
+        tests='test/test_hwtests_v2v3.py',
         features='use pytest',
         use='run_ppu_program_v2_py',
         install_path='${PREFIX}/bin/tests',
@@ -247,7 +250,7 @@ def build(bld):
 
     bld(
         name='libnux_hwtests_v3',
-        tests='test/test_hwtests.py',
+        tests='test/test_hwtests_v2v3.py',
         features='use pytest',
         use='hdls-scripts_runprogram',
         install_path='${PREFIX}/bin/tests',
