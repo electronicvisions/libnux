@@ -101,6 +101,5 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
             expected_exit_code=stack_protection * -559038737),
         PpuHwTest(
             join(TEST_BINARY_PATH, f"test_stack_redzone_{dls_version}.binary"),
-            expected_exit_code=stack_redzone * 12,
-            expect_timeout=not stack_redzone)
+            expected_exit_code=12 if stack_redzone else 2)
     }
