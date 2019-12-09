@@ -1,7 +1,10 @@
 import unittest
 import os
 from typing import Set
-from run_ppu_program import run_program, PPUTimeoutError
+try:
+    from dlens_v2.tools.run_ppu_program import run_program, PPUTimeoutError
+except ImportError:  # No dlens available => DLSv3 run_program
+    from run_ppu_program import run_program, PPUTimeoutError
 
 from helpers.hwtest_common import get_special_binaries, find_binaries, \
     PpuHwTest

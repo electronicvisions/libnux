@@ -193,7 +193,7 @@ def build(bld):
 
             if stack_protector and not stack_redzone:
                 if build_profile == 'release':
-                    return 784
+                    return 816
                 else:
                     return 864
 
@@ -223,7 +223,7 @@ def build(bld):
         name='libnux_hwsimtests_vx',
         tests='test/test_hwsimtests_vx.py',
         features='use pytest pylint pycodestyle',
-        use='run_ppu_program_vx_py',
+        use='dlens_vx',
         install_path='${PREFIX}/bin/tests',
         skip_run=not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
         env = bld.all_envs[''],
@@ -238,7 +238,7 @@ def build(bld):
         name='libnux_hwtests_v2',
         tests='test/test_hwtests_v2v3.py',
         features='use pytest',
-        use='run_ppu_program_v2_py',
+        use='dlens_v2',
         install_path='${PREFIX}/bin/tests',
         skip_run=not (bld.env.dls_partition and bld.env.dls_test_version == "2"),
         env = bld.all_envs[''],

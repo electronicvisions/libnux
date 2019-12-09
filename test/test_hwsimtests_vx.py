@@ -1,9 +1,9 @@
 import unittest
 from typing import Set
 
-from dlens_vx.sta import PlaybackProgramExecutor, generate, InitGenerator
-from run_ppu_program import load_and_start_program, stop_program, \
-    wait_until_ppu_finished, PPUTimeoutError
+from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
+from dlens_vx.tools.run_ppu_program import load_and_start_program, \
+    stop_program, wait_until_ppu_finished, PPUTimeoutError
 from helpers.hwtest_common import get_special_binaries, find_binaries, \
     PpuHwTest
 
@@ -18,7 +18,7 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
         cls.EXECUTOR.connect()
 
         # Initialize the chip
-        init_builder, _ = generate(InitGenerator())
+        init_builder, _ = generate(DigitalInit())
         cls.EXECUTOR.run(init_builder.done())
 
     @classmethod
