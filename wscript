@@ -126,12 +126,21 @@ def build(bld):
         )
 
         bld(
-            name = 'nux_runtime_' + dls_version,
-            target = 'crt.o',
-            source = ['src/crt.s'],
-            features = 'use asm',
-            use = ['nux_runtime_obj_' + dls_version],
+            name='nux_runtime_shutdown_' + dls_version,
+            target='crt_shutdown.o',
+            source=['src/crt_shutdown.s'],
+            features='use asm',
             env = env,
+        )
+
+        bld(
+            name='nux_runtime_' + dls_version,
+            target='crt.o',
+            source=['src/crt.s'],
+            features='use asm',
+            use=['nux_runtime_obj_' + dls_version,
+                 'nux_runtime_shutdown_' + dls_version],
+            env=env,
         )
 
         program_list = [
