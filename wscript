@@ -45,6 +45,8 @@ def configure(conf):
     conf.load('nux_compiler')
     conf.load('objcopy')
     conf.load('test_base')
+    conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
+    conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
     if(conf.options.stack_protector):
         conf.define("LIBNUX_STACK_PROTECTOR", True)
         conf.env.append_value('LIBNUX_STACK_PROTECTOR_ENABLED', 'True')
