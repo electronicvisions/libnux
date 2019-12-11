@@ -60,7 +60,8 @@ def configure(conf):
     else:
         conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'False')
     if(not conf.options.disable_mailbox):
-        conf.env.append_value('LINKFLAGS', '-Wl,--defsym=__mailbox__=1')
+        conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
+        conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
     # specialize for v2
     conf.setenv('nux_v2', env=conf.all_envs['nux'])
     conf.define('LIBNUX_DLS_VERSION_V2', True)

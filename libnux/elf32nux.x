@@ -6,7 +6,12 @@ MEMORY {
 /* ECM(2017-12-04): We should provide this numbers from waf configure step FIXME */
 ram_base = ORIGIN(ram);
 ram_end = ORIGIN(ram) + LENGTH(ram);
-mailbox_size = DEFINED(__mailbox__) ? 4096 : 0;
+
+/* Default mailbox_size=0
+ * May be overwritten by linker using e.g. --defsym=mailbox_size=4096
+ */
+PROVIDE(mailbox_size = 0);
+
 mailbox_end = 0x4000;
 mailbox_base = mailbox_end - mailbox_size;
 
