@@ -23,6 +23,7 @@ uint32_t draw_poisson(uint32_t* seed, uint32_t cutoff, uint32_t dt)
 	return t;
 }
 
+#ifndef LIBNUX_DLS_VERSION_VX
 // ~3 times faster than calling xorshift32 four times.
 void xorshift_vector(const __vector uint8_t* seed)
 {
@@ -39,6 +40,7 @@ void xorshift_vector(const __vector uint8_t* seed)
 	*(x + 2) = *(x + 3);
 	*(x + 3) ^= (*(x + 3) >> 19) ^ t ^ (t >> 8);
 }
+#endif
 
 uint32_t random_lcg(uint32_t *seed) {
   // constants from Numerical Recipes via Wikipedia

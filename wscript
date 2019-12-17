@@ -70,6 +70,7 @@ def configure(conf):
     # specialize for vx
     conf.setenv('nux_vx', env=conf.all_envs['nux'])
     conf.define('LIBNUX_DLS_VERSION_VX', True)
+    conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
 
     # restore env
     conf.setenv('', env=env)
@@ -139,7 +140,6 @@ def build(bld):
         )
 
         program_list = [
-            'examples/stdp.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
             'test/test_helper.cpp',
@@ -155,6 +155,7 @@ def build(bld):
         if dls_version != 'vx':
             # These tests don't work for HX, see Issue #3365
             program_list += [
+                'examples/stdp.cpp',
                 'test/test_fxvadd.cpp',
                 'test/test_fxvsel.cpp',
                 'test/test_inline_vector_argument.cpp',
