@@ -6,6 +6,16 @@
 
 using namespace libnux;
 
+namespace libnux {
+
+enum class PPUOnDLS
+{
+	top,
+	bottom
+};
+
+} // namespace libnux
+
 /* Size of synram */
 constexpr static uint32_t dls_num_rows = 256;
 constexpr static uint32_t dls_num_columns = 256;

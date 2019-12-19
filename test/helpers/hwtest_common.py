@@ -114,6 +114,9 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
             PpuHwTest(
                 join(TEST_BINARY_PATH, f"test_cadc_{dls_version}.bin"),
                 expected_exit_code=0 if simulation is not None else 1),
+            PpuHwTest(
+                join(TEST_BINARY_PATH, f"test_synram_{dls_version}.bin"),
+                timeout=int(2e6)),
         })
 
     return test_list

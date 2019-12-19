@@ -174,6 +174,7 @@ def build(bld):
             program_list += [
                 'test/test_cadc.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
+                'test/test_synram.cpp',
             ]
 
         for program in program_list:
