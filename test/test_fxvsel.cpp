@@ -6,8 +6,29 @@ void test_fxvsel_inline_asm() {
 	libnux_testcase_begin(__func__);
 	// Create a vector with 0, +1, -1, 0, +1, -1, ... . The -1 is explicitely
 	// initialized as its two's complement, which is 0xff
-	__vector uint8_t cmp = {0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
-	                        0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff};
+#ifndef LIBNUX_DLS_VERSION_VX
+	__vector uint8_t cmp = {
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff};
+#else
+	__vector uint8_t cmp = {
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff};
+#endif
 	__vector uint8_t lhs = vec_splat_u8(2);
 	__vector uint8_t rhs = vec_splat_u8(1);
 	/* Condition always */
@@ -24,12 +45,22 @@ void test_fxvsel_inline_asm() {
 				// Call sync to wait for store operation to finish
 				"sync"
 				: /* no output */
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [cmp] "kv" (cmp),
 				  [lhs] "kv" (lhs),
 				  [rhs] "kv" (rhs),
+#else
+				: [cmp] "qv" (cmp),
+				  [lhs] "qv" (lhs),
+				  [rhs] "qv" (rhs),
+#endif
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
+#ifndef LIBNUX_DLS_VERSION_VX
 				: "kv1", "memory");
+#else
+				: "qv1", "memory");
+#endif
 		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			libnux_test_equal(res[i], rhs[i]);
 		}
@@ -43,12 +74,22 @@ void test_fxvsel_inline_asm() {
 				"fxvstax 1, %[zero], %[res_ptr]\n"
 				"sync"
 				: /* no output */
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [cmp] "kv" (cmp),
 				  [lhs] "kv" (lhs),
 				  [rhs] "kv" (rhs),
+#else
+				: [cmp] "qv" (cmp),
+				  [lhs] "qv" (lhs),
+				  [rhs] "qv" (rhs),
+#endif
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
+#ifndef LIBNUX_DLS_VERSION_VX
 				: "kv1", "memory");
+#else
+				: "qv1", "memory");
+#endif
 		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) > 0) {
 				libnux_test_equal(res[i], rhs[i]);
@@ -66,12 +107,22 @@ void test_fxvsel_inline_asm() {
 				"fxvstax 1, %[zero], %[res_ptr]\n"
 				"sync"
 				: /* no output */
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [cmp] "kv" (cmp),
 				  [lhs] "kv" (lhs),
 				  [rhs] "kv" (rhs),
+#else
+				: [cmp] "qv" (cmp),
+				  [lhs] "qv" (lhs),
+				  [rhs] "qv" (rhs),
+#endif
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
+#ifndef LIBNUX_DLS_VERSION_VX
 				: "kv1", "memory");
+#else
+				: "qv1", "memory");
+#endif
 		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) < 0) {
 				libnux_test_equal(res[i], rhs[i]);
@@ -89,12 +140,22 @@ void test_fxvsel_inline_asm() {
 				"fxvstax 1, %[zero], %[res_ptr]\n"
 				"sync"
 				: /* no output */
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [cmp] "kv" (cmp),
 				  [lhs] "kv" (lhs),
 				  [rhs] "kv" (rhs),
+#else
+				: [cmp] "qv" (cmp),
+				  [lhs] "qv" (lhs),
+				  [rhs] "qv" (rhs),
+#endif
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
+#ifndef LIBNUX_DLS_VERSION_VX
 				: "kv1", "memory");
+#else
+				: "qv1", "memory");
+#endif
 		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) == 0) {
 				libnux_test_equal(res[i], rhs[i]);

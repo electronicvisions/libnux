@@ -4,7 +4,13 @@
 #include "libnux/unittest.h"
 
 #define NUM_VECTOR_REGISTERS 32
+
+#ifndef LIBNUX_DLS_VERSION_VX
 #define NUM_VECTORS_TO_USE 10 * NUM_VECTOR_REGISTERS
+#else
+// Not enough memory to fit 320 * 128 bytes on PPU
+#define NUM_VECTORS_TO_USE 1 * NUM_VECTOR_REGISTERS
+#endif
 
 // Have this function non-optimized, such that it would not be inlined in
 // test_many_vectors. This generates an easier to read assembly.
@@ -32,7 +38,7 @@ void test_many_vectors()
 	}
 
 	for (uint32_t i = 0; i < NUM_VECTORS_TO_USE; i++) {
-		for (uint8_t j = 0; j < 16; j++) {
+		for (uint8_t j = 0; j < sizeof(__vector uint8_t); j++) {
 			// Make sure all vectors are correct, crop to 8bit
 			test_equal(vectors[i][j], i % 256);
 		}

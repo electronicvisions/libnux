@@ -140,35 +140,34 @@ def build(bld):
         )
 
         program_list = [
+            'examples/stdp.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
+            'test/test_fxvadd.cpp',
+            'test/test_fxvsel.cpp',
             'test/test_helper.cpp',
+            'test/test_inline_vector_argument.cpp',
             'test/test_malloc.cpp',
+            'test/test_many_vectors.cpp',
             'test/test_measure_time.cpp',
+            'test/test_neuron_counter.cpp',
+            'test/test_noinline_vector_argument.cpp',
+            'test/test_return_vector.cpp',
             'test/test_returncode.cpp',
             'test/test_stack_guard.cpp',
             'test/test_stack_redzone.cpp',
+            'test/test_synram_rw.cpp',
             'test/test_unittest.cpp',
-            'test/test_neuron_counter.cpp',
+            'test/test_vector.cpp',
+            'test/test_vector_alignment.cpp',
+            'test/test_vector_cc.cpp',
+            'test/test_vector_sync.cpp',
         ]
 
         if dls_version != 'vx':
             # These tests don't work for HX, see Issue #3365
             program_list += [
-                'examples/stdp.cpp',
-                'test/test_fxvadd.cpp',
-                'test/test_fxvsel.cpp',
-                'test/test_inline_vector_argument.cpp',
-                'test/test_many_vectors.cpp',
-                'test/test_noinline_vector_argument.cpp',
-                'test/test_omnibus.cpp',
-                'test/test_return_vector.cpp',
-                'test/test_synram_rw.cpp',
-                'test/test_vector.cpp',
-                'test/test_vector_alignment.cpp',
-                'test/test_vector_cc.cpp',
-                'test/test_vector_sync.cpp',
-                'test/test_xorshift_vector.cpp',
+                'test/test_xorshift_vector.cpp', # HX does not yet implement xorshift_vector
             ]
         else:
             # These tests only work for HX

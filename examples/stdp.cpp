@@ -28,12 +28,21 @@ void measure_offsets(__vector uint8_t ca_offsets[], __vector uint8_t ac_offsets[
 			"fxvinx 2, %[ac_base], %[index]\n"
 			"fxvshb %[ca_offset], 1, -1\n"
 			"fxvshb %[ac_offset], 2, -1\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 			: [ca_offset] "=kv" (ca_offsets[index]),
 			  [ac_offset] "=kv" (ac_offsets[index])
+#else
+			: [ca_offset] "=qv" (ca_offsets[index]),
+			  [ac_offset] "=qv" (ac_offsets[index])
+#endif
 			: [index] "r" (index),
 			  [ca_base] "r" (dls_causal_base),
 			  [ac_base] "r" (dls_acausal_base)
+#ifndef LIBNUX_DLS_VERSION_VX
 			: "kv1", "kv2");
+#else
+			: "qv1", "qv2");
+#endif
 		// clang-format on
 	}
 	asm volatile("sync");
@@ -88,13 +97,25 @@ void update_weights(
 			: [index] "r" (index),
 			  [ca_base] "r" (dls_causal_base),
 			  [ac_base] "r" (dls_acausal_base),
+#ifndef LIBNUX_DLS_VERSION_VX
 			  [ca_offset] "kv" (ca_offsets[index]),
 			  [ac_offset] "kv" (ac_offsets[index]),
 			  [select] "kv" (select),
+#else
+			  [ca_offset] "qv" (ca_offsets[index]),
+			  [ac_offset] "qv" (ac_offsets[index]),
+			  [select] "qv" (select),
+#endif
 			  [w_base] "r" (dls_weight_base),
+#ifndef LIBNUX_DLS_VERSION_VX
 			  [zeros] "kv" (zeros),
 			  [factors] "kv" (factors)
 			: "kv1", "kv2", "kv3", "kv4");
+#else
+			  [zeros] "qv" (zeros),
+			  [factors] "qv" (factors)
+			: "qv1", "qv2", "qv3", "qv4");
+#endif
 		// clang-format on
 	}
 	asm volatile("sync");

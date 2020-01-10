@@ -4,10 +4,18 @@
 #include "libnux/random.h"
 
 
+#ifndef LIBNUX_DLS_VERSION_VX
+#define SYNAPSE_ROW_ITERATIONS dls_num_synapse_vectors
+#else
+// Use 32 vectors on HX fitting in the vector registers
+// Otherwise there is not enough memory
+#define SYNAPSE_ROW_ITERATIONS 32
+#endif
+
 void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_t seed) {
 	/* Initialize data in the synram */
-	__vector uint8_t data[dls_num_synapse_vectors];
-	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
+	__vector uint8_t data[SYNAPSE_ROW_ITERATIONS];
+	for (uint32_t index = 0; index < SYNAPSE_ROW_ITERATIONS; index++) {
 		for (uint32_t component = 0; component < sizeof(__vector uint8_t); component++) {
 			data[index][component] = xorshift32(&seed) & mask;
 		}
@@ -19,11 +27,15 @@ void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_
 
 	/* Set the vector in the synram */
 	__vector uint8_t* d_it = data;
-	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++, d_it++) {
+	for (uint32_t index = 0; index < SYNAPSE_ROW_ITERATIONS; index++, d_it++) {
 		asm volatile (
 				"fxvoutx %[vec], %[base], %[index]"
 				: /* no output */
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [vec] "kv" (*d_it),
+#else
+				: [vec] "qv" (*d_it),
+#endif
 				  [base] "b" (base_address),
 				  [index] "r" (index)
 				: /* no clobbers */);
@@ -37,7 +49,7 @@ void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_
 void test_weight_read(uint32_t seed) {
 	libnux_testcase_begin("test_weight_read");
 
-	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
+	for (uint32_t index = 0; index < SYNAPSE_ROW_ITERATIONS; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
 		__vector uint8_t data;
 		__vector uint8_t temp;
@@ -45,7 +57,11 @@ void test_weight_read(uint32_t seed) {
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
 				"sync"
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [temp] "=&kv" (temp)
+#else
+				: [temp] "=&qv" (temp)
+#endif
 				: [base] "b" (dls_weight_base),
 				  [index] "r" (index),
 				  [addr] "r" (&data)
@@ -62,7 +78,7 @@ void test_weight_read(uint32_t seed) {
 void test_decoder_read(uint32_t seed) {
 	libnux_testcase_begin("test_decoder_read");
 
-	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
+	for (uint32_t index = 0; index < SYNAPSE_ROW_ITERATIONS; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
 		__vector uint8_t data;
 		__vector uint8_t temp;
@@ -70,7 +86,11 @@ void test_decoder_read(uint32_t seed) {
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
 				"sync"
+#ifndef LIBNUX_DLS_VERSION_VX
 				: [temp] "=&kv" (temp)
+#else
+				: [temp] "=&qv" (temp)
+#endif
 				: [base] "b" (dls_decoder_base),
 				  [index] "r" (index),
 				  [addr] "r" (&data)
