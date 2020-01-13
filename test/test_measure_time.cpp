@@ -78,7 +78,6 @@ int start()
 	test_sleep_cycles("sleep_cycles 10", tentimes, 10, 600);
 	test_sleep_cycles("sleep_cycles 100", onetime, 100, 600);
 	test_sleep_cycles("sleep_cycles 1000", onetime, 1000, 1600);
-	test_sleep_cycles("sleep_cycles 10000", onetime, 10000, 10600);
 	libnux_testcase_end();
 
 	libnux_testcase_begin("optimization");
