@@ -243,7 +243,8 @@ def build(bld):
                             STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
                             TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux')),
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle")
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+        test_timeout = 3000
     )
 
     bld(
