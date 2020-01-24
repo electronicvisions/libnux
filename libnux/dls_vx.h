@@ -31,6 +31,7 @@ static uint32_t const dls_config_even_base    = 0x00010000;
 static uint32_t const dls_config_odd_base     = 0x00020000;
 static uint32_t const dls_raw_base            = 0x000f0000;
 static uint32_t const dls_randgen_base        = 0x000e0000;
+static uint32_t const dls_extmem_base         = 0x80000000;
 
 /* Byte to be written to synapse for correlation reset */
 static uint8_t const dls_correlation_reset = 0x3;

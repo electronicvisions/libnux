@@ -130,4 +130,44 @@ inline vector_row_t get_row_via_omnibus(size_t const row, uint32_t const base)
 	return ret;
 }
 
+
+vector_type get_vector(uint32_t base, uint32_t index)
+{
+	uint32_t zero = 0;
+	vector_type values;
+	asm volatile(
+	    // clang-format off
+		"fxvinx %1, %[base], %[index]\n"
+		"fxvstax %1, %[sindex], %[zero]\n"
+		"sync\n"
+		: "+m"(const_cast<vector_type &>(values))
+		: [base] "b" (base),
+		  [index] "r" (index),
+		  [sindex] "r" (values.data()),
+		  [zero] "r" (zero)
+		: /* no clobber */
+	    // clang-format on
+	);
+	return values;
+}
+
+void set_vector(vector_type const& values, uint32_t base, uint32_t index)
+{
+	uint32_t zero = 0;
+	asm volatile(
+	    // clang-format off
+		"fxvlax %1, %[sindex], %[zero]\n"
+		"fxvoutx %1, %[base], %[index]\n"
+		"sync\n"
+		:
+		: [base] "b" (base),
+		  [index] "r" (index),
+		  [sindex] "r" (values.data()),
+		  [zero] "r" (zero),
+		  "m"(const_cast<vector_type &>(values))
+		: /* no clobber */
+	    // clang-format on
+	);
+}
+
 } // namespace libnux

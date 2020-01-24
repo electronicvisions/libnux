@@ -169,6 +169,11 @@ def build(bld):
                 'test/test_vector_sync.cpp',
                 'test/test_xorshift_vector.cpp',
             ]
+        else:
+            # These tests only work for HX
+            program_list += [
+                'test/test_fpga_memory_vector_access.cpp',
+            ]
 
         for program in program_list:
             bld.program(
