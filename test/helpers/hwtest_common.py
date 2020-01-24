@@ -93,7 +93,7 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
     stack_protection = os.environ.get("STACK_PROTECTION", "").lower() == "true"
     stack_redzone = os.environ.get("STACK_REDZONE", "").lower() == "true"
 
-    return {
+    test_list = {
         PpuHwTest(
             join(TEST_BINARY_PATH, f"test_unittest_{dls_version}.bin"),
             expected_exit_code=1),
@@ -107,3 +107,13 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
             join(TEST_BINARY_PATH, f"test_stack_redzone_{dls_version}.bin"),
             expected_exit_code=12 if stack_redzone else 2)
     }
+
+    if dls_version == 'vx':
+        simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
+        test_list.update({
+            PpuHwTest(
+                join(TEST_BINARY_PATH, f"test_cadc_{dls_version}.bin"),
+                expected_exit_code=0 if simulation is not None else 1),
+        })
+
+    return test_list

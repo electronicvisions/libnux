@@ -172,6 +172,7 @@ def build(bld):
         else:
             # These tests only work for HX
             program_list += [
+                'test/test_cadc.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
             ]
 
