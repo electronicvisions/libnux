@@ -17,6 +17,7 @@ void libnux_test_init(void) {
 }
 
 void libnux_test_shutdown(void) {
+	libnux_test_write_termination();
 	exit(num_testcases_failed != 0);
 }
 

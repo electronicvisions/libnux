@@ -63,6 +63,11 @@ void libnux_mailbox_write_u8(uint32_t const offset, uint8_t const byte) {
 	}
 }
 
+void libnux_mailbox_string_terminate()
+{
+	libnux_mailbox_write_u8(write_head_offset++, 0);
+}
+
 uint32_t libnux_mailbox_write_string(char const * str) {
 	char const * ptr = str;
 	for (; (*ptr != 0); write_head_offset++, ptr++) {

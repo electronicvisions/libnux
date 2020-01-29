@@ -5,6 +5,11 @@
 uint32_t libnux_test_write_string(char const * str);
 uint32_t libnux_test_write_int(uint32_t const n);
 
+/**
+ * Null-terminate the test result.
+ */
+void libnux_test_write_termination();
+
 void libnux_test_init(void);
 void libnux_test_shutdown(void);
 
