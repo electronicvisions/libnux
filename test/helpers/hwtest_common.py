@@ -14,7 +14,8 @@ TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
                                        os.pardir,
                                        os.pardir,
                                        "build",
-                                       "libnux")
+                                       "libnux",
+                                       "test")
                                   )
 
 if not os.path.isdir(TEST_BINARY_PATH):
@@ -68,7 +69,7 @@ def find_binaries(dls_version: str) -> Set[PpuHwTest]:
     """
     ret = set()
 
-    test_regex = re.compile(r'(?:\b|_)[Tt]est.*' + dls_version + r'\.binary')
+    test_regex = re.compile(r'(?:\b|_)[Tt]est.*' + dls_version + r'\.bin$')
     for path, directories, files in os.walk(TEST_BINARY_PATH):
         for f in files:
             if test_regex.search(f):
@@ -91,15 +92,15 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
 
     return {
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_unittest_{dls_version}.binary"),
+            join(TEST_BINARY_PATH, f"test_unittest_{dls_version}.bin"),
             expected_exit_code=1),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_returncode_{dls_version}.binary"),
+            join(TEST_BINARY_PATH, f"test_returncode_{dls_version}.bin"),
             expected_exit_code=-559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_stack_guard_{dls_version}.binary"),
+            join(TEST_BINARY_PATH, f"test_stack_guard_{dls_version}.bin"),
             expected_exit_code=stack_protection * -559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_stack_redzone_{dls_version}.binary"),
+            join(TEST_BINARY_PATH, f"test_stack_redzone_{dls_version}.bin"),
             expected_exit_code=12 if stack_redzone else 2)
     }

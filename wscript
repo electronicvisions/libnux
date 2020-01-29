@@ -42,7 +42,6 @@ def configure(conf):
     conf.setenv('nux')
     conf.load('nux_assembler')
     conf.load('nux_compiler')
-    conf.load('objcopy')
     conf.load('test_base')
     conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
     conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
@@ -171,8 +170,7 @@ def build(bld):
 
         for program in program_list:
             bld.program(
-                features = 'cxx objcopy',
-                objcopy_bfdname = 'binary',
+                features = 'cxx',
                 target = program.replace('.cpp', '') + '_' + dls_version + '.bin',
                 source = [program],
                 use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
@@ -209,9 +207,8 @@ def build(bld):
                     return 976
 
         bld.program(
-            features = 'cxx objcopy check_size',
+            features = 'cxx check_size',
             check_size_max = max_size_empty(),
-            objcopy_bfdname = 'binary',
             target = 'test_empty_' + dls_version + '.bin',
             source = ['test/test_empty.cpp'],
             use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
@@ -228,7 +225,7 @@ def build(bld):
         env = bld.all_envs[''],
         test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                             STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux')),
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
         test_timeout = 3600
@@ -244,7 +241,7 @@ def build(bld):
         env = bld.all_envs[''],
         test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                             STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'))
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test'))
     )
 
     bld.add_post_fun(summary)
