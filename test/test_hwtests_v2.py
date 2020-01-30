@@ -1,19 +1,12 @@
 import unittest
-import os
 from typing import Set
-try:
-    from dlens_v2.tools.run_ppu_program import run_program, PPUTimeoutError
-except ImportError:  # No dlens available => DLSv3 run_program
-    from run_ppu_program import run_program, PPUTimeoutError
+from dlens_v2.tools.run_ppu_program import run_program, PPUTimeoutError
 
 from helpers.hwtest_common import get_special_binaries, find_binaries, \
     PpuHwTest
 
-# --- Parse the env --- #
-TEST_DLS_VERSION = os.environ.get("TEST_DLS_VERSION")
 
-
-class LibnuxHWTestsV2V3(unittest.TestCase):
+class LibnuxHWTestsV2(unittest.TestCase):
     TESTS: Set[PpuHwTest] = set()
 
     @classmethod
@@ -42,12 +35,12 @@ class LibnuxHWTestsV2V3(unittest.TestCase):
             test_method = generate_test(test)
             test_method.__name__ = test.name
 
-            setattr(LibnuxHWTestsV2V3, test.name, test_method)
+            setattr(LibnuxHWTestsV2, test.name, test_method)
 
 
-LibnuxHWTestsV2V3.TESTS.update(get_special_binaries(TEST_DLS_VERSION))
-LibnuxHWTestsV2V3.TESTS.update(find_binaries(TEST_DLS_VERSION))
-LibnuxHWTestsV2V3.generate_cases()
+LibnuxHWTestsV2.TESTS.update(get_special_binaries("v2"))
+LibnuxHWTestsV2.TESTS.update(find_binaries("v2"))
+LibnuxHWTestsV2.generate_cases()
 
 if __name__ == '__main__':
     unittest.main()

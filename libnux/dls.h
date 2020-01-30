@@ -4,10 +4,6 @@
 #include "dls_v2.h"
 #endif
 
-#ifdef LIBNUX_DLS_VERSION_V3
-#include "dls_v3.h"
-#endif
-
 #ifdef LIBNUX_DLS_VERSION_VX
 #include "dls_vx.h"
 #endif

@@ -10,6 +10,14 @@ void reset_neuron_counter(uint8_t neuron)
 	*ptr = 0;
 }
 
+void reset_all_neuron_counters()
+{
+	uint8_t neuron;
+	for (neuron = 0; neuron < dls_num_columns; neuron++) {
+		reset_neuron_counter(neuron);
+	}
+}
+
 void enable_neuron_counters(uint32_t enable_mask)
 {
 	volatile uint32_t* ptr = (uint32_t*) (dls_rates_base + dls_num_columns);

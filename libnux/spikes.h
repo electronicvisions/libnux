@@ -10,7 +10,6 @@ typedef struct
 	uint8_t addr;
 } spike_t;
 
-// FIXME: expose DLSv3 bug where MSB of addresses is fixed to 0/1 for even/odd rows
 static inline void send_spike(spike_t* sp)
 {
 	volatile uint32_t* ptr = (uint32_t*) (dls_spike_base + (sp->addr));

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#if defined(LIBNUX_DLS_VERSION_V2) || defined(LIBNUX_DLS_VERSION_V3)
+#if defined(LIBNUX_DLS_VERSION_V2)
 
 typedef struct
 {
@@ -15,12 +15,10 @@ uint32_t get_neuron_counter(uint8_t neuron);
 void reset_neuron_counter(uint8_t neuron);
 void reset_all_neuron_counters();
 
-#ifdef LIBNUX_DLS_VERSION_V2
 void enable_neuron_counters(uint32_t enable_mask);
 uint32_t get_enabled_neuron_counters();
 void configure_neuron_counter(neuron_counter_config config);
 neuron_counter_config get_neuron_counter_configuration();
 void clear_neuron_counters_on_read(bool value);
 void fire_interrupt(bool value);
-#endif
 #endif

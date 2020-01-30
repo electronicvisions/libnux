@@ -8,7 +8,6 @@ from waflib.extras.symwaf2ic import get_toplevel_path
 
 
 def depends(dep):
-    dep("hicann-dls-scripts", branch="v3testing")
     dep("haldls")
 
 
@@ -68,10 +67,6 @@ def configure(conf):
     conf.setenv('nux_v2', env=conf.all_envs['nux'])
     conf.define('LIBNUX_DLS_VERSION_V2', True)
 
-    # specialize for v3
-    conf.setenv('nux_v3', env=conf.all_envs['nux'])
-    conf.define('LIBNUX_DLS_VERSION_V3', True)
-
     # specialize for vx
     conf.setenv('nux_vx', env=conf.all_envs['nux'])
     conf.define('LIBNUX_DLS_VERSION_VX', True)
@@ -82,11 +77,8 @@ def configure(conf):
 def build(bld):
     bld.env.dls_partition = "dls" == os.environ.get("SLURM_JOB_PARTITION")
     bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
-    if (bld.env.dls_partition):
-        # FIXME should come from env or hwdb, see Issue #3366
-        bld.env.dls_test_version = ["2", "3"][(int("B291673" in os.environ.get("SLURM_FLYSPI_ID")))]
 
-    for dls_version in ['v2', 'v3', 'vx']:
+    for dls_version in ['v2', 'vx']:
         env = bld.all_envs['nux_' + dls_version]
 
         bld(
@@ -157,6 +149,7 @@ def build(bld):
             'test/test_stack_guard.cpp',
             'test/test_stack_redzone.cpp',
             'test/test_unittest.cpp',
+            'test/test_neuron_counter.cpp',
         ]
 
         if dls_version != 'vx':
@@ -174,12 +167,6 @@ def build(bld):
                 'test/test_vector_cc.cpp',
                 'test/test_vector_sync.cpp',
                 'test/test_xorshift_vector.cpp',
-            ]
-
-        if dls_version != 'v3':
-            # This test doesn't work on the v3 setup
-            program_list += [
-                'test/test_neuron_counter.cpp',
             ]
 
         for program in program_list:
@@ -249,30 +236,15 @@ def build(bld):
 
     bld(
         name='libnux_hwtests_v2',
-        tests='test/test_hwtests_v2v3.py',
+        tests='test/test_hwtests_v2.py',
         features='use pytest',
         use='dlens_v2',
         install_path='${PREFIX}/bin/tests',
-        skip_run=not (bld.env.dls_partition and bld.env.dls_test_version == "2"),
+        skip_run=not bld.env.dls_partition,
         env = bld.all_envs[''],
         test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                             STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
-                            TEST_DLS_VERSION="v2")
-    )
-
-    bld(
-        name='libnux_hwtests_v3',
-        tests='test/test_hwtests_v2v3.py',
-        features='use pytest',
-        use='hdls-scripts_runprogram',
-        install_path='${PREFIX}/bin/tests',
-        skip_run=not (bld.env.dls_partition and bld.env.dls_test_version == "3"),
-        env = bld.all_envs[''],
-        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'),
-                            TEST_DLS_VERSION="v3")
+                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux'))
     )
 
     bld.add_post_fun(summary)
