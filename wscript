@@ -9,6 +9,7 @@ from waflib.extras.symwaf2ic import get_toplevel_path
 
 def depends(dep):
     dep("haldls")
+    dep("libnux", "test/with_hostcode")
 
 
 def options(opt):

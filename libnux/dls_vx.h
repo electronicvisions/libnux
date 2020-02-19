@@ -49,3 +49,6 @@ static constexpr omnibus_address_t dls_syndrv_base = 0x1c000000ul;
 
 /* Address for spike injection */
 static constexpr omnibus_address_t dls_spike_base = 0x1c000040ul;
+
+/* MADC and reference current generator configuration base address */
+static constexpr omnibus_address_t madc_base_address = (1ul << 19 | 1ul << 18);
