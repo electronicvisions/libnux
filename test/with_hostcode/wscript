@@ -63,3 +63,10 @@ def build_ppu_cpp(bld):
                 source="refgen_access_pattern-ppu.cpp",
                 use=["nux_runtime_vx"],
                 env=bld.all_envs["nux_vx"])
+
+    bld.program(name="libnux-test-synram_access_pattern-ppu",
+                features="cxx",
+                target="synram_access_pattern-ppu.bin",
+                source="synram_access_pattern-ppu.cpp",
+                use=["nux_runtime_vx"],
+                env=bld.all_envs["nux_vx"])

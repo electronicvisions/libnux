@@ -3,12 +3,13 @@ import os
 from os.path import join
 import unittest
 
-from dlens_vx.halco import iter_all
-from dlens_vx.halco import PPUOnDLS
+from dlens_vx.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
+    SynapseOnSynapseRow
 from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
 from dlens_vx import logger
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
+from pyhaldls_vx import SynapseQuad
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
@@ -133,6 +134,61 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
 
         with self.assertRaises(StopIteration):
             next(log_events)
+
+    def test_synram_access(self):
+        log = logger.get("LibnuxAccessPatternTestVx.test_synram_access")
+        program = join(TEST_BINARY_PATH, "synram_access_pattern-ppu.bin")
+        initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
+        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
+                                                    initial_logsize))
+
+        for ppu in iter_all(PPUOnDLS):
+            log.info("Running test on %s." % ppu)
+            self.run_ppu_program(ppu, program, int(5e7))
+
+        # Evaluate flange log
+        log_parser = self.LogParser("synram_write_access", initial_logsize)
+        log_events = iter(log_parser)
+
+        num_vectors_per_row = 2
+        vector_size = SynapseOnSynapseRow.size // num_vectors_per_row
+
+        for ppu in iter_all(PPUOnDLS):
+            diagonal_value = 1
+            for row in range(SynapseRowOnSynram.size):
+                for vec in range(num_vectors_per_row):
+                    for vector_element in range(vector_size):
+                        col = 2 * vector_element + vec
+
+                        self.assertDictEqual(
+                            next(log_events),
+                            {
+                                "data":
+                                    0 if row != col else
+                                    self.permute_weights(diagonal_value),
+                                "column":
+                                    col + SynapseOnSynapseRow.size
+                                    * ppu.toEnum().value()
+                            }
+                        )
+
+                diagonal_value += 1
+                if diagonal_value > SynapseQuad.Synapse.Weight.max:
+                    diagonal_value = 1
+
+        with self.assertRaises(StopIteration):
+            next(log_events)
+
+    @staticmethod
+    def permute_weights(before: int):
+        after = 0
+        after |= (bool(before & (1 << 5))) << 5
+        after |= (bool(before & (1 << 0))) << 4
+        after |= (bool(before & (1 << 1))) << 3
+        after |= (bool(before & (1 << 2))) << 2
+        after |= (bool(before & (1 << 3))) << 1
+        after |= (bool(before & (1 << 4))) << 0
+        return after
 
 
 if __name__ == '__main__':
