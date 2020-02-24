@@ -7,12 +7,18 @@
 using namespace libnux;
 
 /* Size of synram */
-static uint32_t const dls_num_rows = 32;
-static uint32_t const dls_num_columns = 32;
-static uint32_t const dls_num_synapses = 32 * 32;
+constexpr static uint32_t dls_num_rows = 256;
+constexpr static uint32_t dls_num_columns = 256;
+constexpr static uint32_t dls_num_synapses = dls_num_rows * dls_num_columns;
+
+/* Vector size */
+constexpr static uint32_t dls_vector_size = 128;
+
+/* Number of vectors per row */
+constexpr static uint32_t dls_num_vectors_per_row = 2;
 
 /* Vector addressing of synapses */
-static uint32_t const dls_num_synapse_vectors = 32 * 32 / 16;
+constexpr static uint32_t dls_num_synapse_vectors = dls_num_synapses / dls_vector_size;
 
 /* Addressing for vector in/out */
 static uint32_t const dls_weight_base         = 0x00000000;
