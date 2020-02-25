@@ -70,3 +70,10 @@ def build_ppu_cpp(bld):
                 source="synram_access_pattern-ppu.cpp",
                 use=["nux_runtime_vx"],
                 env=bld.all_envs["nux_vx"])
+
+    bld.program(name="libnux-test-correlation_reset_causal-ppu",
+                features="cxx",
+                target="correlation_reset_causal-ppu.bin",
+                source="correlation_reset_causal-ppu.cpp",
+                use=["nux_runtime_vx"],
+                env=bld.all_envs["nux_vx"])

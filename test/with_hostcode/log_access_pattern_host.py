@@ -2,6 +2,7 @@ import json
 import os
 from os.path import join
 import unittest
+from typing import List, Iterator
 
 from dlens_vx.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
     SynapseOnSynapseRow
@@ -179,6 +180,57 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(log_events)
 
+    def test_correlation_reset_causal(self):
+        log = logger.get("LibnuxAccessPatternTestVx."
+                         "test_correlation_reset_causal")
+        program = join(TEST_BINARY_PATH, "correlation_reset_causal-ppu.bin")
+        initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
+        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
+                                                    initial_logsize))
+
+        for ppu in iter_all(PPUOnDLS):
+            log.info("Running test on %s." % ppu)
+            self.run_ppu_program(ppu, program, int(5e5))
+
+        # Evaluate flange log
+        log_parser = self.LogParser("correlation_reset_event", initial_logsize)
+        events = iter(log_parser)
+
+        for ppu in iter_all(PPUOnDLS):
+            # Test full reset
+            self.eval_creset(events, ppu, 0, [True] * 256, [True] * 256)
+            self.eval_creset(events, ppu, 10, [True] * 256, [True] * 256)
+            self.eval_creset(events, ppu, 255, [True] * 256, [True] * 256)
+
+            # Test causal-only reset
+            self.eval_creset(events, ppu, 0, [True] * 256, [False] * 256)
+            self.eval_creset(events, ppu, 20, [True] * 256, [False] * 256)
+            self.eval_creset(events, ppu, 255, [True] * 256, [False] * 256)
+
+            # Test acausal-only reset
+            self.eval_creset(events, ppu, 0, [False] * 256, [True] * 256)
+            self.eval_creset(events, ppu, 30, [False] * 256, [True] * 256)
+            self.eval_creset(events, ppu, 255, [False] * 256, [True] * 256)
+
+            # Test no reset at all
+            self.eval_creset(events, ppu, 0, [False] * 256, [False] * 256)
+            self.eval_creset(events, ppu, 40, [False] * 256, [False] * 256)
+            self.eval_creset(events, ppu, 255, [False] * 256, [False] * 256)
+
+            # Test specific odd column reset
+            causal_mask = [False] * 256
+            causal_mask[21] = True  # Column 21 is the 10th odd column
+            self.eval_creset(events, ppu, 0, causal_mask, [False] * 256)
+            self.eval_creset(events, ppu, 50, causal_mask, [False] * 256)
+            self.eval_creset(events, ppu, 255, causal_mask, [False] * 256)
+
+            # Test specific even column reset
+            causal_mask = [False] * 256
+            causal_mask[40] = True  # Column 40 is the 20th even column
+            self.eval_creset(events, ppu, 0, causal_mask, [False] * 256)
+            self.eval_creset(events, ppu, 60, causal_mask, [False] * 256)
+            self.eval_creset(events, ppu, 255, causal_mask, [False] * 256)
+
     @staticmethod
     def permute_weights(before: int):
         after = 0
@@ -189,6 +241,53 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         after |= (bool(before & (1 << 3))) << 1
         after |= (bool(before & (1 << 4))) << 0
         return after
+
+    # pylint: disable=too-many-arguments,too-many-locals
+    def eval_creset(self,
+                    events: Iterator[dict],
+                    ppu: PPUOnDLS,
+                    row: int,
+                    causal_mask: List[bool],
+                    acausal_mask: List[bool]):
+        """
+        Evaluate the next correlation reset events in an event stream against
+        abstract expectations.
+        """
+        expected_corenres_enable = 0b1100 if (ppu == PPUOnDLS.top) else 0b0011
+
+        expected_corenres_address = (row << 8) | row
+        if ppu == PPUOnDLS.top:
+            expected_corenres_address <<= 16
+
+        for vector_parity in range(2):
+            expected_corres_c = 0
+            for idx, val in enumerate(causal_mask):
+                if not val:
+                    continue
+                if idx % 2 == vector_parity:
+                    expected_corres_c |= 1 << (255 - idx)
+
+            expected_corres_a = 0
+            for idx, val in enumerate(acausal_mask):
+                if not val:
+                    continue
+                if idx % 2 == vector_parity:
+                    expected_corres_a |= 1 << (255 - idx)
+
+            if ppu == PPUOnDLS.top:
+                expected_corres_a <<= 256
+                expected_corres_c <<= 256
+
+            expectation = {
+                "sa_corenres_enable": expected_corenres_enable,
+                "sa_corres_c": expected_corres_c,
+                "sa_corres_a": expected_corres_a,
+                "sa_corenres_address": expected_corenres_address
+            }
+
+            # Two rising bit per event => two log outputs
+            for _ in range(2):
+                self.assertDictEqual(expectation, next(events))
 
 
 if __name__ == '__main__':
