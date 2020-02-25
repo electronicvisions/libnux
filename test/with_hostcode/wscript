@@ -77,3 +77,10 @@ def build_ppu_cpp(bld):
                 source="correlation_reset_causal-ppu.cpp",
                 use=["nux_runtime_vx"],
                 env=bld.all_envs["nux_vx"])
+
+    bld.program(name="libnux-test-neuron_reset_global-ppu",
+                features="cxx",
+                target="neuron_reset_global-ppu.bin",
+                source="neuron_reset_global-ppu.cpp",
+                use=["nux_runtime_vx"],
+                env=bld.all_envs["nux_vx"])

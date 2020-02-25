@@ -231,6 +231,41 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             self.eval_creset(events, ppu, 60, causal_mask, [False] * 256)
             self.eval_creset(events, ppu, 255, causal_mask, [False] * 256)
 
+    def test_neuron_reset_global(self):
+        log = logger.get("LibnuxAccessPatternTestVx.test_neuron_reset_global")
+        program = join(TEST_BINARY_PATH, "neuron_reset_global-ppu.bin")
+        initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
+        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
+                                                    initial_logsize))
+
+        for ppu in iter_all(PPUOnDLS):
+            log.info("Running test on %s." % ppu)
+            self.run_ppu_program(ppu, program, int(5e5))
+
+        # Evaluate flange log
+        parser = self.LogParser("global_neuron_reset_event", initial_logsize)
+        log_events = iter(parser)
+
+        for ppu in iter_all(PPUOnDLS):
+            # Test full reset
+            self.eval_neuron_reset(log_events, ppu, [True] * 256)
+
+            # Test no reset at all
+            # no edge at sa_corres_a => no output in log
+
+            # Test specific odd column reset
+            reset_mask = [False] * 256
+            reset_mask[21] = True  # Column 21 is the 10th odd column
+            self.eval_neuron_reset(log_events, ppu, reset_mask)
+
+            # Test specific even column reset
+            reset_mask = [False] * 256
+            reset_mask[40] = True  # Column 40 is the 20th even column
+            self.eval_neuron_reset(log_events, ppu, reset_mask)
+
+        with self.assertRaises(StopIteration):
+            next(log_events)
+
     @staticmethod
     def permute_weights(before: int):
         after = 0
@@ -288,6 +323,43 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             # Two rising bit per event => two log outputs
             for _ in range(2):
                 self.assertDictEqual(expectation, next(events))
+
+    def eval_neuron_reset(self,
+                          events: Iterator[dict],
+                          ppu: PPUOnDLS,
+                          reset_mask: List[bool]):
+        """
+        Evaluate the next global neuron reset events in an event stream against
+        abstract expectations.
+        """
+        expected_corenres_neuron = 0b1100 if (ppu == 0) else 0b0011
+
+        # Events are only visible if C is actually pulled
+        parities = list()
+        if any([val for idx, val in enumerate(reset_mask) if (idx % 2) == 0]):
+            parities.append(0)
+        if any([val for idx, val in enumerate(reset_mask) if (idx % 2) != 0]):
+            parities.append(1)
+
+        for vector_parity in parities:
+            expected_corres_a = 0
+            for idx, val in enumerate(reset_mask):
+                if not val:
+                    continue
+                if idx % 2 == vector_parity:
+                    expected_corres_a |= 1 << (255 - idx)
+
+            if ppu == PPUOnDLS.top:
+                expected_corres_a <<= 256
+
+            expectation = {
+                "sa_corenres_neuron": expected_corenres_neuron,
+                "sa_corres_c": 0,
+                "sa_corres_a": expected_corres_a,
+            }
+
+            self.assertDictEqual(expectation, next(events))
+            next(events)  # Drop falling sa_corres_a edge event
 
 
 if __name__ == '__main__':
