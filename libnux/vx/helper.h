@@ -40,14 +40,16 @@ T find_max_amount(std::array<T, Size> const& array)
 	return max;
 }
 
-/*
-    Prevent the compiler from optimizing away variables or expressions, even
-    if the result is not used after calculation or known at compile time.
-*/
-template <class T>
-__attribute__((always_inline)) inline void do_not_optimize_away(T const& value)
+/**
+ *  Prevent the compiler from optimizing away variables or expressions, even
+ *  if the result is not used after calculation or known at compile time.
+ *
+ *  Combine with clobber() to keep variables alive and to keep stores.
+ */
+template <typename T>
+inline void do_not_optimize_away(T const& p)
 {
-	asm volatile("" : "+m"(const_cast<T&>(value)));
+	asm volatile("" : : "g"(&p) : "memory");
 }
 
 } // namespace libnux::vx
