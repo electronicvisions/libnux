@@ -7,7 +7,7 @@ void test_read_g_after_write_v(void)
 	libnux_testcase_begin(__func__);
 
 	// Write with VX
-	vector uint8_t vec = vec_splat_u8(0xff);
+	__vector uint8_t vec = vec_splat_u8(0xff);
 
 	// Read with GPP
 	libnux_test_equal(vec[0], 0xff);
@@ -19,15 +19,15 @@ void test_read_v_after_write_g(void)
 {
 	libnux_testcase_begin(__func__);
 
-	vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	__vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	// Write with GPP
 	for (uint32_t i = 0; i < 16; i++) {
 		vec[i] = 1;
 	}
 
-	vector uint8_t temp;
-	vector uint8_t copy;
+	__vector uint8_t temp;
+	__vector uint8_t copy;
 
 	// Read from VX
 	// clang-format off
@@ -51,8 +51,8 @@ void test_write_g_after_read_v(void)
 {
 	libnux_testcase_begin(__func__);
 
-	vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	vector uint8_t copy;
+	__vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	__vector uint8_t copy;
 
 	// Read with VX
 	// clang-format off
@@ -83,7 +83,7 @@ void test_write_v_after_read_g(void)
 {
 	libnux_testcase_begin(__func__);
 
-	vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	__vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	// Read with GPP
 	for (uint32_t i = 0; i < 16; i++) {

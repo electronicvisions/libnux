@@ -5,7 +5,7 @@
 #include "dls.h"
 
 // Get weights of synapse row `row` and save in vectors `first_half`, `second_half`.
-inline void get_weights(vector uint8_t* first_half, vector uint8_t* second_half, uint8_t row)
+inline void get_weights(__vector uint8_t* first_half, __vector uint8_t* second_half, uint8_t row)
 {
 	asm volatile(
 		// clang-format off
@@ -21,7 +21,7 @@ inline void get_weights(vector uint8_t* first_half, vector uint8_t* second_half,
 	);
 }
 
-inline void set_weights(vector uint8_t* first_half, vector uint8_t* second_half, uint8_t row)
+inline void set_weights(__vector uint8_t* first_half, __vector uint8_t* second_half, uint8_t row)
 {
 	asm volatile(
 		// clang-format off

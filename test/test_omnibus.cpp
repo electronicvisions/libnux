@@ -7,8 +7,8 @@
 /** Read first word from weight synram region. */
 uint32_t get_weights_vector_unit()
 {
-	vector uint8_t left;
-	vector uint8_t right;
+	__vector uint8_t left;
+	__vector uint8_t right;
 	get_weights(&left, &right, 0);
 	sync();
 	return *((uint32_t*) &left);
@@ -17,8 +17,8 @@ uint32_t get_weights_vector_unit()
 /** Write first word from weight synram region. */
 void set_weights_vector_unit(uint32_t const value)
 {
-	vector uint8_t left = vec_splat_u8(0);
-	vector uint8_t right = vec_splat_u8(0);
+	__vector uint8_t left = vec_splat_u8(0);
+	__vector uint8_t right = vec_splat_u8(0);
 	uint32_t* ptr = (uint32_t*) (&left);
 	*ptr = value;
 	sync();

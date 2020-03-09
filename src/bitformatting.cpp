@@ -16,10 +16,10 @@ uint8_t reverse_byte(uint8_t b)
 	return b;
 }
 
-void vector_reverse_bytes(vector uint8_t* data)
+void vector_reverse_bytes(__vector uint8_t* data)
 {
 	// Switch every entry in the vector individually
-	for(size_t i = 0; i < sizeof(vector uint8_t); i++) {
+	for (size_t i = 0; i < sizeof(__vector uint8_t); i++) {
 		(*data)[i] = UINT8_MAX - reverse_byte((*data)[i]);
 	}
 }

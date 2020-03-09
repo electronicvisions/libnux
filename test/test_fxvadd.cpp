@@ -7,10 +7,10 @@ void test_fxvadd()
 	libnux_testcase_begin(__func__);
 	/* Addition should be modulo arithmetic by default */
 	{
-		vector int8_t vec = fxv_splatb(0xff);
-		vector int8_t const ones = fxv_splatb(1);
+		__vector int8_t vec = fxv_splatb(0xff);
+		__vector int8_t const ones = fxv_splatb(1);
 		vec = fxv_add(vec, ones);
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			libnux_test_equal(vec[i], 0);
 		}
 	}
@@ -22,10 +22,10 @@ void test_fxvaddfs()
 	libnux_testcase_begin(__func__);
 	/* Check if saturating arithmetic works */
 	{
-		vector int8_t vec = fxv_splatb(0x7f);
-		vector int8_t const ones = fxv_splatb(1);
+		__vector int8_t vec = fxv_splatb(0x7f);
+		__vector int8_t const ones = fxv_splatb(1);
 		vec = fxv_addfs(vec, ones);
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			libnux_test_equal(vec[i], 0x7f);
 		}
 	}

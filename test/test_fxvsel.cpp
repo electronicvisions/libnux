@@ -6,14 +6,13 @@ void test_fxvsel_inline_asm() {
 	libnux_testcase_begin(__func__);
 	// Create a vector with 0, +1, -1, 0, +1, -1, ... . The -1 is explicitely
 	// initialized as its two's complement, which is 0xff
-	vector uint8_t cmp = {
-		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
-		0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff};
-	vector uint8_t lhs = vec_splat_u8(2);
-	vector uint8_t rhs = vec_splat_u8(1);
+	__vector uint8_t cmp = {0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff,
+	                        0x00, 0x01, 0x00, 0xff, 0x00, 0x01, 0x00, 0xff};
+	__vector uint8_t lhs = vec_splat_u8(2);
+	__vector uint8_t rhs = vec_splat_u8(1);
 	/* Condition always */
 	{
-		vector uint8_t res;
+		__vector uint8_t res;
 		asm volatile (
 				// Use vector cmp for component wise comparison
 				"fxvcmpb %[cmp]\n"
@@ -31,13 +30,13 @@ void test_fxvsel_inline_asm() {
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
 				: "kv1", "memory");
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			libnux_test_equal(res[i], rhs[i]);
 		}
 	}
 	/* Condition gt */
 	{
-		vector uint8_t res;
+		__vector uint8_t res;
 		asm volatile (
 				"fxvcmpb %[cmp]\n"
 				"fxvsel 1, %[lhs], %[rhs], 1\n"
@@ -50,7 +49,7 @@ void test_fxvsel_inline_asm() {
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
 				: "kv1", "memory");
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) > 0) {
 				libnux_test_equal(res[i], rhs[i]);
 			} else {
@@ -60,7 +59,7 @@ void test_fxvsel_inline_asm() {
 	}
 	/* Condition lt */
 	{
-		vector uint8_t res;
+		__vector uint8_t res;
 		asm volatile (
 				"fxvcmpb %[cmp]\n"
 				"fxvsel 1, %[lhs], %[rhs], 2\n"
@@ -73,7 +72,7 @@ void test_fxvsel_inline_asm() {
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
 				: "kv1", "memory");
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) < 0) {
 				libnux_test_equal(res[i], rhs[i]);
 			} else {
@@ -83,7 +82,7 @@ void test_fxvsel_inline_asm() {
 	}
 	/* Condition eq */
 	{
-		vector uint8_t res;
+		__vector uint8_t res;
 		asm volatile (
 				"fxvcmpb %[cmp]\n"
 				"fxvsel 1, %[lhs], %[rhs], 3\n"
@@ -96,7 +95,7 @@ void test_fxvsel_inline_asm() {
 				  [res_ptr] "r" (&res),
 				  [zero] "r" (0)
 				: "kv1", "memory");
-		for (uint32_t i = 0; i < sizeof(vector uint8_t); i++) {
+		for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
 			if ((int8_t)(cmp[i]) == 0) {
 				libnux_test_equal(res[i], rhs[i]);
 			} else {

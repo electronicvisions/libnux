@@ -7,4 +7,4 @@
 uint8_t reverse_byte(uint8_t b);
 
 // Reverse all bits for all contained bytes in the vector
-void vector_reverse_bytes(vector uint8_t* data);
+void vector_reverse_bytes(__vector uint8_t* data);

@@ -25,7 +25,7 @@ void test_many_vectors()
 {
 	libnux_testcase_begin(__func__);
 
-	vector uint8_t vectors[NUM_VECTORS_TO_USE];
+	__vector uint8_t vectors[NUM_VECTORS_TO_USE];
 
 	for (uint32_t i = 0; i < NUM_VECTORS_TO_USE; i++) {
 		vectors[i] = vec_splat_u8(i);

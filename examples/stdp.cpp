@@ -19,7 +19,7 @@ enum
 };
 
 // Measure correlation offsets
-void measure_offsets(vector uint8_t ca_offsets[], vector uint8_t ac_offsets[])
+void measure_offsets(__vector uint8_t ca_offsets[], __vector uint8_t ac_offsets[])
 {
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		// clang-format off
@@ -46,11 +46,11 @@ void measure_offsets(vector uint8_t ca_offsets[], vector uint8_t ac_offsets[])
 // * Scale the stdp update with the given factor
 // * Apply the stdp update to the weights
 void update_weights(
-	uint8_t const factor, vector uint8_t const ca_offsets[], vector uint8_t const ac_offsets[])
+    uint8_t const factor, __vector uint8_t const ca_offsets[], __vector uint8_t const ac_offsets[])
 {
-	vector uint8_t const select = vec_splat_u8(dls_correlation_reset);
-	vector uint8_t factors = vec_splat_u8(factor);
-	vector uint8_t zeros = vec_splat_u8(0);
+	__vector uint8_t const select = vec_splat_u8(dls_correlation_reset);
+	__vector uint8_t factors = vec_splat_u8(factor);
+	__vector uint8_t zeros = vec_splat_u8(0);
 
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		// Registers are:
@@ -105,7 +105,7 @@ void print_weights(void)
 {
 	libnux_mailbox_write_string("Weights are\n");
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
-		uint8_t vector weights;
+		uint8_t __vector weights;
 		// clang-format off
 		asm volatile (
 			"fxvinx 1, %[dls_weight_base], %[index]\n"
@@ -134,8 +134,8 @@ int start(void)
 	libnux_mailbox_write_string("Synapses reset done\n");
 
 	// Measure offsets
-	vector uint8_t ca_offsets[dls_num_synapse_vectors];
-	vector uint8_t ac_offsets[dls_num_synapse_vectors];
+	__vector uint8_t ca_offsets[dls_num_synapse_vectors];
+	__vector uint8_t ac_offsets[dls_num_synapse_vectors];
 	measure_offsets(ca_offsets, ac_offsets);
 
 	// Execute

@@ -2,7 +2,7 @@
 #include "libnux/spr.h"
 
 // inlined function with vector argument
-inline __attribute__((always_inline)) void foo_inline(vector uint8_t& y)
+inline __attribute__((always_inline)) void foo_inline(__vector uint8_t& y)
 {
 	asm volatile(
 		"fxvcmpb %[v]\n"
@@ -18,7 +18,7 @@ __attribute__((noinline)) time_base_t trigger()
 
 void test_inline()
 {
-	vector uint8_t y = vec_splat_u8(0);
+	__vector uint8_t y = vec_splat_u8(0);
 	trigger();
 	foo_inline(y);
 }

@@ -6,9 +6,9 @@
 
 void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_t seed) {
 	/* Initialize data in the synram */
-	vector uint8_t data[dls_num_synapse_vectors];
+	__vector uint8_t data[dls_num_synapse_vectors];
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
-		for (uint32_t component = 0; component < sizeof(vector uint8_t); component++) {
+		for (uint32_t component = 0; component < sizeof(__vector uint8_t); component++) {
 			data[index][component] = xorshift32(&seed) & mask;
 		}
 	}
@@ -18,7 +18,7 @@ void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_
 	asm volatile ("" : : : "memory");
 
 	/* Set the vector in the synram */
-	vector uint8_t* d_it = data;
+	__vector uint8_t* d_it = data;
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++, d_it++) {
 		asm volatile (
 				"fxvoutx %[vec], %[base], %[index]"
@@ -39,8 +39,8 @@ void test_weight_read(uint32_t seed) {
 
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
-		vector uint8_t data;
-		vector uint8_t temp;
+		__vector uint8_t data;
+		__vector uint8_t temp;
 		asm volatile (
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
@@ -50,7 +50,7 @@ void test_weight_read(uint32_t seed) {
 				  [index] "r" (index),
 				  [addr] "r" (&data)
 				: /* no clobbers */);
-		for (uint32_t j = 0; j < sizeof(vector uint8_t); j++) {
+		for (uint32_t j = 0; j < sizeof(__vector uint8_t); j++) {
 			libnux_test_equal(data[j], xorshift32(&seed) & dls_weight_mask);
 		}
 	}
@@ -64,8 +64,8 @@ void test_decoder_read(uint32_t seed) {
 
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		/* Explicitely load the weights, store to memory and synchronize */
-		vector uint8_t data;
-		vector uint8_t temp;
+		__vector uint8_t data;
+		__vector uint8_t temp;
 		asm volatile (
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
@@ -75,7 +75,7 @@ void test_decoder_read(uint32_t seed) {
 				  [index] "r" (index),
 				  [addr] "r" (&data)
 				: /* no clobbers */);
-		for (uint32_t j = 0; j < sizeof(vector uint8_t); j++) {
+		for (uint32_t j = 0; j < sizeof(__vector uint8_t); j++) {
 			libnux_test_equal(data[j], xorshift32(&seed) & dls_decoder_mask);
 		}
 	}

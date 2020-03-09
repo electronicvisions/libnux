@@ -16,15 +16,15 @@ void test_reverse_byte()
 #ifndef LIBNUX_DLS_VERSION_VX
 void test_vector_reverse_bytes()
 {
-	vector uint8_t test_vector;
+	__vector uint8_t test_vector;
 
-	for(uint8_t i = 0; i < sizeof(vector uint8_t); i++) {
+	for (uint8_t i = 0; i < sizeof(__vector uint8_t); i++) {
 		test_vector[i] = i;
 	}
 
 	vector_reverse_bytes(&test_vector);
 
-	for(uint8_t i = 0; i < sizeof(vector uint8_t); i++) {
+	for (uint8_t i = 0; i < sizeof(__vector uint8_t); i++) {
 		libnux_test_equal(test_vector[i], reverse_byte(i));
 	}
 }

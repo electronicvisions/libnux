@@ -16,9 +16,9 @@ struct CRTP {
 
 struct VectorTestCRTP : public CRTP<VectorTestCRTP> {
 	VectorTestCRTP() {
-		vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-		vector uint8_t rhs = vec_splat_u8(1);
-		vector uint8_t res = vec_add(lhs, rhs);
+		__vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+		__vector uint8_t rhs = vec_splat_u8(1);
+		__vector uint8_t res = vec_add(lhs, rhs);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], index + 1);
 		}
@@ -40,9 +40,9 @@ struct VectorTestINHE : public INHE {
 	VectorTestINHE() :
 		INHE("vector_add_INHE")
 	{
-		vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-		vector uint8_t rhs = vec_splat_u8(1);
-		vector uint8_t res = vec_add(lhs, rhs);
+		__vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+		__vector uint8_t rhs = vec_splat_u8(1);
+		__vector uint8_t res = vec_add(lhs, rhs);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], index + 1);
 		}
@@ -67,9 +67,9 @@ struct VIRT {
 
 struct VectorTestVIRT : public VIRT {
 	void test() override {
-		vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-		vector uint8_t rhs = vec_splat_u8(1);
-		vector uint8_t res = vec_add(lhs, rhs);
+		__vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+		__vector uint8_t rhs = vec_splat_u8(1);
+		__vector uint8_t res = vec_add(lhs, rhs);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], index + 1);
 		}
@@ -83,9 +83,9 @@ struct VectorTestVIRT : public VIRT {
 struct VectorTestGLOB {
 	void test() {
 		libnux_testcase_begin(test_name);
-		vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-		vector uint8_t rhs = vec_splat_u8(1);
-		vector uint8_t res = vec_add(lhs, rhs);
+		__vector uint8_t lhs = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+		__vector uint8_t rhs = vec_splat_u8(1);
+		__vector uint8_t res = vec_add(lhs, rhs);
 		for (uint32_t index = 0; index < 16; index++) {
 			libnux_test_equal(res[index], index + 1);
 		}

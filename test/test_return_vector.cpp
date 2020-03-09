@@ -1,7 +1,7 @@
 #include <s2pp.h>
 #include <libnux/unittest.h>
 
-vector uint8_t foo(vector uint8_t* v)
+__vector uint8_t foo(__vector uint8_t* v)
 {
 	return *v;
 }
@@ -9,11 +9,11 @@ vector uint8_t foo(vector uint8_t* v)
 void test_return_vector()
 {
 	libnux_testcase_begin("return_vector");
-	vector uint8_t in = vec_splat_u8(1);
-	vector uint8_t out;
+	__vector uint8_t in = vec_splat_u8(1);
+	__vector uint8_t out;
 	out = foo(&in);
 
-	for (uint32_t i = 0; i < sizeof(vector uint8_t); ++i) {
+	for (uint32_t i = 0; i < sizeof(__vector uint8_t); ++i) {
 		libnux_test_equal(in[i], 1);
 		libnux_test_equal(out[i], 1);
 	}

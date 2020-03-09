@@ -2,7 +2,7 @@
 #include "libnux/spr.h"
 
 // not inlined function with vector argument
-__attribute__((noinline)) void foo_noinline(vector uint8_t& y)
+__attribute__((noinline)) void foo_noinline(__vector uint8_t& y)
 {
 	asm volatile(
 		"fxvcmpb %[v]\n"
@@ -18,7 +18,7 @@ __attribute__((noinline)) time_base_t trigger()
 
 void test_noinline()
 {
-	vector uint8_t y = vec_splat_u8(0);
+	__vector uint8_t y = vec_splat_u8(0);
 	trigger();
 	foo_noinline(y);
 }

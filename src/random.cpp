@@ -24,12 +24,12 @@ uint32_t draw_poisson(uint32_t* seed, uint32_t cutoff, uint32_t dt)
 }
 
 // ~3 times faster than calling xorshift32 four times.
-void xorshift_vector(const vector uint8_t* seed)
+void xorshift_vector(const __vector uint8_t* seed)
 {
 	// Check if vector is 16B long. Otherwise xorshift_vector won't work
 	// because it assumes exactly 4 uint32_t to fit in a vector.
 	static_assert(
-		sizeof(vector uint8_t) == 16, "vector size is not 16B, xorshift_vector will not work.");
+	    sizeof(__vector uint8_t) == 16, "vector size is not 16B, xorshift_vector will not work.");
 
 	// xorshift128
 	uint32_t* x = (uint32_t*) seed;

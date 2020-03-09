@@ -9,11 +9,11 @@ void reset_all_correlations();
 //   Saves causal & acausal correlation of both halves of a synapse row
 //   in arrays at `first_half`, `second half`, respectively.
 static inline void get_correlation(
-	vector uint8_t* first_causal_half,
-	vector uint8_t* second_causal_half,
-	vector uint8_t* first_acausal_half,
-	vector uint8_t* second_acausal_half,
-	uint8_t row)
+    __vector uint8_t* first_causal_half,
+    __vector uint8_t* second_causal_half,
+    __vector uint8_t* first_acausal_half,
+    __vector uint8_t* second_acausal_half,
+    uint8_t row)
 {
 	asm volatile(
 		// clang-format off
@@ -38,7 +38,7 @@ static inline void get_correlation(
 
 
 static inline void get_causal_correlation(
-	vector uint8_t* first_half, vector uint8_t* second_half, uint8_t row)
+    __vector uint8_t* first_half, __vector uint8_t* second_half, uint8_t row)
 {
 	asm volatile(
 		// clang-format off
@@ -57,7 +57,7 @@ static inline void get_causal_correlation(
 
 static inline void reset_correlation(uint8_t row)
 {
-	vector uint8_t reset_vec;
+	__vector uint8_t reset_vec;
 	reset_vec = vec_splat_u8(dls_correlation_reset);
 	asm volatile(
 		// clang-format off
