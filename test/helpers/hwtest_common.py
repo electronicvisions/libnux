@@ -31,11 +31,13 @@ class PpuHwTest(object):
 
     def __init__(self, binary_path: str,
                  expected_exit_code: int = 0,
-                 expect_timeout: bool = False):
+                 expect_timeout: bool = False,
+                 timeout: int = int(5e5)):
         """
         :param binary_path: Absolute path to the test binary or its name
         :param expected_exit_code: Exit code expected for the binary
         :param expect_timeout: Is the test supposed to time out?
+        :param timeout: Maximum execution time until a timeout is raised
         """
         if not os.path.isabs(binary_path):
             raise RuntimeError("Test binary path is not absolute")
@@ -43,6 +45,7 @@ class PpuHwTest(object):
         self.path = os.path.realpath(binary_path)
         self.expected_exit_code = expected_exit_code
         self.expect_timeout = expect_timeout
+        self.timeout = timeout
 
     @property
     def name(self):

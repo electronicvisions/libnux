@@ -43,7 +43,8 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
 
                     load_and_start_program(cls.EXECUTOR, ppu_test.path, ppu)
                     try:
-                        wait_until_ppu_finished(cls.EXECUTOR, timeout=int(5e5),
+                        wait_until_ppu_finished(cls.EXECUTOR,
+                                                timeout=ppu_test.timeout,
                                                 ppu=ppu)
                         self.assertFalse(ppu_test.expect_timeout,
                                          "Expected timeout did not happen.")
