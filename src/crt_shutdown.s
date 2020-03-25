@@ -13,6 +13,8 @@
 .globl exit
 .type exit, @function
 
+.section .text.crt_int
+
 exit:
 	# load stack base into r11 and save the current stack pointer to the
 	# stack base

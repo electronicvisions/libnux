@@ -2,12 +2,13 @@
  * This program runs all the programs generated with the C-compiler
  * */
 
-.extern _start
 .extern reset
 .extern exit
+.extern _start
+
 .extern _isr_undefined
 .extern isr_einput
-.extern isr_alignemnt
+.extern isr_alignment
 .extern isr_program
 .extern isr_doorbell
 .extern isr_fit
@@ -15,8 +16,11 @@
 
 .extern stack_ptr_init
 
+.globl __init
+.type __init, @function
+
 # Code section
-.section .text.crt
+.section .text.crt_int
 
 reset:
 	b __init
@@ -27,7 +31,7 @@ reset:
 	int_dstorage:  b _isr_undefined
 	int_istorage:  b _isr_undefined
 	int_einput:    b isr_einput
-	int_alignment: b isr_alignment 
+	int_alignment: b isr_alignment
 	int_program:   b isr_program
 	int_syscall:   b _isr_undefined
 	int_doorbell:  b isr_doorbell

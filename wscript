@@ -229,6 +229,14 @@ def build(bld):
             env = env,
         )
 
+        bld.program(
+            features = 'cxx check_linkage',
+            target = 'test/test_textplacement_' + dls_version + '.bin',
+            source = ['test/test_textplacement.cpp'],
+            use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
+            env = env,
+        )
+
     bld(
         name='libnux_hwsimtests_vx',
         tests='test/test_hwsimtests_vx.py',
@@ -242,7 +250,7 @@ def build(bld):
                             TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        test_timeout = 7200
+        test_timeout = 14400
     )
 
     bld.add_post_fun(summary)
@@ -266,5 +274,26 @@ def check_size_run_test(self):
         return
     if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
         t = self.create_task('check_size', self.link_task.outputs)
+        self.bld.env = self.env
+        t.init(self)
+
+
+class check_linkage(test_base.TestBase):
+    def run(self):
+        test = self.inputs[0]
+        test_abspath = test.abspath()
+        xmlfile_abspath = self.getXMLFile(test).abspath()
+        cmd = ['python test/helpers/check_linkage.py {} {}'.format(
+            test_abspath, xmlfile_abspath)]
+        self.runTest(test, cmd)
+
+
+@feature('check_linkage')
+@after_method('apply_link', 'process_use', 'propagate_uselib_vars')
+def check_linkage_run_test(self):
+    if self.testsDisabled():
+        return
+    if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
+        t = self.create_task('check_linkage', self.link_task.outputs)
         self.bld.env = self.env
         t.init(self)
