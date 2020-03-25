@@ -95,6 +95,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
                          f"PPU exit code was {ret_code}, expected 0.")
 
     def test_refgen_access(self):
+        print("test_refgen_access")
         if self.CHIP_REVISION < 2:
             self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
 
@@ -148,6 +149,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             next(log_events)
 
     def test_synram_access(self):
+        print("test_synram_access")
         if self.CHIP_REVISION < 2:
             self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
 
@@ -196,6 +198,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             next(log_events)
 
     def test_correlation_reset_causal(self):
+        print("test_correlation_reset_causal_access")
         if self.CHIP_REVISION < 2:
             self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
 
@@ -251,6 +254,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             self.eval_creset(events, ppu, 255, causal_mask, [False] * 256)
 
     def test_neuron_reset_global(self):
+        print("test_neuron_reset_global_access")
         if self.CHIP_REVISION < 2:
             self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
 

@@ -159,6 +159,15 @@ def build(bld):
             test_timeout = 20000
         )
 
+        bld.program(
+            features = "cxx check_linkage",
+            target = f"test_textplacement_vx_{chip_version_number}.bin",
+            source = ["sw/libnux/test_textplacement.cpp"],
+            use = [f"nux_vx_v{chip_version_number}",
+                   f"nux_runtime_vx_v{chip_version_number}"],
+            env = env,
+        )
+
 
 class check_size(test_base.TestBase):
     def run(self):
@@ -169,6 +178,27 @@ class check_size(test_base.TestBase):
         cmd = [f'python sw/libnux/check_obj_size.py {test_abspath} '
                f'{xmlfile_abspath} {max_size}']
         self.runTest(test, cmd)
+
+
+class check_linkage(test_base.TestBase):
+    def run(self):
+        test = self.inputs[0]
+        test_abspath = test.abspath()
+        xmlfile_abspath = self.getXMLFile(test).abspath()
+        cmd = ['python sw/libnux/check_linkage.py {} {}'.format(
+            test_abspath, xmlfile_abspath)]
+        self.runTest(test, cmd)
+
+
+@feature('check_linkage')
+@after_method('apply_link', 'process_use', 'propagate_uselib_vars')
+def check_linkage_run_test(self):
+    if self.testsDisabled():
+        return
+    if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
+        t = self.create_task('check_linkage', self.link_task.outputs)
+        self.bld.env = self.env
+        t.init(self)
 
 
 @feature('check_size')

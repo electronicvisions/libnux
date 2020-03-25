@@ -1,5 +1,6 @@
 #include "libnux/vx/globaladdress.h"
 #include "libnux/vx/unittest.h"
+#include "libnux/vx/mailbox.h"
 
 using namespace libnux::vx;
 
@@ -18,7 +19,7 @@ void start()
 
 	{
 		// Write to 0x1234 in extmem
-		constexpr auto a = GlobalAddress::from_global(1ull << 31 | 0x1234);
+		constexpr auto a = GlobalAddress::from_global(1ull << 31 | (0x1234 + (1 << 14)));
 
 		uint32_t volatile* ptr_scalar = a.to_extmem().to_scalar<uint32_t>();
 		*(ptr_scalar + 17) = 17 + 4;
@@ -41,23 +42,28 @@ void start()
 		// test_equal(*(ptr_scalar + 17), 17ull + 5);
 		// test_equal(*(ptr_scalar + 18), 17ull + 4);
 	}
+	mailbox_write_string("a");
 
 	{
-		constexpr auto a = GlobalAddress::from_global(1ull << 31 | 0x1234);
+		constexpr auto a = GlobalAddress::from_global(1ull << 31 | (0x1234 + (1 << 14)));
 		test_equal(
-		    (uintptr_t) a.to_extmem().to_vector<__vector uint16_t>(), (0x8000'0000ull | (0x1234)));
+		    (uintptr_t) a.to_extmem().to_vector<__vector uint16_t>(), (0x8000'0000ull | (0x1234 + (1 << 14))));
+		mailbox_write_string("b");
 		test_equal(
 		    (uintptr_t) a.to_extmem().to_scalar<__vector uint16_t>(),
-		    (0x4000'0000ull | (0x1234 << 2)));
-		static_assert(a.to_extmem().to_vector_addr() == (0x8000'0000ull | (0x1234)));
-		static_assert(a.to_extmem().to_scalar_addr() == (0x4000'0000ull | (0x1234 << 2)));
+		    (0x4000'0000ull | ((0x1234 + (1 << 14)) << 2)));
+		mailbox_write_string("b");
+		static_assert(a.to_extmem().to_vector_addr() == (0x8000'0000ull | (0x1234 + (1 << 14))));
+		static_assert(a.to_extmem().to_scalar_addr() == (0x4000'0000ull | ((0x1234 + (1 << 14)) << 2)));
 
-		constexpr auto b = GlobalAddress::from_relative<GlobalAddress::ExtMem>(0x1234 << 2);
+		constexpr auto b = GlobalAddress::from_relative<GlobalAddress::ExtMem>((0x1234 + (1 << 14)) << 2);
 		test_equal(
 		    (intptr_t) a.to_extmem().to_scalar<uint32_t>(),
 		    (intptr_t) b.to_extmem().to_scalar<uint32_t>());
+		mailbox_write_string("b");
 		static_assert(a == b);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto b = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() - 1);
@@ -75,6 +81,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_extmem()) == false);
 		static_assert(static_cast<bool>(m.to_extmem()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto b =
@@ -93,6 +100,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_sram()) == false);
 		static_assert(static_cast<bool>(m.to_sram()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto b =
@@ -111,6 +119,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_sram()) == false);
 		static_assert(static_cast<bool>(m.to_sram()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto c =
@@ -129,6 +138,7 @@ void start()
 		static_assert(c.to_sram().is_local(PPUOnDLS::top) == false);
 		static_assert(c.to_sram().is_local(PPUOnDLS::bottom) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto d =
@@ -139,6 +149,7 @@ void start()
 		test_equal(static_cast<bool>(d.to_vecgen()), true);
 		static_assert(static_cast<bool>(d.to_vecgen()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto d =
@@ -149,6 +160,7 @@ void start()
 		test_equal(static_cast<bool>(d.to_vecgen()), true);
 		static_assert(static_cast<bool>(d.to_vecgen()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto b =
@@ -167,6 +179,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_vecgen()) == false);
 		static_assert(static_cast<bool>(m.to_vecgen()) == true);
 	}
+	mailbox_write_string("a");
 
 	{
 		constexpr auto b =
@@ -185,6 +198,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_vecgen()) == false);
 		static_assert(static_cast<bool>(m.to_vecgen()) == true);
 	}
+	mailbox_write_string("a");
 	testcase_end();
 
 	test_summary();

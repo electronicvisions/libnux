@@ -2,9 +2,10 @@
  * This program runs all the programs generated with the C-compiler
  * */
 
-.extern _start
 .extern reset
 .extern exit
+.extern _start
+
 .extern _isr_undefined
 .extern isr_einput
 .extern isr_alignment
@@ -15,8 +16,11 @@
 
 .extern stack_ptr_init
 
+.globl __init
+.type __init, @function
+
 # Code section
-.section .text.crt
+.section .text.crt_int
 
 reset:
 	b __init

@@ -30,7 +30,7 @@ void start()
 
 	{
 		testcase_begin("Vector (generated) write to extmem (vector address via vector type), scalar read (generated) of one element");
-		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset);
+		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset + (1 << 14));
 		next_offset += 0x100;
 		*ga.to_extmem().to_scalar<__vector uint16_t>() = vec_splat_u16(0x1);
 		auto val = *ga.to_extmem().to_scalar<uint16_t>();
@@ -43,7 +43,7 @@ void start()
 
 	{
 		testcase_begin("Vector (fxvstax) write to extmem (scalar address), scalar read (generated) of one element");
-		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset);
+		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset + (1 << 14));
 		next_offset += 0x100;
 		__vector uint8_t data = vec_splat_u8(0x2);
 		// clang-format off
@@ -63,7 +63,7 @@ void start()
 
 	{
 		testcase_begin("Vector (fxvoutx) write to extmem (hioff(scalar) >> 4 | 1<<31), scalar read (generated) of one element");
-		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset);
+		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset + (1 << 14));
 		next_offset += 0x100;
 		__vector uint8_t data = vec_splat_u8(0x9);
 		uint32_t const address = ((ga.to_extmem().to_scalar_addr() & 0x3fff'ffff) >> 4) | (1ull<<31);
@@ -84,7 +84,7 @@ void start()
 
 	{
 		testcase_begin("Vector (fxvoutx) write to extmem (fxviox address), scalar read (generated) of one element");
-		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset);
+		auto const ga = GlobalAddress::from_global(AddressSpace::extmem.to_global_omnibus() + next_offset + (1 << 14));
 		next_offset += 0x100;
 		__vector uint8_t data = vec_splat_u8(0xb);
 		// clang-format off

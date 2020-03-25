@@ -7,7 +7,7 @@
 using namespace libnux::vx;
 
 template <typename T>
-void test_write_read(T const value, size_t const offset = 13)
+void test_write_read(T const value, size_t const offset = (1 << 16) + 13)
 {
 	T* ptr = (T*) (extmem_data_base + offset * sizeof(T));
 	*ptr = value;
@@ -21,7 +21,6 @@ void start(void)
 	test_init();
 
 	testcase_begin("external memory write read via scalar unit");
-	test_write_read<uint8_t>(17 + 4, 0); // w/r lowest extmem address
 	test_write_read<uint8_t>(123);
 	test_write_read<uint16_t>(12345);
 	test_write_read<uint32_t>(12345678);

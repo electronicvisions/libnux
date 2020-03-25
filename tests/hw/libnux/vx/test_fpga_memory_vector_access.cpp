@@ -18,7 +18,7 @@ void start(void) {
 
 	uint32_t const index = 0;
 
-	set_vector(values, dls_extmem_base, index);
+	set_vector(values, dls_extmem_base + (1 << 16), index);
 
 	auto const read = get_vector(dls_extmem_base, index);
 
