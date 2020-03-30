@@ -3,9 +3,11 @@ import unittest
 from numbers import Integral
 from typing import Set, ClassVar
 
+from dlens_vx_v2.hal import CADCConfig
 from dlens_vx_v2.hxcomm import ManagedConnection
 from dlens_vx_v2.sta import generate, DigitalInit, run
-from dlens_vx_v2.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
+from dlens_vx_v2.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS,\
+    CADCConfigOnDLS
 from dlens_vx_v2.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
 from dlens_vx_v2 import logger
@@ -30,6 +32,11 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.write(TimerOnDLS(), Timer(0))
         init_builder.block_until(TimerOnDLS(), 1000)
+        for cadc in iter_all(CADCConfigOnDLS):
+            cadc_config = CADCConfig()
+            cadc_config.enable = True
+            init_builder.write(cadc, cadc_config)
+
         run(cls.CONNECTION, init_builder.done())
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
