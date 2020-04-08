@@ -112,6 +112,7 @@ def build(bld):
             'src/time.cpp',
             'src/unittest.cpp',
             'src/unittest_mailbox.cpp',
+            'src/vector_helper.cpp',
         ]
 
         bld.stlib(
@@ -180,6 +181,7 @@ def build(bld):
             'test/test_vector_saturating_subtract.cpp',
             'test/test_vector_register_reusage.cpp',
             'test/test_vector_splat.cpp',
+            'test/test_vector_helper.cpp',
             'test/test_vector_sync.cpp',
 	    'test/test_plasticity_rule_constant.cpp',
             'test/test_neuron_counter.cpp',
@@ -215,6 +217,7 @@ def build(bld):
             program_list += [
                 'test/test_cadc_static.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
+                'test/test_random.cpp',
                 'test/test_synram.cpp',
             ]
 
