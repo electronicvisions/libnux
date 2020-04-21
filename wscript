@@ -161,6 +161,7 @@ def build(bld):
             'test/test_vector.cpp',
             'test/test_vector_alignment.cpp',
             'test/test_vector_cc.cpp',
+            'test/test_vector_splat.cpp',
             'test/test_vector_sync.cpp',
         ]
 
