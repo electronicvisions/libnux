@@ -186,7 +186,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
                         )
 
                 diagonal_value += 1
-                if diagonal_value > SynapseQuad.Synapse.Weight.max:
+                if diagonal_value > SynapseQuad.Weight.max:
                     diagonal_value = 1
 
         with self.assertRaises(StopIteration):
