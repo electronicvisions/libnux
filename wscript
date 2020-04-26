@@ -179,6 +179,7 @@ def build(bld):
             program_list += [
                 'test/test_cadc_static.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
+                'test/test_fpga_memory_scalar_access.cpp',
                 'test/test_synram.cpp',
             ]
 

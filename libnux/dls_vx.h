@@ -84,3 +84,6 @@ static constexpr omnibus_address_t cadc_top_causal_base_address =
 /* CADC acausal base address for top PPU */
 static constexpr omnibus_address_t cadc_top_acausal_base_address =
     synram_top_base_address | dls_acausal_base;
+
+/* External memory base address for scalar data access */
+static constexpr uint32_t extmem_data_base = 1ul << 30;
