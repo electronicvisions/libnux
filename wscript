@@ -237,7 +237,7 @@ def build(bld):
                             TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        test_timeout = 3600
+        test_timeout = 5400
     )
 
     bld(
