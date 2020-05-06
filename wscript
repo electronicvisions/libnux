@@ -9,6 +9,7 @@ from waflib.extras.symwaf2ic import get_toplevel_path
 
 def depends(dep):
     dep("haldls")
+    dep("hate")
 
     if getattr(dep.options, 'with_libnux_test_hostcode', True):
         dep("libnux", "test/with_hostcode")
@@ -119,7 +120,7 @@ def build(bld):
         bld.stlib(
             target = 'nux_' + dls_version,
             source = nux_sources,
-            use = ['nux_inc_' + dls_version],
+            use = ['nux_inc_' + dls_version, 'hate_inc'],
             env = env,
         )
 
@@ -194,6 +195,7 @@ def build(bld):
                 'test/test_fpga_memory_scalar_access.cpp',
                 'test/test_globaladdress.cpp',
                 'test/test_synram.cpp',
+                'test/test_barrier_single.cpp',
             ]
 
         for program in program_list:
@@ -257,6 +259,28 @@ def build(bld):
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
         test_timeout = 10800
+    )
+
+    bld.program(
+        features = 'cxx',
+        target = 'test/barrier_two_ppus.bin',
+        source = ['test/barrier_two_ppus.cpp'],
+        use = ['nux_vx', 'nux_runtime_vx'],
+        env = bld.all_envs['nux_vx'],
+    )
+
+    bld(
+        name='libnux_barriertest_vx',
+        tests='test/test_barrier.py',
+        features='use pytest pylint pycodestyle',
+        use='dlens_vx',
+        install_path='${PREFIX}/bin/tests',
+        skip_run=not bld.env.cube_partition,
+        env = bld.all_envs[''],
+        test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+        test_timeout = 2000
     )
 
     bld.add_post_fun(summary)
