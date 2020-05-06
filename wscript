@@ -13,6 +13,7 @@ from waflib.Errors import BuildError, ConfigurationError
 
 def depends(dep):
     dep("haldls")
+    dep("hate")
 
     if getattr(dep.options, 'with_libnux_test_hostcode', True):
         dep("libnux", "test/with_hostcode")
@@ -160,7 +161,7 @@ def build(bld):
             target = f"nux_vx_v{chip_version_number}",
             source = bld.path.ant_glob("src/vx/*.cpp")
                      + bld.path.ant_glob(f"src/vx/v{chip_version_number}/*.cpp"),
-            use = [f"nux_inc_vx_v{chip_version_number}"],
+            use = [f"nux_inc_vx_v{chip_version_number}", 'hate_inc'],
             env = env,
         )
 
@@ -267,6 +268,28 @@ def build(bld):
             pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
             pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
             test_timeout = 20000
+        )
+
+        bld.program(
+            features = 'cxx',
+            target = f"test/barrier_two_ppus_vx_v{chip_version_number}.bin",
+            source = ['test/barrier_two_ppus.cpp'],
+            use = [f"nux_vx_c{chip_version_number}", f"nux_runtime_vx_v{chip_version_number}"],
+            env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
+        )
+
+        bld(
+            name=f"libnux_barriertest_vx_v{chip_version_number}",
+            tests=f"test/test_barrier_vx_v{chip_version_number}.py",
+            features='use pytest pylint pycodestyle',
+            use='dlens_vx',
+            install_path='${PREFIX}/bin/tests',
+            skip_run=not bld.env.cube_partition,
+            env = bld.all_envs[''],
+            test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
+            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+            test_timeout = 2000
         )
 
     bld.add_post_fun(summary)
