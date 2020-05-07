@@ -12,7 +12,7 @@ ram_end = ORIGIN(ram) + LENGTH(ram);
  */
 PROVIDE(mailbox_size = 0);
 
-mailbox_end = 0x4000;
+mailbox_end = ram_end;
 mailbox_base = mailbox_end - mailbox_size;
 
 /* In the PowerPC EABI calling convention the link register is saved in the
