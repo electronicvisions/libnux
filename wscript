@@ -141,6 +141,7 @@ def build(bld):
 
         program_list = [
             'examples/stdp.cpp',
+            'test/test_ctors.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
             'test/test_fxvadd.cpp',
