@@ -3,7 +3,8 @@ import unittest
 from numbers import Integral
 from typing import Set, ClassVar
 
-from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
+from dlens_vx.hxcomm import ManagedConnection
+from dlens_vx.sta import generate, DigitalInit, run
 from dlens_vx.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
@@ -15,27 +16,28 @@ from helpers.hwtest_common import get_special_binaries, find_binaries, \
 
 class LibnuxHwSimTestsVx(unittest.TestCase):
     TESTS: Set[PpuHwTest] = set()
-    EXECUTOR = PlaybackProgramExecutor()
+    MANAGED_CONNECTION = ManagedConnection()
+    CONNECTION = None
     CHIP_REVISION: ClassVar[Integral]
 
     @classmethod
     def setUpClass(cls) -> None:
-        # Connect to some executor (sim or hardware)
-        cls.EXECUTOR.connect()
+        # Initialize remote connection (to sim or hardware)
+        cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()
 
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.write(TimerOnDLS(), Timer(0))
         init_builder.wait_until(TimerOnDLS(), 1000)
-        cls.EXECUTOR.run(init_builder.done())
+        run(cls.CONNECTION, init_builder.done())
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 
     @classmethod
     def tearDownClass(cls) -> None:
         # Disconnect the executor
-        cls.EXECUTOR.disconnect()
+        cls.MANAGED_CONNECTION.__exit__()
 
     @classmethod
     def generate_cases(cls):
@@ -53,9 +55,9 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
                     ppu = random.choice(list(iter_all(PPUOnDLS)))
                     log.info("Running test on %s." % ppu)
 
-                    load_and_start_program(cls.EXECUTOR, ppu_test.path, ppu)
+                    load_and_start_program(cls.CONNECTION, ppu_test.path, ppu)
                     try:
-                        wait_until_ppu_finished(cls.EXECUTOR,
+                        wait_until_ppu_finished(cls.CONNECTION,
                                                 timeout=ppu_test.timeout,
                                                 ppu=ppu)
                         self.assertFalse(ppu_test.expect_timeout,
@@ -64,7 +66,7 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
                         self.assertTrue(ppu_test.expect_timeout,
                                         "Unexpected timeout.")
                     finally:
-                        returncode = stop_program(cls.EXECUTOR, ppu=ppu)
+                        returncode = stop_program(cls.CONNECTION, ppu=ppu)
 
                     self.assertEqual(ppu_test.expected_exit_code, returncode,
                                      f"Exit code was {returncode}, expected "

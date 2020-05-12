@@ -6,7 +6,8 @@ from typing import List, Iterator, ClassVar
 
 from dlens_vx.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
     SynapseOnSynapseRow, TimerOnDLS, JTAGIdCodeOnDLS
-from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
+from dlens_vx.hxcomm import ManagedConnection
+from dlens_vx.sta import generate, DigitalInit, run
 from dlens_vx import logger
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
@@ -38,7 +39,8 @@ FLANGE_LOG_PATH = os.environ.get("FLANGE_LOG_PATH",
 
 
 class LibnuxAccessPatternTestVx(unittest.TestCase):
-    EXECUTOR = PlaybackProgramExecutor()
+    MANAGED_CONNECTION = ManagedConnection()
+    CONNECTION = None
     CHIP_REVISION: ClassVar[int]
 
     class LogParser:
@@ -68,26 +70,26 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         # Connect to some executor (sim or hardware)
-        cls.EXECUTOR.connect()
+        cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()
 
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.write(TimerOnDLS(), Timer(0))
         init_builder.wait_until(TimerOnDLS(), 1000)
-        cls.EXECUTOR.run(init_builder.done())
+        run(cls.CONNECTION, init_builder.done())
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 
     @classmethod
     def tearDownClass(cls) -> None:
         # Disconnect the executor
-        cls.EXECUTOR.disconnect()
+        cls.MANAGED_CONNECTION.__exit__()
 
     def run_ppu_program(self, ppu: PPUOnDLS, program_path: str, timeout: int):
-        load_and_start_program(self.EXECUTOR, program_path, ppu)
-        wait_until_ppu_finished(self.EXECUTOR, timeout=timeout, ppu=ppu)
-        ret_code = stop_program(self.EXECUTOR, ppu=ppu,
+        load_and_start_program(self.CONNECTION, program_path, ppu)
+        wait_until_ppu_finished(self.CONNECTION, timeout=timeout, ppu=ppu)
+        ret_code = stop_program(self.CONNECTION, ppu=ppu,
                                 print_mailbox=False)
 
         self.assertEqual(0, ret_code,
