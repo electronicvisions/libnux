@@ -45,7 +45,7 @@ void measure_int_multiply_not_optimized_away(char const* msg, times<N>& t)
 {
 	int a = 10;
 	int b = 20;
-	ATTRIB_UNUSED int c;
+	ATTRIB_UNUSED int c{};
 	do_not_optimize_away(a);
 	do_not_optimize_away(b);
 	do_not_optimize_away(c);

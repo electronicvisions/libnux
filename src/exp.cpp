@@ -17,9 +17,13 @@ int32_t exp_6(int32_t x)
 
 	/* avoid overflow problems for the multiplication */
 	if( (x < FP(1.0)) && (x > FP(-1.0)) ) {
+		// cppcheck-suppress integerOverflowCond
 		x2 = (x  * x ) / INV_SCALE;
+		// cppcheck-suppress integerOverflowCond
 		x3 = (x2 * x ) / INV_SCALE;
+		// cppcheck-suppress integerOverflowCond
 		x4 = (x2 * x2) / INV_SCALE;
+		// cppcheck-suppress integerOverflowCond
 		x5 = (x3 * x2) / INV_SCALE;
 	} else {
 		x2 = x  * (x  / INV_SCALE);
@@ -76,6 +80,7 @@ int32_t exp_6b(int32_t x)
 	else if( ik < -11 )
 		res_i = -65535;
 	else
+		// cppcheck-suppress arrayIndexOutOfBoundsCond
 		res_i = lut[ik+11];
 
 	// calculate exponential for the fractional part

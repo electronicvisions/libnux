@@ -9,6 +9,7 @@ int start(void)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 	/* Write out of bounds into array, overwriting stack-guard magic value. */
+	// cppcheck-suppress arrayIndexOutOfBounds
 	a[2] = 5;
 #pragma GCC diagnostic pop
 
