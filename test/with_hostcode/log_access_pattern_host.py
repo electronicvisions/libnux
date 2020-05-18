@@ -2,15 +2,15 @@ import json
 import os
 from os.path import join
 import unittest
-from typing import List, Iterator
+from typing import List, Iterator, ClassVar
 
 from dlens_vx.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
-    SynapseOnSynapseRow
+    SynapseOnSynapseRow, TimerOnDLS, JTAGIdCodeOnDLS
 from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
 from dlens_vx import logger
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
-from pyhaldls_vx import SynapseQuad
+from pyhaldls_vx import SynapseQuad, Timer
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
@@ -39,6 +39,7 @@ FLANGE_LOG_PATH = os.environ.get("FLANGE_LOG_PATH",
 
 class LibnuxAccessPatternTestVx(unittest.TestCase):
     EXECUTOR = PlaybackProgramExecutor()
+    CHIP_REVISION: ClassVar[int]
 
     class LogParser:
         LOG_PREFIX = "HX_SIMULATION_LOG: "
@@ -69,9 +70,14 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         # Connect to some executor (sim or hardware)
         cls.EXECUTOR.connect()
 
-        # Initialize the chip
+        # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
+        jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
+        init_builder.write(TimerOnDLS(), Timer(0))
+        init_builder.wait_until(TimerOnDLS(), 1000)
         cls.EXECUTOR.run(init_builder.done())
+        jtag_id = jtag_id_ticket.get()
+        cls.CHIP_REVISION = jtag_id.version
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -88,6 +94,9 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
                          f"PPU exit code was {ret_code}, expected 0.")
 
     def test_refgen_access(self):
+        if self.CHIP_REVISION < 2:
+            self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
+
         log = logger.get("LibnuxAccessPatternTestVx.test_refgen_access")
         program = join(TEST_BINARY_PATH, "refgen_access_pattern-ppu.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
@@ -137,6 +146,9 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             next(log_events)
 
     def test_synram_access(self):
+        if self.CHIP_REVISION < 2:
+            self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
+
         log = logger.get("LibnuxAccessPatternTestVx.test_synram_access")
         program = join(TEST_BINARY_PATH, "synram_access_pattern-ppu.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
@@ -181,6 +193,9 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             next(log_events)
 
     def test_correlation_reset_causal(self):
+        if self.CHIP_REVISION < 2:
+            self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
+
         log = logger.get("LibnuxAccessPatternTestVx."
                          "test_correlation_reset_causal")
         program = join(TEST_BINARY_PATH, "correlation_reset_causal-ppu.bin")
@@ -232,6 +247,9 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
             self.eval_creset(events, ppu, 255, causal_mask, [False] * 256)
 
     def test_neuron_reset_global(self):
+        if self.CHIP_REVISION < 2:
+            self.skipTest(f"Incompatible chip rev. {self.CHIP_REVISION} (<2).")
+
         log = logger.get("LibnuxAccessPatternTestVx.test_neuron_reset_global")
         program = join(TEST_BINARY_PATH, "neuron_reset_global-ppu.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
