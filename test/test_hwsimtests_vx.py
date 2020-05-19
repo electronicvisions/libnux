@@ -1,12 +1,14 @@
 import random
 import unittest
-from typing import Set
+from numbers import Integral
+from typing import Set, ClassVar
 
 from dlens_vx.sta import PlaybackProgramExecutor, generate, DigitalInit
-from dlens_vx.halco import PPUOnDLS, iter_all
+from dlens_vx.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
 from dlens_vx.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
 from dlens_vx import logger
+from pyhaldls_vx import Timer
 from helpers.hwtest_common import get_special_binaries, find_binaries, \
     PpuHwTest
 
@@ -14,15 +16,21 @@ from helpers.hwtest_common import get_special_binaries, find_binaries, \
 class LibnuxHwSimTestsVx(unittest.TestCase):
     TESTS: Set[PpuHwTest] = set()
     EXECUTOR = PlaybackProgramExecutor()
+    CHIP_REVISION: ClassVar[Integral]
 
     @classmethod
     def setUpClass(cls) -> None:
         # Connect to some executor (sim or hardware)
         cls.EXECUTOR.connect()
 
-        # Initialize the chip
+        # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
+        jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
+        init_builder.write(TimerOnDLS(), Timer(0))
+        init_builder.wait_until(TimerOnDLS(), 1000)
         cls.EXECUTOR.run(init_builder.done())
+        jtag_id = jtag_id_ticket.get()
+        cls.CHIP_REVISION = jtag_id.version
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -37,6 +45,10 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
         for test in cls.TESTS:
             def generate_test(ppu_test: PpuHwTest):
                 def test_func(self: LibnuxHwSimTestsVx):
+                    if not ppu_test.supports_revision(self.CHIP_REVISION):
+                        self.skipTest("Incompatible chip rev. "
+                                      "{self.CHIP_REVISION}")
+
                     log = logger.get("LibnuxHwSimTestsVx.%s" % ppu_test.name)
                     ppu = random.choice(list(iter_all(PPUOnDLS)))
                     log.info("Running test on %s." % ppu)

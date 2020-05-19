@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import os
+from numbers import Integral
 from os.path import join
 import unittest
 import re
-
-from typing import Set
+from typing import Set, Callable
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
@@ -32,12 +32,16 @@ class PpuHwTest(object):
     def __init__(self, binary_path: str,
                  expected_exit_code: int = 0,
                  expect_timeout: bool = False,
-                 timeout: int = int(5e5)):
+                 timeout: int = int(5e5),
+                 supports_revision: Callable[[Integral],
+                                             bool] = lambda _: True):
         """
         :param binary_path: Absolute path to the test binary or its name
         :param expected_exit_code: Exit code expected for the binary
         :param expect_timeout: Is the test supposed to time out?
         :param timeout: Maximum execution time until a timeout is raised
+        :param supports_revision: Evaluate whether this test supports
+                                  evaluation on a given chip revision
         """
         if not os.path.isabs(binary_path):
             raise RuntimeError("Test binary path is not absolute")
@@ -46,6 +50,7 @@ class PpuHwTest(object):
         self.expected_exit_code = expected_exit_code
         self.expect_timeout = expect_timeout
         self.timeout = timeout
+        self.supports_revision = supports_revision
 
     @property
     def name(self):
@@ -112,11 +117,13 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
         simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
         test_list.update({
             PpuHwTest(
-                join(TEST_BINARY_PATH, f"test_cadc_{dls_version}.bin"),
-                expected_exit_code=0 if simulation is not None else 1),
+                join(TEST_BINARY_PATH, f"test_cadc_static_{dls_version}.bin"),
+                expected_exit_code=0 if simulation is not None else 1,
+                supports_revision=lambda rev: rev >= 2),
             PpuHwTest(
                 join(TEST_BINARY_PATH, f"test_synram_{dls_version}.bin"),
-                timeout=int(2e6)),
+                timeout=int(2e6),
+                supports_revision=lambda rev: rev >= 2),
         })
 
     return test_list
