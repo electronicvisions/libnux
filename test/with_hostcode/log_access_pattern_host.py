@@ -4,14 +4,14 @@ from os.path import join
 import unittest
 from typing import List, Iterator, ClassVar
 
-from dlens_vx.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
+from dlens_vx_v1.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
     SynapseOnSynapseRow, TimerOnDLS, JTAGIdCodeOnDLS
-from dlens_vx.hxcomm import ManagedConnection
-from dlens_vx.sta import generate, DigitalInit, run
-from dlens_vx import logger
-from dlens_vx.tools.run_ppu_program import load_and_start_program, \
+from dlens_vx_v1.hxcomm import ManagedConnection
+from dlens_vx_v1.sta import generate, DigitalInit, run
+from dlens_vx_v1 import logger
+from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
-from pyhaldls_vx import SynapseQuad, Timer
+from pyhaldls_vx_v1 import SynapseQuad, Timer
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",

@@ -231,7 +231,7 @@ def build(bld):
         name='libnux_hwsimtests_vx',
         tests='test/test_hwsimtests_vx.py',
         features='use pytest pylint pycodestyle',
-        use='dlens_vx',
+        use='dlens_vx_v1',
         install_path='${PREFIX}/bin/tests',
         skip_run=not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
         env = bld.all_envs[''],

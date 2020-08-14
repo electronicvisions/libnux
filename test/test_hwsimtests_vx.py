@@ -3,13 +3,13 @@ import unittest
 from numbers import Integral
 from typing import Set, ClassVar
 
-from dlens_vx.hxcomm import ManagedConnection
-from dlens_vx.sta import generate, DigitalInit, run
-from dlens_vx.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
-from dlens_vx.tools.run_ppu_program import load_and_start_program, \
+from dlens_vx_v1.hxcomm import ManagedConnection
+from dlens_vx_v1.sta import generate, DigitalInit, run
+from dlens_vx_v1.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
+from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
-from dlens_vx import logger
-from pyhaldls_vx import Timer
+from dlens_vx_v1 import logger
+from pyhaldls_vx_v1 import Timer
 from helpers.hwtest_common import get_special_binaries, find_binaries, \
     PpuHwTest
 
