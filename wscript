@@ -243,19 +243,6 @@ def build(bld):
         test_timeout = 7200
     )
 
-    bld(
-        name='libnux_hwtests_v2',
-        tests='test/test_hwtests_v2.py',
-        features='use pytest',
-        use='dlens_v2',
-        install_path='${PREFIX}/bin/tests',
-        skip_run=not bld.env.dls_partition,
-        env = bld.all_envs[''],
-        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test'))
-    )
-
     bld.add_post_fun(summary)
 
 
