@@ -6,9 +6,9 @@ void test_timer_next_event()
 	libnux_testcase_begin("timer.next_event");
 	auto timer = Timer();
 	Event e;
-	time_t start = 1;
-	time_t repeat = 2;
-	time_t stop = 2;
+	time_type start = 1;
+	time_type repeat = 2;
+	time_type stop = 2;
 	timer.set_first_deadline(start);
 	timer.set_period(repeat);
 	timer.set_num_periods(stop);
@@ -37,9 +37,9 @@ void test_timer_miss_run()
 {
 	libnux_testcase_begin("timer.missed_count");
 	auto timer = Timer();
-	time_t start = 1;
-	time_t repeat = 2;
-	time_t stop = 4;
+	time_type start = 1;
+	time_type repeat = 2;
+	time_type stop = 4;
 	timer.set_first_deadline(start);
 	timer.set_period(repeat);
 	timer.set_num_periods(stop);

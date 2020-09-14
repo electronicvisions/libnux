@@ -6,8 +6,8 @@ void test_timer_oneshot_next_event()
 	libnux_testcase_begin("test_timer_oneshot_wants_run");
 	auto timer = TimerOneshot();
 	Event e;
-	time_t runtime = 10;
-	time_t window = 5;
+	time_type runtime = 10;
+	time_type window = 5;
 	timer.set_deadline(runtime);
 	timer.set_window(window);
 	bool before = timer.next_event(e, 0);
