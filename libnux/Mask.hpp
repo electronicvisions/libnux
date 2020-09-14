@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "libnux/attrib.h"
 #include "libnux/iterator.hpp"
+#include "libnux/dls.h"
 
 // boolean mask vector, mask is encoded in mask[i] != 0
 ATTRIB_ALWAYS_INLINE __vector uint8_t
@@ -12,8 +13,13 @@ if_(__vector uint8_t mask, __vector uint8_t const v_true, __vector uint8_t const
 	asm volatile(
 		"fxvcmpb %[mask]\n"
 		"fxvsel %[mask], %[v_false], %[v_true], 1\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 		: [mask] "=&kv"(mask)
 		: [v_true] "kv"(v_true), [v_false] "kv"(v_false)
+#else
+		: [mask] "=&qv"(mask)
+		: [v_true] "qv"(v_true), [v_false] "qv"(v_false)
+#endif
 		:);
 	// clang-format on
 	return mask;
@@ -37,8 +43,13 @@ ATTRIB_ALWAYS_INLINE __vector uint8_t if_eq(
 	asm volatile(
 		"fxvcmpb %[mask]\n"
 		"fxvsel %[mask], %[v_false], %[v_true], 3\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 		: [mask] "+&kv"(mask)
 		: [v_true] "kv"(v_true), [v_false] "kv"(v_false)
+#else
+		: [mask] "+&qv"(mask)
+		: [v_true] "qv"(v_true), [v_false] "qv"(v_false)
+#endif
 		:);
 	// clang-format on
 	return mask;
@@ -56,7 +67,11 @@ ATTRIB_ALWAYS_INLINE __vector uint8_t not_if_eq(
 // return (exists i: v[i] == c)
 ATTRIB_ALWAYS_INLINE bool any(__vector uint8_t const v, uint8_t const c)
 {
+#ifndef LIBNUX_VDLS_VERSION_VX
 	for (uint32_t i = 0; i < 16; ++i) {
+#else	
+	for (uint32_t i = 0; i < dls_vector_size; ++i) {
+#endif
 		if (v[i] == c) {
 			return true;
 		}
@@ -87,9 +102,7 @@ struct addressed_vector_ref
 template <size_t num_partial_vectors, size_t num_full_vectors>
 struct Mask
 {
-	__vector uint8_t const one;
 	Mask() :
-	    one{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	    full_vector_synram_address(),
 	    partial_vector_synram_address(),
 	    vectors()
@@ -116,9 +129,9 @@ void Mask<num_partial_vectors, num_full_vectors>::apply_vector_rule(
 	for (size_t i = 0; i < num_partial_vectors; ++i) {
 		(t->*vector_rule)(this->partial_vector_synram_address[i], this->vectors[i]);
 	}
-
+	
 	for (size_t i = 0; i < num_full_vectors; ++i) {
-		(t->*vector_rule)(this->full_vector_synram_address[i], one);
+		(t->*vector_rule)(this->full_vector_synram_address[i], vec_splat_u8(1));
 	}
 }
 
@@ -126,7 +139,8 @@ template <size_t num_partial_vectors, size_t num_full_vectors>
 addressed_vector_ref Mask<num_partial_vectors, num_full_vectors>::operator[](size_t i)
 {
 	// clang-format off
-	return i < num_full_vectors ? addressed_vector_ref{full_vector_synram_address[i], one}
+	return i < num_full_vectors ? addressed_vector_ref{full_vector_synram_address[i],
+		vec_splat_u8(1)}
 		: addressed_vector_ref{partial_vector_synram_address[i - num_full_vectors],
 						vectors[i - num_full_vectors]};
 	// clang-format on
@@ -195,9 +209,8 @@ Iterator<Mask<num_partial_vectors, 0> > Mask<num_partial_vectors, 0>::end()
 template <size_t num_full_vectors>
 struct Mask<0, num_full_vectors>
 {
-	__vector uint8_t const one;
 	vector_synram_address full_vector_synram_address[num_full_vectors];
-	Mask() : one{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, full_vector_synram_address() {}
+	Mask() : full_vector_synram_address() {}
 	template <class T>
 	void apply_vector_rule(
 	    T* t, void (T::*vector_rule)(vector_synram_address const addr, __vector uint8_t const& vec));
@@ -213,14 +226,14 @@ void Mask<0, num_full_vectors>::apply_vector_rule(
     T* t, void (T::*vector_rule)(vector_synram_address const addr, __vector uint8_t const& vec))
 {
 	for (size_t i = 0; i < num_full_vectors; ++i) {
-		(t->*vector_rule)(this->full_vector_synram_address[i], one);
+		(t->*vector_rule)(this->full_vector_synram_address[i], vec_splat_u8(1));
 	}
 }
 
 template <size_t num_full_vectors>
 addressed_vector_ref Mask<0, num_full_vectors>::operator[](size_t i)
 {
-	return addressed_vector_ref{full_vector_synram_address[i], one};
+	return addressed_vector_ref{full_vector_synram_address[i], vec_splat_u8(1)};
 }
 
 template <size_t num_full_vectors>
@@ -275,8 +288,8 @@ void MaskTagged<num_vectors>::apply_vector_rule(
     void (T::*vector_rule)(vector_synram_address const addr, __vector uint8_t const& vec),
     uint8_t tag)
 {
-	__vector uint8_t const one = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-	__vector uint8_t const zero = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	__vector uint8_t const one = vec_splat_u8(1);
+	__vector uint8_t const zero = vec_splat_u8(0);
 
 	for (uint32_t i = 0; i < num_vectors; ++i) {
 		if (any(vectors[i], tag)) {

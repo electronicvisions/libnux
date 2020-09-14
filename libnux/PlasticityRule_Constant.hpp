@@ -39,9 +39,15 @@ void Constant::vector_rule(vector_synram_address const addr, __vector uint8_t co
 	    "fxvsel %[tmp], %[tmp], %[values], 1\n"
 	    // save updated weights
 	    "fxvoutx %[tmp], %[dls_weight_base], %[index]\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 	    : [tmp] "=&kv"(tmp)
 	    : [vec] "kv"(vec), [index] "r"(addr), [dls_weight_base] "b"(dls_weight_base),
 	      [values] "kv"(this->values)
+#else
+	    : [tmp] "=&qv"(tmp)
+	    : [vec] "qv"(vec), [index] "r"(addr), [dls_weight_base] "b"(dls_weight_base),
+	      [values] "qv"(this->values)
+#endif
 	    :);
 }
 }

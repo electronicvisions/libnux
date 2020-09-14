@@ -42,7 +42,12 @@ STDP::STDP(
 
 void STDP::vector_rule(vector_synram_address addr, __vector uint8_t const& mask)
 {
+#ifndef LIBNUX_DLS_VERSION_VX
 	xorshift_vector(&m_random);
+#else
+	// Get random vecotr from rng 0. FIXME: Inititalize rng
+	m_random = get_rand_u8(0);
+#endif
 	// Declare temporary variables
 	__vector uint8_t temps;
 	__vector uint8_t updates;
@@ -80,6 +85,7 @@ void STDP::vector_rule(vector_synram_address addr, __vector uint8_t const& mask)
 	    "fxvcmpb %[mask]\n"
 	    "fxvsel %[temps], %[temps], %[weights],1\n"
 	    "fxvoutx %[temps], %[dls_weight_base], %[index]\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 	    : [temps] "=&kv"(temps), [updates] "=&kv"(updates), [weights] "=&kv"(weights)
 	    : [index] "r"(addr), [dls_causal_base] "b"(dls_causal_base),
 	      [dls_weight_base] "b"(dls_weight_base),
@@ -88,6 +94,16 @@ void STDP::vector_rule(vector_synram_address addr, __vector uint8_t const& mask)
 	      [synapse_factors] "kv"(vec_splat_u8(m_synapse_factor)),
 	      [update_scales] "kv"(vec_splat_u8(m_update_scale)), [random] "kv"(m_random),
 	      [mask] "kv"(mask)
+#else
+	    : [temps] "=&qv"(temps), [updates] "=&qv"(updates), [weights] "=&qv"(weights)
+	    : [index] "r"(addr), [dls_causal_base] "b"(dls_causal_base),
+	      [dls_weight_base] "b"(dls_weight_base),
+	      [select] "qv"(vec_splat_u8(dls_correlation_reset)), [zeros] "qv"(vec_splat_u8(0)),
+	      [decay_factors] "qv"(vec_splat_u8(m_decay_factor)),
+	      [synapse_factors] "qv"(vec_splat_u8(m_synapse_factor)),
+	      [update_scales] "qv"(vec_splat_u8(m_update_scale)), [random] "qv"(m_random),
+	      [mask] "qv"(mask)
+#endif
 	    :);
 }
 

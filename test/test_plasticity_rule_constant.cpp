@@ -9,8 +9,17 @@ void test_plasticity_rule_constant()
 	libnux_testcase_begin("plasticity_rule_constant");
 
 	// generate masks
+#ifndef LIBNUX_DLS_VERSION_VX
 	__vector uint8_t mask1 = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0};
 	__vector uint8_t mask2 = {0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+#else
+	__vector uint8_t mask1 = vec_splat_u8(0);
+	__vector uint8_t mask2 = vec_splat_u8(1);
+	for (size_t i = 0; i < dls_vector_size / 2; ++i) {
+		mask1[i] = 1;
+		mask2[i] = 0;
+	}
+#endif
 	Mask<1, 1> m1;
 	Mask<1, 0> m2;
 	m1.partial_vector_synram_address[0] = 0;
@@ -37,7 +46,11 @@ void test_plasticity_rule_constant()
 		"fxvinx %[read0], %[dls_weight_base], %[i]\n"
 		"fxvinx %[read1], %[dls_weight_base], %[j]\n"
 		"sync\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 		: [read0] "=kv"(read0), [read1] "=kv"(read1)
+#else
+		: [read0] "=qv"(read0), [read1] "=qv"(read1)
+#endif
 		: [dls_weight_base] "b"(dls_weight_base), [i] "r"(i), [j] "r"(j)
 		:);
 	// clang-format on
@@ -84,7 +97,11 @@ void test_plasticity_rule_mask_tagged()
 		"sync\n"
 		"fxvinx %[read0], %[dls_weight_base], %[i]\n"
 		"sync\n"
+#ifndef LIBNUX_DLS_VERSION_VX
 		: [read0] "=kv"(read0)
+#else
+		: [read0] "=qv"(read0)
+#endif
 		: [dls_weight_base] "b"(dls_weight_base), [i] "r"(m.addresses[0])
 		:);
 	// clang-format on

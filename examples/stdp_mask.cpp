@@ -8,8 +8,14 @@ int start()
 	uint8_t synapse_factor = 32;
 	uint8_t decay_factor = 48;
 	uint8_t update_scale = 32;
+#ifndef LIBNUX_DLS_VERSION_VX
 	__vector uint8_t random_seed = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-
+#else
+	__vector uint8_t random_seed;
+	for (size_t i = 0; i < 128; ++i) {
+		random_seed[i] = i;
+	}
+#endif
 	// set arbitrary Mask
 	// 17 partial vectors, 3 full vectors
 	Mask<17, 3> mask;
