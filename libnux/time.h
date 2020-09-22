@@ -7,7 +7,12 @@
 #include "libnux/spr.h"
 #include "libnux/time.h"
 
+#ifdef LIBNUX_DLS_VERSION_V2
 #define USEC 98 // clock cycles in a microsecond
+#else
+constexpr static uint32_t default_ppu_cycles_per_us = 250;
+#define USEC default_ppu_cycles_per_us // Only correct for default PLL settings (Issue #3705)
+#endif
 
 void sleep_cycles(uint32_t cycles);
 
