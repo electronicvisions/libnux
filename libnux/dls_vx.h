@@ -31,6 +31,7 @@ constexpr static uint32_t dls_num_vectors_per_row = 2;
 constexpr static uint32_t dls_num_synapse_vectors = dls_num_synapses / dls_vector_size;
 
 /* Addressing for vector in/out */
+// clang-format off
 static uint32_t const dls_weight_base         = 0x00000000;
 static uint32_t const dls_decoder_base        = 0x00040000;
 static uint32_t const dls_causal_base         = 0x00080000;
@@ -42,6 +43,8 @@ static uint32_t const dls_config_odd_base     = 0x00020000;
 static uint32_t const dls_raw_base            = 0x000f0000;
 static uint32_t const dls_randgen_base        = 0x000e0000;
 static uint32_t const dls_extmem_base         = 0x80000000;
+static uint32_t const dls_neuron_reset_base   = 0x00c90000 + dls_num_rows * dls_num_vectors_per_row;
+// clang-format on
 
 /* Byte to be written to synapse for correlation reset */
 static uint8_t const dls_correlation_reset = 0x3;
