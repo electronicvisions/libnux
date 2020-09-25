@@ -4,8 +4,9 @@ import unittest
 from typing import ClassVar
 
 from dlens_vx_v2.hal import Barrier, NeuronConfig, SpikeCounterReset
-from dlens_vx_v2.halco import iter_all, PPUOnDLS, BarrierOnFPGA, JTAGIdCodeOnDLS,\
-    NeuronConfigOnDLS, SpikeCounterReadOnDLS, SpikeCounterResetOnDLS
+from dlens_vx_v2.halco import iter_all, PPUOnDLS, BarrierOnFPGA, \
+    JTAGIdCodeOnDLS, NeuronConfigOnDLS, SpikeCounterReadOnDLS, \
+    SpikeCounterResetOnDLS
 from dlens_vx_v2.hxcomm import ManagedConnection
 from dlens_vx_v2.sta import generate, DigitalInit, run, \
     PlaybackProgramBuilder
