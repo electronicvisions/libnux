@@ -9,7 +9,9 @@ from waflib.extras.symwaf2ic import get_toplevel_path
 
 def depends(dep):
     dep("haldls")
-    dep("libnux", "test/with_hostcode")
+
+    if getattr(dep.options, 'with_libnux_test_hostcode', True):
+        dep("libnux", "test/with_hostcode")
 
 
 def options(opt):
@@ -17,26 +19,31 @@ def options(opt):
     opt.load('nux_compiler')
     opt.load('test_base')
     opt.load('pytest')
-    opt.add_option("--enable-stack-protector",
-                   default=False,
-                   action='store_true',
-                   dest='stack_protector',
-                   help="Enable stack frame overflow check.")
-    opt.add_option("--enable-stack-redzone",
-                   default=False,
-                   action='store_true',
-                   dest='stack_redzone',
-                   help="Enable stack redzone check towards the program memory region.")
-    opt.add_option("--disable-mailbox",
-                   default=False,
-                   action='store_true',
-                   dest='disable_mailbox',
-                   help="Disable mailbox memory region.")
+
+    hopts = opt.add_option_group('libnux options')
+    hopts.add_option("--enable-stack-protector",
+                     default=False,
+                     action='store_true',
+                     dest='stack_protector',
+                     help="Enable stack frame overflow check.")
+    hopts.add_option("--enable-stack-redzone",
+                     default=False,
+                     action='store_true',
+                     dest='stack_redzone',
+                     help="Enable stack redzone check towards the program memory region.")
+    hopts.add_option("--disable-mailbox",
+                     default=False,
+                     action='store_true',
+                     dest='disable_mailbox',
+                     help="Disable mailbox memory region.")
+    hopts.add_withoption('libnux-test-hostcode', default=True,
+                         help='Toggle the generation and build of with_hostcode tests')
 
 
 def configure(conf):
-    # host-based python stuff also needed for cross-env tests
-    conf.load('pytest')
+    if getattr(conf.options, 'with_libnux_test_hostcode', True):
+        # host-based python stuff also needed for cross-env tests
+        conf.load('pytest')
 
     # now configure for nux cross compiler
     env = conf.env
