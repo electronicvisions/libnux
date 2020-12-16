@@ -43,7 +43,7 @@ static uint32_t const dls_buffer_enable_mask = 0x200000;
 static uint32_t const dls_test_mask = 0x100000;
 
 /*
- * Omnibus addresses
+ * On-chip Omnibus addresses
  * The following omnibus addresses are in the "FPGA omnibus tree format". To be used
  * on the PPU, the need to be modified using get_omnibus_pointer (see omnibus.h for details).
  */
@@ -83,3 +83,27 @@ static constexpr omnibus_address_t cadc_top_acausal_base_address =
 static constexpr uint32_t extmem_data_base = 1ul << 30;
 static constexpr uint32_t vecgen_top_base_address = extmem_data_base | (1ul << 28);
 static constexpr uint32_t vecgen_bottom_base_address = extmem_data_base | (1ul << 28) | 0x4000;
+
+
+/*
+ * FPGA Omnibus addresses
+ * The following omnibus addresses are in the "FPGA omnibus tree format" but
+ * shifted explicitly to acquire a byte address (to be used in pointers), cf.
+ * above.
+ *
+ */
+
+// cf. haldls, but as byte-addresses here (instead of 4-byte words)
+constexpr uint32_t fpga_omnibus_mask{extmem_data_base};
+constexpr uint32_t external_ppu_memory_base_address{(0x0000'0000 << 2) | fpga_omnibus_mask};
+constexpr uint32_t executor_omnibus_mask{(0x0800'0000 << 2) | external_ppu_memory_base_address};
+constexpr uint32_t fpga_device_dna_base_address{(0x3 << 2) | executor_omnibus_mask};
+constexpr uint32_t event_recording_config_base_address{(0x5 << 2) | executor_omnibus_mask};
+constexpr uint32_t ut_omnibus_mask{(0x0000'4000 << 2) | executor_omnibus_mask};
+constexpr uint32_t phy_omnibus_mask{(0x0000'2000 << 2) | ut_omnibus_mask};
+constexpr uint32_t spimaster_omnibus_mask{(0x0000'1000 << 2) | phy_omnibus_mask};
+constexpr uint32_t i2cmaster_omnibus_mask{(0x0000'0800 << 2) | spimaster_omnibus_mask};
+constexpr uint32_t perftest_omnibus_mask{
+    ((0x0000'8000 | 0x0800'0000) << 2) | external_ppu_memory_base_address};
+constexpr uint32_t l2_omnibus_mask{(0x0000'4000 << 2) | perftest_omnibus_mask};
+constexpr uint32_t hicann_arq_status_base_address{/*2 x NUM_PHY*/ 0x0000'0010 | l2_omnibus_mask};

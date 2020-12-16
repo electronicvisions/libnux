@@ -21,9 +21,11 @@ void start(void)
 	test_init();
 
 	testcase_begin("external memory write read via scalar unit");
+	test_write_read<uint8_t>(17 + 4, 0); // w/r lowest extmem address
 	test_write_read<uint8_t>(123);
 	test_write_read<uint16_t>(12345);
 	test_write_read<uint32_t>(12345678);
+	test_write_read<uint8_t>(17 + 4, 1 << 29); // w/r highest extmem address
 	testcase_end();
 
 	test_summary();
