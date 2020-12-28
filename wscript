@@ -86,6 +86,11 @@ def build(bld):
     bld.env.dls_partition = "dls" == os.environ.get("SLURM_JOB_PARTITION")
     bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
 
+    bld(
+        target = 'nux_inc_host_vx',
+        export_includes = ['.']
+    )
+
     for dls_version in ['v2', 'vx']:
         env = bld.all_envs['nux_' + dls_version]
 
@@ -187,6 +192,7 @@ def build(bld):
                 'test/test_cadc_static.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
                 'test/test_fpga_memory_scalar_access.cpp',
+                'test/test_globaladdress.cpp',
                 'test/test_synram.cpp',
             ]
 
