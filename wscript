@@ -130,6 +130,11 @@ def build(bld):
     env = bld.all_envs["nux_vx"]
 
     bld(
+        target = 'nux_inc_host_vx',
+        export_includes = ['.']
+    )
+
+    bld(
         target = "nux_inc_vx",
         export_includes = ["."],
         env = env,

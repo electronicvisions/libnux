@@ -48,6 +48,9 @@ static uint32_t const dls_test_mask = 0x100000;
  * on the PPU, the need to be modified using get_omnibus_pointer (see omnibus.h for details).
  */
 
+/** Bit to enable on PPU to access on-chip omnibus; off-chip omnibus is visible in "extmem". */
+static constexpr uint32_t ppu_omnibus_chip = 1ull << 31;
+
 /* Addressing of rate counters */
 static constexpr omnibus_address_t dls_rates_base = 0x1e000000ul;
 
