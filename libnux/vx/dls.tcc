@@ -60,9 +60,13 @@ static constexpr omnibus_address_t dls_spike_base = 0x1c000040ul;
 /* MADC and reference current generator configuration base address */
 static constexpr omnibus_address_t madc_base_address = (1ul << 19 | 1ul << 18);
 
+/* Omnibus address of SRAMs */
+static constexpr omnibus_address_t sram_top_base_address = 0x02800000;
+static constexpr omnibus_address_t sram_bot_base_address = 0x03800000;
+
 /* Address of synram */
-static constexpr omnibus_address_t synram_top_base_address = 0x02800000 | (1 << 22);
-static constexpr omnibus_address_t synram_bottom_base_address = 0x03800000 | (1 << 22);
+static constexpr omnibus_address_t synram_top_base_address = sram_top_base_address | (1 << 22);
+static constexpr omnibus_address_t synram_bottom_base_address = sram_bot_base_address | (1 << 22);
 
 /* CADC causal base address for top PPU */
 static constexpr omnibus_address_t cadc_top_causal_base_address =
