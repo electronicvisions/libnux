@@ -4,8 +4,6 @@
 
 #include "omnibus.h"
 
-using namespace libnux;
-
 namespace libnux {
 
 enum class PPUOnDLS : uint32_t
@@ -62,27 +60,27 @@ static uint32_t const dls_test_mask = 0x100000;
  */
 
 /* Addressing of rate counters */
-static constexpr omnibus_address_t dls_rates_base = 0x1e000000ul;
+static constexpr libnux::omnibus_address_t dls_rates_base = 0x1e000000ul;
 
 /* Address of synapse driver configuration */
-static constexpr omnibus_address_t dls_syndrv_base = 0x1c000000ul;
+static constexpr libnux::omnibus_address_t dls_syndrv_base = 0x1c000000ul;
 
 /* Address for spike injection */
-static constexpr omnibus_address_t dls_spike_base = 0x1c000040ul;
+static constexpr libnux::omnibus_address_t dls_spike_base = 0x1c000040ul;
 
 /* MADC and reference current generator configuration base address */
-static constexpr omnibus_address_t madc_base_address = (1ul << 19 | 1ul << 18);
+static constexpr libnux::omnibus_address_t madc_base_address = (1ul << 19 | 1ul << 18);
 
 /* Address of synram */
-static constexpr omnibus_address_t synram_top_base_address = 0x02800000 | (1 << 22);
-static constexpr omnibus_address_t synram_bottom_base_address = 0x03800000 | (1 << 22);
+static constexpr libnux::omnibus_address_t synram_top_base_address = 0x02800000 | (1 << 22);
+static constexpr libnux::omnibus_address_t synram_bottom_base_address = 0x03800000 | (1 << 22);
 
 /* CADC causal base address for top PPU */
-static constexpr omnibus_address_t cadc_top_causal_base_address =
+static constexpr libnux::omnibus_address_t cadc_top_causal_base_address =
     synram_top_base_address | dls_causal_base;
 
 /* CADC acausal base address for top PPU */
-static constexpr omnibus_address_t cadc_top_acausal_base_address =
+static constexpr libnux::omnibus_address_t cadc_top_acausal_base_address =
     synram_top_base_address | dls_acausal_base;
 
 /* External memory base address for scalar data access */
