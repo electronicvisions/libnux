@@ -164,7 +164,7 @@ public:
 		/** Convert to "vector unit" address. */
 		constexpr byte_address to_vector_addr() const
 		{
-			return m_ptr | extmem_data_base;
+			return (m_ptr >> 2) | dls_extmem_base;
 		}
 
 		/** Convert to "vector fxvoutx" address. */
