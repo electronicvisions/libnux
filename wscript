@@ -190,12 +190,13 @@ def build(bld):
         else:
             # These tests only work for HX
             program_list += [
+                'test/test_barrier_single.cpp',
                 'test/test_cadc_static.cpp',
                 'test/test_fpga_memory_vector_access.cpp',
                 'test/test_fpga_memory_scalar_access.cpp',
                 'test/test_globaladdress.cpp',
+                'test/test_vector_zynq.cpp',
                 'test/test_synram.cpp',
-                'test/test_barrier_single.cpp',
             ]
 
         for program in program_list:
