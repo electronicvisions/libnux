@@ -223,10 +223,7 @@ public:
 	{
 	public:
 		/** Convert to "vector unit" address for local access. */
-		constexpr byte_address to_vector_addr() const
-		{
-			return m_ptr;
-		}
+		inline constexpr byte_address to_vector_addr() const;
 
 		/** Convert to "vector unit" pointer.
 		 *
@@ -239,10 +236,7 @@ public:
 		}
 
 		/** Convert to "scalar unit" address for local access. */
-		constexpr byte_address to_scalar_addr() const
-		{
-			return m_ptr;
-		}
+		inline constexpr byte_address to_scalar_addr() const;
 
 		/** Convert to "scalar unit" address for local and non-local access. */
 		inline constexpr byte_address to_scalar_addr(PPUOnDLS const ppu) const;
@@ -444,14 +438,24 @@ constexpr GlobalAddress::SRAM::SRAM(
     m_ptr((address << 2) | offset), m_me(me)
 {}
 
+constexpr GlobalAddress::byte_address GlobalAddress::SRAM::to_vector_addr() const
+{
+	return m_ptr & 0x3fff; //(~(AddressSpace::sram_bot.to_global_omnibus() << 2));
+}
+
+constexpr GlobalAddress::byte_address GlobalAddress::SRAM::to_scalar_addr() const
+{
+	return m_ptr & 0x3fff; //(~(AddressSpace::sram_bot.to_global_omnibus() << 2));
+}
+
 constexpr GlobalAddress::byte_address GlobalAddress::SRAM::to_scalar_addr(PPUOnDLS const ppu) const
 {
-	// non-local SRAM via omnibus (convert to byte address), requires bit 31 to be active.
-	return m_ptr | ((ppu == m_me)
-	                    ? 0
-	                    : (ppu_omnibus_chip | (m_me == PPUOnDLS::top)
-	                           ? (AddressSpace::sram_top.to_global_omnibus() << 2)
-	                           : (AddressSpace::sram_bot.to_global_omnibus() << 2)));
+	if (ppu == m_me) {
+		return to_scalar_addr();
+	} else {
+		// non-local SRAM via omnibus (convert to byte address), requires bit 31 to be active.
+		return m_ptr | ppu_omnibus_chip;
+	}
 }
 
 constexpr GlobalAddress::VectorGenerator::VectorGenerator(
