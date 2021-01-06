@@ -90,11 +90,18 @@ void start()
 		constexpr auto c =
 		    GlobalAddress::from_relative<GlobalAddress::SRAM>(0x123, PPUOnDLS::bottom);
 		test_equal(
-		    (intptr_t) c.to_sram().to_vector<__vector uint8_t>(), (1 << 27 | 1 << 26 | 1 << 25 | 0x123));
-		static_assert(c.to_sram().to_vector_addr() == (1 << 27 | 1 << 26 | 1 << 25 | 0x123));
+		    (intptr_t) c.to_sram().to_vector<__vector uint8_t>(),
+		    (1 << 27 | 1 << 26 | 1 << 25 | 0x123 << 2));
+		static_assert(c.to_sram().to_vector_addr() == 0x123);
 		test_equal(
-		    (intptr_t) c.to_sram().to_scalar<__vector uint8_t>(), (1 << 27 | 1 << 26 | 1 << 25 | 0x123));
-		static_assert(c.to_sram().to_scalar_addr() == (1 << 27 | 1 << 26 | 1 << 25 | 0x123));
+		    (intptr_t) c.to_sram().to_scalar<__vector uint8_t>(),
+		    (1 << 27 | 1 << 26 | 1 << 25 | 0x123 << 2));
+		static_assert(c.to_sram().to_scalar_addr() == 0x123);
+		static_assert(c.to_sram().to_scalar_addr(PPUOnDLS::bottom) == 0x123);
+		static_assert(
+		    c.to_sram().to_scalar_addr(PPUOnDLS::top) ==
+		    (1ull << 31 | 1 << 27 | 1 << 26 | 1 << 25 | 0x123));
+
 		test_equal(c.to_sram().is_local(PPUOnDLS::top), false);
 		test_equal(c.to_sram().is_local(PPUOnDLS::bottom), true);
 		static_assert(c.to_sram().is_local(PPUOnDLS::top) == false);
