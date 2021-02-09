@@ -115,6 +115,7 @@ def build(bld):
             features = 'cxx',
             name = 'nux_runtime_obj_' + dls_version,
             source = ['src/start.cpp',
+                      'src/cstring.cpp',
                       'src/initdeinit.cpp',
                       'src/cxa_pure_virtual.cpp'],
             use = 'nux_inc_' + dls_version,
@@ -141,6 +142,7 @@ def build(bld):
 
         program_list = [
             'examples/stdp.cpp',
+            'test/test_cstring.cpp',
             'test/test_ctors.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
