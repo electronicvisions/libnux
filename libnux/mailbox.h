@@ -3,8 +3,14 @@
 #include <s2pp.h>
 #include <stdint.h>
 
-extern uint8_t mailbox_base;
-extern uint8_t mailbox_end;
+extern uint8_t mailbox_base; // from linker
+extern uint8_t mailbox_end;  // from linker
+
+/** Set a different mailbox base and end address than provided by linker.
+ * @param base Base or start address of mailbox.
+ * @param end End address of mailbox.
+ */
+void set_mailbox(uint8_t* base, uint8_t* end);
 
 uint32_t mailbox_write(uint32_t const offset, uint8_t const * src, uint32_t const size);
 uint32_t mailbox_read(uint8_t * dest, uint32_t const offset, uint32_t const size);

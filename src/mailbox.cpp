@@ -2,6 +2,14 @@
 #include "libnux/mailbox.h"
 
 static uint32_t write_head_offset = 0;
+static uint8_t* mailbox_base_real = &mailbox_base;
+static uint8_t* mailbox_end_real = &mailbox_end;
+
+void set_mailbox(uint8_t* base, uint8_t* end)
+{
+	mailbox_base_real = base;
+	mailbox_end_real = end;
+}
 
 char* itoa(uint32_t value, uint32_t const base) {
 	/* Reserve buffer for 32 digits + null byte */
@@ -25,31 +33,31 @@ char* itoa(uint32_t value, uint32_t const base) {
 }
 
 uint32_t mailbox_write(uint32_t const offset, uint8_t const * src, uint32_t const size) {
-	volatile uint8_t* ptr = &mailbox_base + offset;
+	volatile uint8_t* ptr = mailbox_base_real + offset;
 	uint32_t i;
 
-	for(i=size; (ptr < &mailbox_end) && (i > 0); ptr++, i--) {
+	for(i=size; (ptr < mailbox_end_real) && (i > 0); ptr++, i--) {
 		*ptr = *(src++);
 	}
 
-	return ptr - &mailbox_base + offset;
+	return ptr - mailbox_base_real + offset;
 }
 
 uint32_t mailbox_read(uint8_t * dest, uint32_t const offset, uint32_t const size) {
-	volatile uint8_t* ptr = &mailbox_base + offset;
+	volatile uint8_t* ptr = mailbox_base_real + offset;
 	uint32_t i;
 
-	for(i=size; (dest < &mailbox_end) && (i > 0); ptr++, i--) {
+	for(i=size; (dest < mailbox_end_real) && (i > 0); ptr++, i--) {
 		*(dest++) = *(ptr);
 	}
 
-	return ptr - &mailbox_base + offset;
+	return ptr - mailbox_base_real + offset;
 }
 
 uint8_t libnux_mailbox_read_u8(uint32_t const offset) {
-	if (reinterpret_cast<unsigned long>(&mailbox_base + offset) <
-	    reinterpret_cast<unsigned long>(&mailbox_end)) {
-		return *(&mailbox_base + offset);
+	if (reinterpret_cast<unsigned long>(mailbox_base_real + offset) <
+	    reinterpret_cast<unsigned long>(mailbox_end_real)) {
+		return *(mailbox_base_real + offset);
 	} else {
 		/* TODO set errno ERANGE as soon as implemented */
 		return 0;
@@ -57,9 +65,9 @@ uint8_t libnux_mailbox_read_u8(uint32_t const offset) {
 }
 
 void libnux_mailbox_write_u8(uint32_t const offset, uint8_t const byte) {
-	if (reinterpret_cast<unsigned long>(&mailbox_base + offset) <
-	    reinterpret_cast<unsigned long>(&mailbox_end)) {
-		*(&mailbox_base + offset) = byte;
+	if (reinterpret_cast<unsigned long>(mailbox_base_real + offset) <
+	    reinterpret_cast<unsigned long>(mailbox_end_real)) {
+		*(mailbox_base_real + offset) = byte;
 	} else {
 		/* TODO set errno ERANGE as soon as implemented */
 	}
@@ -73,11 +81,11 @@ void libnux_mailbox_string_terminate()
 uint32_t libnux_mailbox_write_string(char const * str) {
 	char const * ptr = str;
 	for (; (*ptr != 0); write_head_offset++, ptr++) {
-		if (&mailbox_base + write_head_offset == &mailbox_end) {
+		if (mailbox_base_real + write_head_offset == mailbox_end_real) {
 			/* TODO set errno ERANGE as soon as implemented */
 			return ptr - str;
 		}
-		*(&mailbox_base + write_head_offset) = *ptr;
+		*(mailbox_base_real + write_head_offset) = *ptr;
 	}
 	return ptr - str;
 }
