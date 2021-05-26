@@ -8,6 +8,8 @@
 #include "libnux/unittest.h"
 #include "libnux/vector.h"
 
+using namespace libnux;
+
 // weight value which is the same value than written, when read from Omnibus
 constexpr uint8_t invariant_weight = 32;
 
