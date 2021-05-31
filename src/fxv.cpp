@@ -1,5 +1,4 @@
 #include <stdint.h>
-
 #include "libnux/fxv.h"
 #include "libnux/constants.h"
 #include "libnux/sync.h"

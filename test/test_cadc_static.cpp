@@ -6,7 +6,6 @@
 #include "libnux/unittest.h"
 #include "libnux/vector.h"
 
-
 using namespace libnux;
 
 // generated in hx_top/**/anncore.sv

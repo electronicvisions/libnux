@@ -1,5 +1,6 @@
 #pragma once
-#include "libnux/dls_vx.h"
+
+#include "libnux/dls.h"
 #include "libnux/vector.h"
 
 namespace libnux {

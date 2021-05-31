@@ -60,6 +60,7 @@ def configure(conf):
         conf.env.append_value('CXXFLAGS', '-fstack-protector-all')
     else:
         conf.env.append_value('LIBNUX_STACK_PROTECTOR_ENABLED', 'False')
+
     if(conf.options.stack_redzone):
         conf.define("LIBNUX_STACK_REDZONE", True)
         conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'True')
@@ -67,26 +68,22 @@ def configure(conf):
         conf.env.append_value('CXXFLAGS', '-fstack-limit-symbol=stack_redzone')
     else:
         conf.env.append_value('LIBNUX_STACK_REDZONE_ENABLED', 'False')
+
     if(not conf.options.disable_mailbox):
         conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
-    # specialize for v2
-    conf.setenv('nux_v2', env=conf.all_envs['nux'])
-    conf.define('LIBNUX_DLS_VERSION_V2', True)
 
     # specialize for vx
     conf.setenv('nux_vx', env=conf.all_envs['nux'])
-    conf.define('LIBNUX_DLS_VERSION_VX', True)
     conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
 
     # restore env
     conf.setenv('', env=env)
 
 def build(bld):
-    bld.env.dls_partition = "dls" == os.environ.get("SLURM_JOB_PARTITION")
     bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
 
-    for dls_version in ['v2', 'vx']:
+    for dls_version in ['vx']:
         env = bld.all_envs['nux_' + dls_version]
 
         bld(
@@ -98,7 +95,6 @@ def build(bld):
         nux_sources = [
             'src/bitformatting.cpp',
             'src/correlation.cpp',
-            'src/counter.cpp',
             'src/exp.cpp',
             'src/fxv.cpp',
             'src/mailbox.cpp',
@@ -148,9 +144,12 @@ def build(bld):
 
         program_list = [
             'examples/stdp.cpp',
+            'test/test_cadc_static.cpp',
             'test/test_ctors.cpp',
             'test/test_bitformatting.cpp',
             'test/test_bool.cpp',
+            'test/test_fpga_memory_vector_access.cpp',
+            'test/test_fpga_memory_scalar_access.cpp',
             'test/test_fxvadd.cpp',
             'test/test_fxvsel.cpp',
             'test/test_helper.cpp',
@@ -158,12 +157,12 @@ def build(bld):
             'test/test_malloc.cpp',
             'test/test_many_vectors.cpp',
             'test/test_measure_time.cpp',
-            'test/test_neuron_counter.cpp',
             'test/test_noinline_vector_argument.cpp',
             'test/test_return_vector.cpp',
             'test/test_returncode.cpp',
             'test/test_stack_guard.cpp',
             'test/test_stack_redzone.cpp',
+            'test/test_synram.cpp',
             'test/test_synram_rw.cpp',
             'test/test_unittest.cpp',
             'test/test_vector.cpp',
@@ -175,20 +174,6 @@ def build(bld):
             'test/test_vector_splat.cpp',
             'test/test_vector_sync.cpp',
         ]
-
-        if dls_version != 'vx':
-            # These tests don't work for HX, see Issue #3365
-            program_list += [
-                'test/test_xorshift_vector.cpp', # HX does not yet implement xorshift_vector
-            ]
-        else:
-            # These tests only work for HX
-            program_list += [
-                'test/test_cadc_static.cpp',
-                'test/test_fpga_memory_vector_access.cpp',
-                'test/test_fpga_memory_scalar_access.cpp',
-                'test/test_synram.cpp',
-            ]
 
         for program in program_list:
             bld.program(

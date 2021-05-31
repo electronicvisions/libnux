@@ -1,5 +1,4 @@
 #include <stddef.h>
-
 #include "libnux/bitformatting.h"
 
 uint8_t reverse_byte(uint8_t b)

@@ -1,5 +1,4 @@
-#ifndef ISR_H__
-#define ISR_H__
+#pragma once
 
 /** Code fragment with comments for the isr pro- and epilogue */
 // XXX save/restore CTR, XER, ... ?
@@ -101,6 +100,3 @@ ISR_EPILOGUE                     \
 );                               \
                                  \
 void isr_einput_func()
-
-#endif
-

@@ -1,5 +1,4 @@
 #include <stdint.h>
-
 #include "libnux/helper.h"
 
 extern uint8_t stack_redzone;

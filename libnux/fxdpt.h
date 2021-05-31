@@ -1,8 +1,6 @@
-#ifndef FXDPT_H__
-#define FXDPT_H__
+#pragma once
 
 #include <stdint.h>
-
 #include "libnux/attrib.h"
 
 /** INV_SCALE 0x10000 is the 16.16 fixedpoint representation
@@ -41,6 +39,3 @@ ATTRIB_UNUSED static int16_t fxdpt_32_to_16_bits(const int32_t x)
 
 // convert floating-point to 8 bit fractional fixed-point
 #define F8(x) ((int8_t)( 0x80 * (x) ))
-
-#endif
-

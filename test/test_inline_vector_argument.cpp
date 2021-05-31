@@ -7,11 +7,7 @@ inline __attribute__((always_inline)) void foo_inline(__vector uint8_t& y)
 	asm volatile(
 		"fxvcmpb %[v]\n"
 		:
-#ifndef LIBNUX_DLS_VERSION_VX
-		: [v] "kv" (y)
-#else
 		: [v] "qv" (y)
-#endif
 		:
 	);
 }

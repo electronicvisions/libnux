@@ -4,14 +4,10 @@
 #include "libnux/random.h"
 
 
-#ifndef LIBNUX_DLS_VERSION_VX
-#define SYNAPSE_ROW_ITERATIONS dls_num_synapse_vectors
-#else
 // Use 8 of 32 vectors on HX fitting in the vector registers
 // For more than 32 there is not enough memory
 // 8 is used in order to reduce the runtime in simulation
 #define SYNAPSE_ROW_ITERATIONS 8
-#endif
 
 void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_t seed) {
 	/* Initialize data in the synram */
@@ -32,11 +28,7 @@ void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_
 		asm volatile (
 				"fxvoutx %[vec], %[base], %[index]"
 				: /* no output */
-#ifndef LIBNUX_DLS_VERSION_VX
-				: [vec] "kv" (*d_it),
-#else
 				: [vec] "qv" (*d_it),
-#endif
 				  [base] "b" (base_address),
 				  [index] "r" (index)
 				: /* no clobbers */);
@@ -58,11 +50,7 @@ void test_weight_read(uint32_t seed) {
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
 				"sync"
-#ifndef LIBNUX_DLS_VERSION_VX
-				: [temp] "=&kv" (temp)
-#else
 				: [temp] "=&qv" (temp)
-#endif
 				: [base] "b" (dls_weight_base),
 				  [index] "r" (index),
 				  [addr] "r" (&data)
@@ -87,11 +75,7 @@ void test_decoder_read(uint32_t seed) {
 				"fxvinx %[temp], %[base], %[index]\n"
 				"fxvstax %[temp], 0, %[addr]\n"
 				"sync"
-#ifndef LIBNUX_DLS_VERSION_VX
-				: [temp] "=&kv" (temp)
-#else
 				: [temp] "=&qv" (temp)
-#endif
 				: [base] "b" (dls_decoder_base),
 				  [index] "r" (index),
 				  [addr] "r" (&data)

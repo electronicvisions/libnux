@@ -1,10 +1,8 @@
 #include <array>
-
 #include "libnux/omnibus.h"
-#include "libnux/dls_vx.h"
+#include "libnux/dls.h"
 
 using namespace libnux;
-
 
 // Reference generator configuration values used within this test
 static constexpr std::array<unsigned int, 4> amp_values{5, 10, 15, 20};

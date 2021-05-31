@@ -1,8 +1,8 @@
 #pragma once
+
 #include <s2pp.h>
 #include "libnux/dls.h"
 
-#ifdef LIBNUX_DLS_VERSION_VX
 namespace libnux {
 
 /**
@@ -52,4 +52,3 @@ inline void reset_neurons()
 }
 
 } // namespace libnux
-#endif

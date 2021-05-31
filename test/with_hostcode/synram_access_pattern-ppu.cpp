@@ -3,14 +3,12 @@
 #include "libnux/dls.h"
 #include "libnux/vector.h"
 
-
 void fill_array(vector_type& array, uint8_t target)
 {
 	for (auto& value : array) {
 		value = target;
 	}
 }
-
 
 int start(void)
 {

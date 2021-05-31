@@ -21,10 +21,6 @@ void test_read_v_after_write_g(void)
 {
 	libnux_testcase_begin(__func__);
 
-#ifndef LIBNUX_DLS_VERSION_VX
-	__vector uint8_t vec = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#else
 	__vector uint8_t vec = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -34,7 +30,6 @@ void test_read_v_after_write_g(void)
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#endif
 
 	// Write with GPP
 	for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {
@@ -50,11 +45,7 @@ void test_read_v_after_write_g(void)
 		"fxvlax %[temp], %y[src_ptr]\n"
 		"fxvstax %[temp], %y[tgt_ptr]\n"
 		"sync"
-#ifndef LIBNUX_DLS_VERSION_VX
-		: [temp] "=&kv" (temp),
-#else
 		: [temp] "=&qv" (temp),
-#endif
 		  [tgt_ptr] "=Z"(copy)
 		: [src_ptr] "Z"(vec)
 	);
@@ -72,10 +63,6 @@ void test_write_g_after_read_v(void)
 {
 	libnux_testcase_begin(__func__);
 
-#ifndef LIBNUX_DLS_VERSION_VX
-	__vector uint8_t vec = {
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#else
 	__vector uint8_t vec = {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -85,7 +72,6 @@ void test_write_g_after_read_v(void)
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#endif
 	__vector uint8_t copy;
 
 	// Read with VX
@@ -96,11 +82,7 @@ void test_write_g_after_read_v(void)
 		// Load the vector from memory into a register
 		"fxvlax %[copy], %y[ptr]\n"
 		"sync"
-#ifndef LIBNUX_DLS_VERSION_VX
-		: [copy] "=kv" (copy)
-#else
 		: [copy] "=qv" (copy)
-#endif
 		: [dls_causal_base] "b"(dls_causal_base),
 		  [index] "r"(0),
 		  [ptr] "Z"(vec)
@@ -125,11 +107,15 @@ void test_write_v_after_read_g(void)
 {
 	libnux_testcase_begin(__func__);
 
-#ifndef LIBNUX_DLS_VERSION_VX
-	__vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#else
-	__vector uint8_t vec = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-#endif
+	__vector uint8_t vec = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	// Read with GPP
 	for (uint32_t i = 0; i < sizeof(__vector uint8_t); i++) {

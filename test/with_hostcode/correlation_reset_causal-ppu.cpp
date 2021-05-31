@@ -4,9 +4,7 @@
 #include "libnux/dls.h"
 #include "libnux/vector.h"
 
-
 using namespace libnux;
-
 
 void fill_array(vector_type& array, uint8_t target)
 {

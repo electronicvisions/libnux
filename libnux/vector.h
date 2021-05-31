@@ -1,10 +1,10 @@
 #pragma once
+
 #include <array>
 #include <stddef.h>
 #include <stdint.h>
 #include "libnux/dls.h"
 #include "libnux/omnibus.h"
-
 
 namespace libnux {
 

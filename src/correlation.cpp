@@ -1,7 +1,5 @@
 #include <stddef.h>
-
 #include "libnux/correlation.h"
-
 
 void reset_all_correlations()
 {

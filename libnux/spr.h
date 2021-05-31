@@ -1,8 +1,6 @@
-#ifndef SPR_H__
-#define SPR_H__
+#pragma once
 
 #include <stdint.h>
-
 #include "libnux/attrib.h"
 
 #define SPR_SETTER(name, code) \
@@ -126,6 +124,3 @@ ATTRIB_UNUSED static uint8_t get_fit_period()
 /* not needed outside */
 #undef SPR_SETTER
 #undef SPR_GETTER
-
-#endif
-

@@ -1,5 +1,4 @@
 #include <s2pp.h>
-
 #include "libnux/unittest.h"
 
 // some function doing something with vector registers
@@ -21,11 +20,7 @@ void start()
 	__vector uint8_t vec;
 	asm volatile(
 		"fxvsplatb %[vec], %[value]\n"
-#ifdef LIBNUX_DLS_VERSION_VX
 		: [vec] "=qv" (vec)
-#else
-		: [vec] "=kv" (vec)
-#endif
 		: [value] "r" (value1) :
 	);
 
@@ -37,13 +32,8 @@ void start()
 	asm volatile(
 		"fxvsplatb %[tmp], %[zero]\n"
 		"fxvaddbm %[vec], %[vec], %[tmp]\n"
-#ifdef LIBNUX_DLS_VERSION_VX
 		: [vec] "+qv" (vec),
 		  [tmp] "=qv" (tmp)
-#else
-		: [vec] "+kv" (vec),
-		  [tmp] "=kv" (tmp)
-#endif
 		: [zero] "r" (uint32_t(0))
 		:
 	);

@@ -5,10 +5,6 @@
 void test_vector_add() {
 	libnux_testcase_begin("vector_add");
 
-#ifndef LIBNUX_DLS_VERSION_VX
-	__vector uint8_t lhs = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-#else
 	__vector uint8_t lhs = {
 		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
 		16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
@@ -20,7 +16,6 @@ void test_vector_add() {
 		100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
 		112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123,
 		124, 125, 126, 127};
-#endif
 	__vector uint8_t rhs = vec_splat_u8(1);
 	__vector uint8_t res = vec_add(lhs, rhs);
 	for (uint32_t index = 0; index < sizeof(__vector uint8_t); index++) {

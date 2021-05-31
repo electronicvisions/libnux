@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-
 #include "libnux/constants.h"
 
 
@@ -161,4 +160,3 @@ typedef enum {
 #define fxv_zero_set(x) fxv_splath(x, 0)
 
 extern void fxv_zero_vrf();
-
