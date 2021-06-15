@@ -1,8 +1,10 @@
 #include <s2pp.h>
 #include <stdint.h>
-#include "libnux/correlation.h"
-#include "libnux/dls.h"
-#include "libnux/mailbox.h"
+#include "libnux/vx/correlation.h"
+#include "libnux/vx/dls.h"
+#include "libnux/vx/mailbox.h"
+
+using namespace libnux::vx;
 
 // Mailbox index at which the program "listens" for the commands, which are
 // "wait", "update" and "stop"
@@ -37,7 +39,7 @@ void measure_offsets(__vector uint8_t ca_offsets[], __vector uint8_t ac_offsets[
 		// clang-format on
 	}
 	asm volatile("sync");
-	libnux_mailbox_write_string("Offsets measured\n");
+	mailbox_write_string("Offsets measured\n");
 }
 
 // Update the weights:
@@ -98,12 +100,12 @@ void update_weights(
 		// clang-format on
 	}
 	asm volatile("sync");
-	libnux_mailbox_write_string("Update done\n");
+	mailbox_write_string("Update done\n");
 }
 
 void print_weights(void)
 {
-	libnux_mailbox_write_string("Weights are\n");
+	mailbox_write_string("Weights are\n");
 	for (uint32_t index = 0; index < dls_num_synapse_vectors; index++) {
 		uint8_t __vector weights;
 		// clang-format off
@@ -118,11 +120,11 @@ void print_weights(void)
 			: "kv1");
 		// clang-format on
 		for (uint32_t j = 0; j < 16; j++) {
-			libnux_mailbox_write_int(weights[j]);
-			libnux_mailbox_write_string(" ");
+			mailbox_write_int(weights[j]);
+			mailbox_write_string(" ");
 		}
 		if ((index % 2) == 1) {
-			libnux_mailbox_write_string("\n");
+			mailbox_write_string("\n");
 		}
 	}
 }
@@ -131,7 +133,7 @@ int start(void)
 {
 	// Initialize
 	reset_all_correlations();
-	libnux_mailbox_write_string("Synapses reset done\n");
+	mailbox_write_string("Synapses reset done\n");
 
 	// Measure offsets
 	__vector uint8_t ca_offsets[dls_num_synapse_vectors];
@@ -141,16 +143,16 @@ int start(void)
 	// Execute
 	uint8_t signal = signal_wait;
 	do {
-		signal = libnux_mailbox_read_u8(signal_addr_offset);
+		signal = mailbox_read_u8(signal_addr_offset);
 		if (signal == signal_update) {
-			libnux_mailbox_write_u8(signal_addr_offset, signal_wait);
-			uint8_t const factor = libnux_mailbox_read_u8(factor_addr_offset);
+			mailbox_write_u8(signal_addr_offset, signal_wait);
+			uint8_t const factor = mailbox_read_u8(factor_addr_offset);
 			update_weights(factor, ca_offsets, ac_offsets);
 		}
 	} while (signal != signal_stop);
 
 	// Print the whole weight matrix at the end of the emulation
 	print_weights();
-	libnux_mailbox_write_string("Program exited gracefully\n");
+	mailbox_write_string("Program exited gracefully\n");
 	return 0;
 }

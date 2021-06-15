@@ -73,8 +73,12 @@ def configure(conf):
         conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
 
-    # specialize for vx
-    conf.setenv('nux_vx', env=conf.all_envs['nux'])
+    # specialize for vx-v1
+    conf.setenv('nux_vx_v1', env=conf.all_envs['nux'])
+    conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
+
+    # specialize for vx-v2
+    conf.setenv('nux_vx_v2', env=conf.all_envs['nux'])
     conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
 
     # restore env
@@ -83,160 +87,127 @@ def configure(conf):
 def build(bld):
     bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
 
-    for dls_version in ['vx']:
-        env = bld.all_envs['nux_' + dls_version]
+    chip_revision_list = ["vx"]
+    chip_version_list = [["v1", "v2"]]
 
-        bld(
-            target = 'nux_inc_' + dls_version,
-            export_includes = ['.'],
-            env = env,
-        )
+    for chip_idx, chip_revision in enumerate(chip_revision_list):
+        for chip_version in chip_version_list[chip_idx]:
 
-        nux_sources = [
-            'src/bitformatting.cpp',
-            'src/correlation.cpp',
-            'src/exp.cpp',
-            'src/fxv.cpp',
-            'src/mailbox.cpp',
-            'src/malloc.cpp',
-            'src/random.cpp',
-            'src/stack_guards.cpp',
-            'src/spikes.cpp',
-            'src/time.cpp',
-            'src/unittest.cpp',
-            'src/unittest_mailbox.cpp',
-        ]
+            env = bld.all_envs["nux_" + chip_revision + "_" + chip_version]
 
-        bld.stlib(
-            target = 'nux_' + dls_version,
-            source = nux_sources,
-            use = ['nux_inc_' + dls_version],
-            env = env,
-        )
-
-        bld(
-            features = 'cxx',
-            name = 'nux_runtime_obj_' + dls_version,
-            source = ['src/start.cpp',
-                      'src/initdeinit.cpp',
-                      'src/cxa_pure_virtual.cpp'],
-            use = 'nux_inc_' + dls_version,
-            env = env,
-        )
-
-        bld(
-            name='nux_runtime_shutdown_' + dls_version,
-            target='crt_shutdown.o',
-            source=['src/crt_shutdown.s'],
-            features='use asm',
-            env = env,
-        )
-
-        bld(
-            name='nux_runtime_' + dls_version,
-            target='crt.o',
-            source=['src/crt.s'],
-            features='use asm',
-            use=['nux_runtime_obj_' + dls_version,
-                 'nux_runtime_shutdown_' + dls_version],
-            env=env,
-        )
-
-        program_list = [
-            'examples/stdp.cpp',
-            'test/test_cadc_static.cpp',
-            'test/test_ctors.cpp',
-            'test/test_bitformatting.cpp',
-            'test/test_bool.cpp',
-            'test/test_fpga_memory_vector_access.cpp',
-            'test/test_fpga_memory_scalar_access.cpp',
-            'test/test_fxvadd.cpp',
-            'test/test_fxvsel.cpp',
-            'test/test_helper.cpp',
-            'test/test_inline_vector_argument.cpp',
-            'test/test_malloc.cpp',
-            'test/test_many_vectors.cpp',
-            'test/test_measure_time.cpp',
-            'test/test_noinline_vector_argument.cpp',
-            'test/test_return_vector.cpp',
-            'test/test_returncode.cpp',
-            'test/test_stack_guard.cpp',
-            'test/test_stack_redzone.cpp',
-            'test/test_synram.cpp',
-            'test/test_synram_rw.cpp',
-            'test/test_unittest.cpp',
-            'test/test_vector.cpp',
-            'test/test_vector_alignment.cpp',
-            'test/test_vector_cc.cpp',
-            'test/test_vector_convert.cpp',
-            'test/test_vector_saturating_subtract.cpp',
-            'test/test_vector_register_reusage.cpp',
-            'test/test_vector_splat.cpp',
-            'test/test_vector_sync.cpp',
-        ]
-
-        for program in program_list:
-            bld.program(
-                features = 'cxx',
-                target = program.replace('.cpp', '') + '_' + dls_version + '.bin',
-                source = [program],
-                use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
-                env = bld.all_envs['nux_' + dls_version],
+            bld(
+                target = "nux_inc_" + chip_revision + "_" + chip_version,
+                export_includes = ["."],
+                env = env,
             )
 
-        def max_size_empty():
-            stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
-            stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
-            build_profile = bld.options.build_profile
+            bld.stlib(
+                target = "nux_" + chip_revision + "_" + chip_version,
+                source = bld.path.ant_glob("src/" + chip_revision + "/*.cpp")
+                       + bld.path.ant_glob("src/" + chip_revision + "/" + chip_version + "/*.cpp"),
+                use = ["nux_inc_" + chip_revision + "_" + chip_version],
+                env = env,
+            )
 
-            if not stack_protector and not stack_redzone:
-                if build_profile == 'release':
-                    return 400
-                else:
-                    return 544
+            bld(
+                features = "cxx",
+                name = "nux_runtime_obj_" + chip_revision + "_" + chip_version,
+                source = ["src/start.cpp",
+                          "src/initdeinit.cpp",
+                          "src/cxa_pure_virtual.cpp"],
+                use = "nux_inc_" + chip_revision + "_" + chip_version,
+                env = env,
+            )
 
-            if stack_protector and not stack_redzone:
-                if build_profile == 'release':
-                    return 816
-                else:
-                    return 864
+            bld(
+                name = "nux_runtime_shutdown_" + chip_revision + "_" + chip_version,
+                target = "crt_shutdown.o",
+                source = ["src/crt_shutdown.s"],
+                features = "use asm",
+                env = env,
+            )
 
-            if not stack_protector and stack_redzone:
-                if build_profile == 'release':
-                    return 496
-                else:
-                    return 608
+            bld(
+                name = "nux_runtime_" + chip_revision + "_" + chip_version,
+                target = "crt.o",
+                source = ["src/crt.s"],
+                features = "use asm",
+                use = ["nux_runtime_obj_" + chip_revision + "_" + chip_version,
+                       "nux_runtime_shutdown_" + chip_revision + "_" + chip_version],
+                env=env,
+            )
 
-            if stack_protector and stack_redzone:
-                if build_profile == 'release':
-                    return 928
-                else:
-                    return 1008
+            program_list = []
+            program_list += ["test/" + chip_revision + "/" + os.path.basename(str(f)) 
+                             for f in bld.path.ant_glob("test/" + chip_revision + "/*.cpp")]
+            program_list += ["test/" + chip_revision + "/" + chip_version + "/" + os.path.basename(str(f))
+                             for f in bld.path.ant_glob("test/" + chip_revision + "/" + chip_version + "/*.cpp")]
+            program_list += ["examples/stdp.cpp"]
 
-        bld.program(
-            features = 'cxx check_size',
-            check_size_max = max_size_empty(),
-            target = 'test_empty_' + dls_version + '.bin',
-            source = ['test/test_empty.cpp'],
-            use = ['nux_' + dls_version, 'nux_runtime_' + dls_version],
-            env = env,
-        )
+            for program in program_list:
+                bld.program(
+                    features = "cxx",
+                    target = program.replace(".cpp", "") + "_" + chip_revision + "_" + chip_version + ".bin",
+                    source = [program],
+                    use = ["nux_" + chip_revision + "_" + chip_version,
+                           "nux_runtime_" + chip_revision + "_" + chip_version],
+                    env = bld.all_envs["nux_" + chip_revision + "_" + chip_version],
+                )
 
-    bld(
-        name='libnux_hwsimtests_vx',
-        tests='test/test_hwsimtests_vx.py',
-        features='use pytest pylint pycodestyle',
-        use='dlens_vx_v1',
-        install_path='${PREFIX}/bin/tests',
-        skip_run=not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
-        env = bld.all_envs[''],
-        test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                            STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                            TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
-        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        test_timeout = 20000
-    )
+            def max_size_empty():
+                stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
+                stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+                build_profile = bld.options.build_profile
+
+                if not stack_protector and not stack_redzone:
+                    if build_profile == 'release':
+                        return 400
+                    else:
+                        return 544
+
+                if stack_protector and not stack_redzone:
+                    if build_profile == 'release':
+                        return 816
+                    else:
+                        return 864
+
+                if not stack_protector and stack_redzone:
+                    if build_profile == 'release':
+                        return 496
+                    else:
+                        return 608
+
+                if stack_protector and stack_redzone:
+                    if build_profile == 'release':
+                        return 928
+                    else:
+                        return 1008
+
+            bld.program(
+                features = "cxx check_size",
+                check_size_max = max_size_empty(),
+                target = "test_empty_" + chip_revision + "_" + chip_version + ".bin",
+                source = ["test/helpers/test_empty.cpp"],
+                use = ["nux_" + chip_revision + "_" + chip_version,
+                       "nux_runtime_" + chip_revision + "_" + chip_version],
+                env = env,
+            )
+
+            bld(
+                name = "libnux_hwsimtests_" + chip_revision + "_" + chip_version,
+                tests = "test/test_hwsimtests_" + chip_revision + "_" + chip_version + ".py",
+                features = "use pytest pylint pycodestyle",
+                use = "dlens_" + chip_revision + "_" + chip_version,
+                install_path = "${PREFIX}/bin/tests",
+                skip_run = not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
+                env = bld.all_envs[''],
+                test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                                    STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                                    TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "test")),
+                pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
+                pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
+                test_timeout = 20000
+            )
 
     bld.add_post_fun(summary)
 

@@ -25,17 +25,22 @@ def build(bld):
     bld.env.DLSvx_HARDWARE_AVAILABLE = "cube" == os.environ.get("SLURM_JOB_PARTITION")
     bld.env.DLSvx_SIM_AVAILABLE = "FLANGE_SIMULATION_RCF_PORT" in os.environ
 
-    build_host_python(bld)
-    build_ppu_cpp(bld)
+    chip_revision_list = ["vx"]
+    chip_version_list = [["v1", "v2"]]
+
+    for chip_idx, chip_revision in enumerate(chip_revision_list):
+        for chip_version in chip_version_list[chip_idx]:
+            build_host_python(bld, chip_revision, chip_version)
+            build_ppu_cpp(bld, chip_revision, chip_version)
 
     bld.add_post_fun(summary)
 
 
-def build_host_python(bld):
-    bld(name="libnux-simtest-log_access_pattern",
-        tests="log_access_pattern_host.py",
+def build_host_python(bld, chip_revision, chip_version):
+    bld(name="libnux-simtest-log_access_pattern_" + chip_revision + "_" + chip_version,
+        tests="log_access_pattern_host_" + chip_revision + "_" + chip_version + ".py",
         features="use pytest pylint pycodestyle",
-        use="dlens_vx_v1",
+        use="dlens_" + chip_revision + "_" + chip_version,
         install_path="${PREFIX}/bin/tests/sim",
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
@@ -55,55 +60,62 @@ def build_host_python(bld):
         test_timeout=3600
         )
 
-    bld(name="libnux-test-neuron_reset_vector",
-        tests="neuron_reset_vector.py",
-        features="use pytest pylint pycodestyle",
-        use="dlens_vx_v2",
-        install_path="${PREFIX}/bin/tests/sim",
-        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        skip_run=not bld.env.DLSvx_HARDWARE_AVAILABLE,
-        test_environ=dict(
-            TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
-                                          "build",
-                                          "libnux",
-                                          "test",
-                                          "with_hostcode")),
-        test_timeout=30
-        )
+    if chip_revision == "vx" and chip_version == "v1":
+        pass
+    else:
+        bld(name="libnux-test-neuron_reset_vector_" + chip_revision + "_" + chip_version,
+            tests="neuron_reset_vector_" + chip_revision + "_" + chip_version + ".py",
+            features="use pytest pylint pycodestyle",
+            use="dlens_" + chip_revision + "_" + chip_version,
+            install_path="${PREFIX}/bin/tests/sim",
+            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+            skip_run=not bld.env.DLSvx_HARDWARE_AVAILABLE,
+            test_environ=dict(
+                TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
+                                              "build",
+                                              "libnux",
+                                              "test",
+                                              "with_hostcode")),
+            test_timeout=30
+            )
 
 
-def build_ppu_cpp(bld):
-    bld.program(name="libnux-test-refgen_access_pattern-ppu",
+def build_ppu_cpp(bld, chip_revision, chip_version):
+    bld.program(name="libnux-test-refgen_access_pattern-ppu_" + chip_revision + "_" + chip_version,
                 features="cxx",
-                target="refgen_access_pattern-ppu.bin",
-                source="refgen_access_pattern-ppu.cpp",
-                use=["nux_runtime_vx"],
-                env=bld.all_envs["nux_vx"])
+                target="refgen_access_pattern-ppu_" + chip_revision + "_" + chip_version + ".bin",
+                source=chip_revision + "/refgen_access_pattern-ppu.cpp",
+                use=["nux_runtime_" + chip_revision + "_" + chip_version],
+                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
 
-    bld.program(name="libnux-test-synram_access_pattern-ppu",
+    bld.program(name="libnux-test-synram_access_pattern-ppu_" + chip_revision + "_" + chip_version,
                 features="cxx",
-                target="synram_access_pattern-ppu.bin",
-                source="synram_access_pattern-ppu.cpp",
-                use=["nux_runtime_vx"],
-                env=bld.all_envs["nux_vx"])
+                target="synram_access_pattern-ppu_" + chip_revision + "_" + chip_version + ".bin",
+                source=chip_revision + "/synram_access_pattern-ppu.cpp",
+                use=["nux_runtime_" + chip_revision + "_" + chip_version],
+                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
 
-    bld.program(name="libnux-test-correlation_reset_causal-ppu",
+    bld.program(name="libnux-test-correlation_reset_causal-ppu_" + chip_revision + "_" + chip_version,
                 features="cxx",
-                target="correlation_reset_causal-ppu.bin",
-                source="correlation_reset_causal-ppu.cpp",
-                use=["nux_runtime_vx"],
-                env=bld.all_envs["nux_vx"])
+                target="correlation_reset_causal-ppu_" + chip_revision + "_" + chip_version + ".bin",
+                source=chip_revision + "/correlation_reset_causal-ppu.cpp",
+                use=["nux_runtime_" + chip_revision + "_" + chip_version],
+                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
 
-    bld.program(name="libnux-test-neuron_reset_global-ppu",
+    bld.program(name="libnux-test-neuron_reset_global-ppu_" + chip_revision + "_" + chip_version,
                 features="cxx",
-                target="neuron_reset_global-ppu.bin",
-                source="neuron_reset_global-ppu.cpp",
-                use=["nux_runtime_vx"],
-                env=bld.all_envs["nux_vx"])
-    bld.program(name="libnux-test-neuron_reset_vector-ppu",
-                features="cxx",
-                target="neuron_reset_vector-ppu.bin",
-                source="neuron_reset_vector-ppu.cpp",
-                use=["nux_runtime_vx"],
-                env=bld.all_envs["nux_vx"])
+                target="neuron_reset_global-ppu_" + chip_revision + "_" + chip_version + ".bin",
+                source=chip_revision + "/neuron_reset_global-ppu.cpp",
+                use=["nux_runtime_" + chip_revision + "_" + chip_version],
+                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+
+    if chip_revision == "vx" and chip_version == "v1":
+        pass
+    else:
+        bld.program(name="libnux-test-neuron_reset_vector-ppu_" + chip_revision + "_" + chip_version,
+                    features="cxx",
+                    target="neuron_reset_vector-ppu_" + chip_revision + "_" + chip_version + ".bin",
+                    source=chip_revision + "/neuron_reset_vector-ppu.cpp",
+                    use=["nux_runtime_" + chip_revision + "_" + chip_version],
+                    env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])

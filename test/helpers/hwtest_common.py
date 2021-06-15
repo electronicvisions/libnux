@@ -69,7 +69,7 @@ class PpuHwTest(object):
         return hash(self.path)
 
 
-def find_binaries(dls_version: str) -> Set[PpuHwTest]:
+def find_binaries(chip_revision: str, chip_version: str) -> Set[PpuHwTest]:
     """
     Find test-binaries matching `(?:\b|_)[Tt]est`.
 
@@ -77,7 +77,7 @@ def find_binaries(dls_version: str) -> Set[PpuHwTest]:
     """
     ret = set()
 
-    test_regex = re.compile(r'(?:\b|_)[Tt]est.*' + dls_version + r'\.bin$')
+    test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"_" + chip_version + r"\.bin$")
     for path, directories, files in os.walk(TEST_BINARY_PATH):
         for f in files:
             if test_regex.search(f):
@@ -87,7 +87,7 @@ def find_binaries(dls_version: str) -> Set[PpuHwTest]:
     return ret
 
 
-def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
+def get_special_binaries(chip_revision:str, chip_version: str) -> Set[PpuHwTest]:
     """
     Compile a set of "special" hardware tests. Tests are special, if the
     default constructor of :class:`PpuHwTest` does not apply.
@@ -100,30 +100,29 @@ def get_special_binaries(dls_version: str) -> Set[PpuHwTest]:
 
     test_list = {
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_unittest_{dls_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_unittest_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=1),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_returncode_{dls_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_returncode_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=-559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_stack_guard_{dls_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_stack_guard_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=stack_protection * -559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, f"test_stack_redzone_{dls_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=12 if stack_redzone else 2)
     }
 
-    if dls_version == 'vx':
-        simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
-        test_list.update({
-            PpuHwTest(
-                join(TEST_BINARY_PATH, f"test_cadc_static_{dls_version}.bin"),
-                expected_exit_code=0 if simulation is not None else 1,
-                supports_revision=lambda rev: rev >= 2),
-            PpuHwTest(
-                join(TEST_BINARY_PATH, f"test_synram_{dls_version}.bin"),
-                timeout=int(2e6),
-                supports_revision=lambda rev: rev >= 2),
-        })
+    simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
+    test_list.update({
+        PpuHwTest(
+            join(TEST_BINARY_PATH, chip_revision, f"test_cadc_static_{chip_revision}_{chip_version}.bin"),
+            expected_exit_code=0 if simulation is not None else 1,
+            supports_revision=lambda rev: rev >= 2),
+        PpuHwTest(
+            join(TEST_BINARY_PATH, chip_revision, f"test_synram_{chip_revision}_{chip_version}.bin"),
+            timeout=int(2e6),
+            supports_revision=lambda rev: rev >= 2),
+    })
 
     return test_list
