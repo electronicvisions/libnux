@@ -1,12 +1,12 @@
+#include <stddef.h>
 #include <stdint.h>
 #include "libnux/fxv.h"
-#include "libnux/constants.h"
+#include "libnux/dls.h"
 #include "libnux/sync.h"
 
 void fxv_zero_vrf() {
-	int i;
-	volatile uint8_t zeros[NUM_BYTES_PER_ARRAY];
-	for(i=0; i<NUM_BYTES_PER_ARRAY; i++) {
+	volatile uint8_t zeros[dls_bytes_per_vector];
+	for(size_t i = 0; i < dls_bytes_per_vector; i++) {
 		zeros[i] = 0;
 	}
 	sync();

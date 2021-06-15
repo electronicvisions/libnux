@@ -1,4 +1,5 @@
 #include <s2pp.h>
+#include <stddef.h>
 #include "libnux/unittest.h"
 
 // needed for current gcc-nux
@@ -14,7 +15,7 @@
 void test_size()
 {
 	libnux_testcase_begin("size == 1B");
-	libnux_test_equal(sizeof(bool), 1);
+	libnux_test_equal(sizeof(bool), static_cast<size_t>(1));
 	libnux_testcase_end();
 }
 

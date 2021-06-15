@@ -1,4 +1,5 @@
 #include <s2pp.h>
+#include <stddef.h>
 #include "libnux/mailbox.h"
 #include "libnux/unittest.h"
 
@@ -113,10 +114,10 @@ void test_vector_alignment() {
 	libnux_test_equal(local_small, 0xff);
 	libnux_test_equal(local_second[0], 0x30);
 
-	libnux_test_equal(((uint32_t)&global_first) % sizeof(__vector uint8_t), 0);
-	libnux_test_equal(((uint32_t)&global_second) % sizeof(__vector uint8_t), 0);
-	libnux_test_equal(((uint32_t)&local_first) % sizeof(__vector uint8_t), 0);
-	libnux_test_equal(((uint32_t)&local_second) % sizeof(__vector uint8_t), 0);
+	libnux_test_equal(((uint32_t)&global_first) % sizeof(__vector uint8_t), static_cast<size_t>(0));
+	libnux_test_equal(((uint32_t)&global_second) % sizeof(__vector uint8_t), static_cast<size_t>(0));
+	libnux_test_equal(((uint32_t)&local_first) % sizeof(__vector uint8_t), static_cast<size_t>(0));
+	libnux_test_equal(((uint32_t)&local_second) % sizeof(__vector uint8_t), static_cast<size_t>(0));
 
 	dump_vector(&global_first);
 	dump_vector(&global_second);

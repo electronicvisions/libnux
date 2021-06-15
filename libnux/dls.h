@@ -22,6 +22,11 @@ constexpr static uint32_t dls_num_synapses = dls_num_rows * dls_num_columns;
 
 /* Vector size */
 constexpr static uint32_t dls_vector_size = 128;
+constexpr static uint32_t dls_vector_slices = 8;
+constexpr static uint32_t dls_bytes_per_vector_slice = 16;
+constexpr static uint32_t dls_bytes_per_vector = dls_bytes_per_vector_slice * dls_vector_slices;
+constexpr static uint32_t dls_halfwords_per_vector = dls_bytes_per_vector / 2;
+constexpr static uint32_t dls_words_per_vector = dls_halfwords_per_vector / 2;
 
 /* Number of vectors per row */
 constexpr static uint32_t dls_num_vectors_per_row = 2;

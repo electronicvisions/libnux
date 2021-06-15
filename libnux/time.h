@@ -9,7 +9,6 @@
 #include "libnux/time.h"
 
 constexpr static uint32_t default_ppu_cycles_per_us = 250;
-#define USEC default_ppu_cycles_per_us // Only correct for default PLL settings (Issue #3705)
 
 void sleep_cycles(uint32_t cycles);
 

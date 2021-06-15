@@ -5,7 +5,7 @@ int start()
 {
 	libnux::reset_neurons();
 
-	sleep_cycles(USEC * 10);
+	sleep_cycles(10 * default_ppu_cycles_per_us);
 
 	__vector uint8_t even = vec_splat_u8(1);
 	__vector uint8_t odd = vec_splat_u8(0);
