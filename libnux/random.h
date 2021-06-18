@@ -13,6 +13,7 @@ void init_random_generator(size_t row, uint8_t seed);
 void init_random_generator(size_t row, __vector uint8_t seed_vector);
 void make_rand_calls(size_t row, size_t num);
 __vector uint8_t get_rand_u8(size_t row);
+__vector int8_t get_rand_s8(size_t row);
 __vector uint16_t get_rand_u16(size_t row);
 __vector uint8_t get_rand_bitwise_u8(size_t row, size_t bit);
 __vector uint16_t get_rand_bitwise_u16(size_t row, size_t bit);

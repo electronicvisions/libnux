@@ -113,6 +113,7 @@ def build(bld):
             'src/unittest.cpp',
             'src/unittest_mailbox.cpp',
             'src/vector_helper.cpp',
+            'src/cstring.cpp',
         ]
 
         bld.stlib(
@@ -152,8 +153,8 @@ def build(bld):
         )
 
         program_list = [
-	    'examples/stdp_mask.cpp',
-            'examples/stdp.cpp',
+	    #'examples/stdp_mask.cpp',
+            #'examples/stdp.cpp',
             'test/test_cstring.cpp',
             'test/test_ctors.cpp',
             #'examples/scheduling.cpp',
@@ -209,7 +210,7 @@ def build(bld):
                 'test/test_vector_alignment.cpp',
                 'test/test_vector_cc.cpp',
                 'test/test_vector_sync.cpp',
-                'test/test_xorshift_vector.cpp',
+                #'test/test_xorshift_vector.cpp',
                 'test/test_plasticity_rule_constant.cpp',
             ]
         else:

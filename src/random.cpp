@@ -124,6 +124,7 @@ __vector type get_rand_##name(size_t row)\
 	return vec;\
 }
 
+GET_RAND(int8_t, s8)
 GET_RAND(uint8_t, u8)
 GET_RAND(uint16_t, u16)
 #undef GET_RAND
