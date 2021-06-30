@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stdint.h>
 #include "libnux/dls.h"
+#include <stdint.h>
 
 
 //--------------------------------------------------------------------------------

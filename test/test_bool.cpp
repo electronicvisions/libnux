@@ -1,6 +1,6 @@
+#include "libnux/unittest.h"
 #include <s2pp.h>
 #include <stddef.h>
-#include "libnux/unittest.h"
 
 // needed for current gcc-nux
 #ifndef false
