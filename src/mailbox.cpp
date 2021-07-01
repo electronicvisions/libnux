@@ -98,8 +98,8 @@ uint32_t libnux_mailbox_write_signed_int(int32_t const n) {
 	return libnux_mailbox_write_int(n);
 }
 
-#define LIBNUX_WRITE_VECTOR(type, name, number_writer)                                             \
-	uint32_t libnux_mailbox_write_vector_##name(__vector type const vec)                           \
+#define LIBNUX_MAILBOX_WRITE_VECTOR(type, name, number_writer)                                     \
+	uint32_t libnux_mailbox_write_##name(__vector type const& vec)                                 \
 	{                                                                                              \
 		uint32_t ret = 0;                                                                          \
 		ret += libnux_mailbox_write_string("{");                                                   \
@@ -112,8 +112,9 @@ uint32_t libnux_mailbox_write_signed_int(int32_t const n) {
 		return ret + libnux_mailbox_write_string("}");                                             \
 	}
 
-LIBNUX_WRITE_VECTOR(uint8_t, uint8, libnux_mailbox_write_int)
-LIBNUX_WRITE_VECTOR(int8_t, int8, libnux_mailbox_write_signed_int)
-LIBNUX_WRITE_VECTOR(uint16_t, uint16, libnux_mailbox_write_int)
-LIBNUX_WRITE_VECTOR(int16_t, int16, libnux_mailbox_write_signed_int)
-#undef LIBNUX_WRITE_VECTOR
+LIBNUX_MAILBOX_WRITE_VECTOR(uint8_t, vector, libnux_mailbox_write_int)
+LIBNUX_MAILBOX_WRITE_VECTOR(uint16_t, vector, libnux_mailbox_write_int)
+LIBNUX_MAILBOX_WRITE_VECTOR(int8_t, signed_vector, libnux_mailbox_write_signed_int)
+LIBNUX_MAILBOX_WRITE_VECTOR(int16_t, signed_vector, libnux_mailbox_write_signed_int)
+
+#undef LIBNUX_MAILBOX_WRITE_VECTOR
