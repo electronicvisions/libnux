@@ -87,6 +87,16 @@ def configure(conf):
 def build(bld):
     bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
 
+    bld(
+        name = "libnux_test_helper",
+        features = "py",
+        source = bld.path.ant_glob("libnux_test_helper/*.py"),
+        relative_trick = True,
+        install_path = "${PREFIX}/lib",
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+    )
+
     chip_revision_list = ["vx"]
     chip_version_list = [["v1", "v2"]]
 
@@ -197,7 +207,7 @@ def build(bld):
                 name = "libnux_hwsimtests_" + chip_revision + "_" + chip_version,
                 tests = "test/test_hwsimtests_" + chip_revision + "_" + chip_version + ".py",
                 features = "use pytest pylint pycodestyle",
-                use = "dlens_" + chip_revision + "_" + chip_version,
+                use = ["dlens_" + chip_revision + "_" + chip_version, "libnux_test_helper"],
                 install_path = "${PREFIX}/bin/tests",
                 skip_run = not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
                 env = bld.all_envs[''],

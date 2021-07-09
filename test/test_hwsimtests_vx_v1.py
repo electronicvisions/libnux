@@ -10,8 +10,8 @@ from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
 from dlens_vx_v1 import logger
 from pyhaldls_vx_v1 import Timer
-from helpers.hwtest_common import get_special_binaries, find_binaries, \
-    PpuHwTest
+from libnux_test_helper.hwtest_common import get_special_binaries, \
+    find_binaries, PpuHwTest
 
 
 class LibnuxHwSimTestsVx(unittest.TestCase):
