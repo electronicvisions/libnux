@@ -5,6 +5,8 @@ using namespace libnux::vx;
 
 void test_reverse_byte()
 {
+	testcase_begin(__func__);
+
 	uint8_t byte_1 = 170;
 	test_equal(reverse_byte(byte_1), 85);
 
@@ -13,10 +15,14 @@ void test_reverse_byte()
 
 	uint8_t byte_3 = 0;
 	test_equal(reverse_byte(byte_3), 0);
+
+	testcase_end();
 }
 
 void test_vector_reverse_bytes()
 {
+	testcase_begin(__func__);
+
 	__vector uint8_t test_vector;
 
 	for (uint8_t i = 0; i < sizeof(__vector uint8_t); i++) {
@@ -28,6 +34,8 @@ void test_vector_reverse_bytes()
 	for (uint8_t i = 0; i < sizeof(__vector uint8_t); i++) {
 		test_equal(test_vector[i], reverse_byte(i));
 	}
+
+	testcase_end();
 }
 
 void start()
