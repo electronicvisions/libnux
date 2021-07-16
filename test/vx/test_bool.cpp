@@ -1,6 +1,6 @@
 #include "libnux/vx/unittest.h"
 #include <s2pp.h>
-#include <stddef.h>
+#include <cstddef>
 
 using namespace libnux::vx;
 

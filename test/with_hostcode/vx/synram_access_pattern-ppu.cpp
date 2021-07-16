@@ -1,5 +1,5 @@
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include "libnux/vx/dls.h"
 #include "libnux/vx/vector.h"
 

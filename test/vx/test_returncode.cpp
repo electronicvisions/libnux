@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 
 uint32_t __attribute__((optimize("O0"))) grow_stack(uint32_t const depth, uint32_t const ret) {
 	if (depth) {

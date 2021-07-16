@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/helper.h"
 
 using namespace libnux::vx;

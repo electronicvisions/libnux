@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/v2/omnibus.h"
 
 namespace libnux::vx::v2 {

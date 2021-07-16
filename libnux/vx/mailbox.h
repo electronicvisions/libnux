@@ -1,7 +1,7 @@
 #pragma once
 
 #include <s2pp.h>
-#include <stdint.h>
+#include <cstdint>
 
 extern uint8_t mailbox_base;
 extern uint8_t mailbox_end;

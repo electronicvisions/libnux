@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/exp.h"
 #include "libnux/vx/fxdpt.h"
 

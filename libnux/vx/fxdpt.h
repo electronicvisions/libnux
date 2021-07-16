@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/attrib.h"
 
 /** INV_SCALE 0x10000 is the 16.16 fixedpoint representation

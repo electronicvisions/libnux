@@ -1,8 +1,8 @@
 #include "libnux/vx/fxv.h"
 #include "libnux/vx/dls.h"
 #include "libnux/vx/sync.h"
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 namespace libnux::vx {
 

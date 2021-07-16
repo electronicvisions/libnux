@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/attrib.h"
 
 #define SPR_SETTER(name, code) \

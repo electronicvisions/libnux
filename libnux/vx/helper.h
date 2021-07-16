@@ -1,7 +1,7 @@
 #pragma once
 
 #include <array>
-#include <stdint.h>
+#include <cstdint>
 
 namespace libnux::vx {
 

@@ -1,5 +1,5 @@
 #include <s2pp.h>
-#include <libnux/vx/unittest.h>
+#include "libnux/vx/unittest.h"
 
 using namespace libnux::vx;
 

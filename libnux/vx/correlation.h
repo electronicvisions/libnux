@@ -1,7 +1,7 @@
 #pragma once
 
 #include <s2pp.h>
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/dls.h"
 
 namespace libnux::vx {

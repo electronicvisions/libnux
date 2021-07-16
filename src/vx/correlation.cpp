@@ -1,5 +1,5 @@
 #include "libnux/vx/correlation.h"
-#include <stddef.h>
+#include <cstddef>
 
 namespace libnux::vx {
 

@@ -2,7 +2,7 @@
 
 #include <limits.h>
 #include <s2pp.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace libnux::vx {
 

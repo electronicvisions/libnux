@@ -1,4 +1,4 @@
-#include <stddef.h>
+#include <cstddef>
 #include "libnux/vx/mailbox.h"
 
 namespace libnux::vx {

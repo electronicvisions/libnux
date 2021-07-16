@@ -1,4 +1,4 @@
-#include <stddef.h>
+#include <cstddef>
 #include "libnux/vx/bitformatting.h"
 
 namespace libnux::vx {

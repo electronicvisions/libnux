@@ -1,7 +1,7 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 #include "libnux/vx/attrib.h"
 #include "libnux/vx/mailbox.h"

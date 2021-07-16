@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 
 extern int32_t start();
 

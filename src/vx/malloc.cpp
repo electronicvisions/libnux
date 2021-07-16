@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/malloc.h"
 
 #ifdef MALLOC_DEBUG

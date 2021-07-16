@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/dls.h"
 #include "libnux/vx/omnibus.h"
 #include "libnux/vx/time.h"

@@ -1,5 +1,5 @@
 #include <s2pp.h>
-#include <stdint.h>
+#include <cstdint>
 #include "libnux/vx/correlation.h"
 #include "libnux/vx/dls.h"
 #include "libnux/vx/mailbox.h"
