@@ -1,9 +1,3 @@
-enum class PPUOnDLS : uint32_t
-{
-	top,
-	bottom
-};
-
 /* Size of synram */
 constexpr static uint32_t dls_num_rows = 256;
 constexpr static uint32_t dls_num_columns = 256;
