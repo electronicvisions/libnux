@@ -7,7 +7,7 @@
 .extern exit
 .extern _isr_undefined
 .extern isr_einput
-.extern isr_alignemnt
+.extern isr_alignment
 .extern isr_program
 .extern isr_doorbell
 .extern isr_fit
@@ -27,7 +27,7 @@ reset:
 	int_dstorage:  b _isr_undefined
 	int_istorage:  b _isr_undefined
 	int_einput:    b isr_einput
-	int_alignment: b isr_alignment 
+	int_alignment: b isr_alignment
 	int_program:   b isr_program
 	int_syscall:   b _isr_undefined
 	int_doorbell:  b isr_doorbell
