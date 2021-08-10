@@ -1,10 +1,14 @@
 import os
 from os.path import join
+import re
+import yaml
+from enum import Enum, auto
 
 from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
 from waflib.extras.symwaf2ic import get_toplevel_path
+from waflib.Errors import BuildError
 
 
 def depends(dep):
@@ -85,130 +89,152 @@ def configure(conf):
     conf.setenv('', env=env)
 
 def build(bld):
-    bld.env.cube_partition = "cube" == os.environ.get("SLURM_JOB_PARTITION")
+    class TestTarget(Enum):
+        SOFTWARE_ONLY = auto()
+        HARDWARE = auto()
+        SIMULATION = auto()
 
-    chip_revision_list = ["vx"]
-    chip_version_list = [["v1", "v2"]]
+    if "FLANGE_SIMULATION_RCF_PORT" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.SIMULATION
 
-    for chip_idx, chip_revision in enumerate(chip_revision_list):
-        for chip_version in chip_version_list[chip_idx]:
+        try:
+            chip_revision = int(os.environ.get("SIMULATED_CHIP_REVISION"))
+        except TypeError:
+            raise BuildError("Environment variable 'SIMULATED_CHIP_REVISION' "
+                             "not set or cannot be casted to integer.")
+        bld.env.CURRENT_SETUP = dict(chip_revision=chip_revision)
+    elif "SLURM_HWDB_ENTRIES" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.HARDWARE
+        slurm_licenses = os.environ.get("SLURM_HARDWARE_LICENSES")
+        hwdb_entries = os.environ.get("SLURM_HWDB_ENTRIES")
+        fpga_id = int(re.match(r"W(?P<wafer>\d+)F(?P<fpga>\d+)",
+                               slurm_licenses)["fpga"])
+        bld.env.CURRENT_SETUP = yaml.full_load(hwdb_entries)["fpgas"][fpga_id]
+    else:
+        bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
+        bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
-            env = bld.all_envs["nux_" + chip_revision + "_" + chip_version]
+    for chip_version_number in [1, 2]:
+        env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
-            bld(
-                target = "nux_inc_" + chip_revision + "_" + chip_version,
-                export_includes = ["."],
-                env = env,
-            )
+        bld(
+            target = f"nux_inc_vx_v{chip_version_number}",
+            export_includes = ["."],
+            env = env,
+        )
 
-            bld.stlib(
-                target = "nux_" + chip_revision + "_" + chip_version,
-                source = bld.path.ant_glob("src/" + chip_revision + "/*.cpp")
-                       + bld.path.ant_glob("src/" + chip_revision + "/" + chip_version + "/*.cpp"),
-                use = ["nux_inc_" + chip_revision + "_" + chip_version],
-                env = env,
-            )
+        bld.stlib(
+            target = f"nux_vx_v{chip_version_number}",
+            source = bld.path.ant_glob("src/vx/*.cpp")
+                     + bld.path.ant_glob(f"src/vx/v{chip_version_number}/*.cpp"),
+            use = [f"nux_inc_vx_v{chip_version_number}"],
+            env = env,
+        )
 
-            bld(
-                features = "cxx",
-                name = "nux_runtime_obj_" + chip_revision + "_" + chip_version,
-                source = ["src/start.cpp",
-                          "src/initdeinit.cpp",
-                          "src/cxa_pure_virtual.cpp",
+        bld(
+            features = "cxx",
+            name = f"nux_runtime_obj_vx_v{chip_version_number}",
+            source = ["src/start.cpp",
+                      "src/initdeinit.cpp",
+                      "src/cxa_pure_virtual.cpp",
                           "src/stack_guards.cpp"],
-                use = "nux_inc_" + chip_revision + "_" + chip_version,
-                env = env,
-            )
+                use = f"nux_inc_vx_v{chip_version_number}",
+            env = env,
+        )
 
-            bld(
-                name = "nux_runtime_shutdown_" + chip_revision + "_" + chip_version,
-                target = "crt_shutdown.o",
-                source = ["src/crt_shutdown.s"],
-                features = "use asm",
-                env = env,
-            )
+        bld(
+            name = f"nux_runtime_shutdown_vx_v{chip_version_number}",
+            target = "crt_shutdown.o",
+            source = ["src/crt_shutdown.s"],
+            features = "use asm",
+            env = env,
+        )
 
-            bld(
-                name = "nux_runtime_" + chip_revision + "_" + chip_version,
-                target = "crt.o",
-                source = ["src/crt.s"],
-                features = "use asm",
-                use = ["nux_runtime_obj_" + chip_revision + "_" + chip_version,
-                       "nux_runtime_shutdown_" + chip_revision + "_" + chip_version],
-                env=env,
-            )
+        bld(
+            name = f"nux_runtime_vx_v{chip_version_number}",
+            target = "crt.o",
+            source = ["src/crt.s"],
+            features = "use asm",
+            use = [f"nux_runtime_obj_vx_v{chip_version_number}",
+                   f"nux_runtime_shutdown_vx_v{chip_version_number}"],
+            env=env,
+        )
 
-            program_list = []
-            program_list += ["test/" + chip_revision + "/" + os.path.basename(str(f)) 
-                             for f in bld.path.ant_glob("test/" + chip_revision + "/*.cpp")]
-            program_list += ["test/" + chip_revision + "/" + chip_version + "/" + os.path.basename(str(f))
-                             for f in bld.path.ant_glob("test/" + chip_revision + "/" + chip_version + "/*.cpp")]
-            program_list += ["examples/stdp.cpp"]
+        program_list = []
+        program_list += [f"test/vx/{os.path.basename(str(f))}"
+                         for f in bld.path.ant_glob("test/vx/*.cpp")]
+        program_list += [f"test/vx/v{chip_version_number}/{os.path.basename(str(f))}"
+                         for f in bld.path.ant_glob(f"test/vx/v{chip_version_number}/*.cpp")]
+        program_list += ["examples/stdp.cpp"]
 
-            for program in program_list:
-                bld.program(
-                    features = "cxx",
-                    target = program.replace(".cpp", "") + "_" + chip_revision + "_" + chip_version + ".bin",
-                    source = [program],
-                    use = ["nux_" + chip_revision + "_" + chip_version,
-                           "nux_runtime_" + chip_revision + "_" + chip_version],
-                    env = bld.all_envs["nux_" + chip_revision + "_" + chip_version],
-                )
-
-            def max_size_empty():
-                stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
-                stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
-                build_profile = bld.options.build_profile
-
-                if not stack_protector and not stack_redzone:
-                    if build_profile == 'release':
-                        return 400
-                    else:
-                        return 544
-
-                if stack_protector and not stack_redzone:
-                    if build_profile == 'release':
-                        return 816
-                    else:
-                        return 864
-
-                if not stack_protector and stack_redzone:
-                    if build_profile == 'release':
-                        return 496
-                    else:
-                        return 608
-
-                if stack_protector and stack_redzone:
-                    if build_profile == 'release':
-                        return 928
-                    else:
-                        return 1008
-
+        for program in program_list:
             bld.program(
-                features = "cxx check_size",
-                check_size_max = max_size_empty(),
-                target = "test_empty_" + chip_revision + "_" + chip_version + ".bin",
-                source = ["test/helpers/test_empty.cpp"],
-                use = ["nux_" + chip_revision + "_" + chip_version,
-                       "nux_runtime_" + chip_revision + "_" + chip_version],
-                env = env,
+                features = "cxx",
+                target = f"{program.replace('.cpp', '')}_vx_v{chip_version_number}.bin",
+                source = [program],
+                use = [f"nux_vx_v{chip_version_number}",
+                       f"nux_runtime_vx_v{chip_version_number}"],
+                env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
             )
 
-            bld(
-                name = "libnux_hwsimtests_" + chip_revision + "_" + chip_version,
-                tests = "test/test_hwsimtests_" + chip_revision + "_" + chip_version + ".py",
-                features = "use pytest pylint pycodestyle",
-                use = "dlens_" + chip_revision + "_" + chip_version,
-                install_path = "${PREFIX}/bin/tests",
-                skip_run = not (bld.env.cube_partition or ("FLANGE_SIMULATION_RCF_PORT" in os.environ)),
-                env = bld.all_envs[''],
-                test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                                    STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                                    TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "test")),
-                pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
-                pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
-                test_timeout = 20000
-            )
+        def max_size_empty():
+            stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
+            stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
+            build_profile = bld.options.build_profile
+
+            if not stack_protector and not stack_redzone:
+                if build_profile == 'release':
+                    return 400
+                else:
+                    return 544
+
+            if stack_protector and not stack_redzone:
+                if build_profile == 'release':
+                    return 816
+                else:
+                    return 864
+
+            if not stack_protector and stack_redzone:
+                if build_profile == 'release':
+                    return 496
+                else:
+                    return 608
+
+            if stack_protector and stack_redzone:
+                if build_profile == 'release':
+                    return 928
+                else:
+                    return 1008
+
+        bld.program(
+            features = "cxx check_size",
+            check_size_max = max_size_empty(),
+            target = f"test_empty_vx_v{chip_version_number}.bin",
+            source = ["test/helpers/test_empty.cpp"],
+            use = [f"nux_vx_v{chip_version_number}",
+                   f"nux_runtime_vx_v{chip_version_number}"],
+            env = env,
+        )
+
+        bld(
+            name = f"libnux_hwsimtests_vx_v{chip_version_number}",
+            tests = f"test/test_hwsimtests_vx_v{chip_version_number}.py",
+            features = "use pytest pylint pycodestyle",
+            use = f"dlens_vx_v{chip_version_number}",
+            install_path = "${PREFIX}/bin/tests",
+            skip_run = not (((bld.env.TEST_TARGET == TestTarget.HARDWARE) or
+                             (bld.env.TEST_TARGET == TestTarget.SIMULATION))
+                            and
+                            int(bld.env.CURRENT_SETUP["chip_revision"]) ==
+                            chip_version_number),
+            env = bld.all_envs[''],
+            test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
+                                STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                                TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "test")),
+            pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
+            test_timeout = 20000
+        )
 
     bld.add_post_fun(summary)
 
@@ -219,8 +245,8 @@ class check_size(test_base.TestBase):
         test_abspath = test.abspath()
         xmlfile_abspath = self.getXMLFile(test).abspath()
         max_size = self.generator.check_size_max
-        cmd = ['python test/helpers/check_obj_size.py {} {} {}'.format(
-            test_abspath, xmlfile_abspath, max_size)]
+        cmd = [f'python test/helpers/check_obj_size.py {test_abspath} '
+               f'{xmlfile_abspath} {max_size}']
         self.runTest(test, cmd)
 
 

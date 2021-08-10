@@ -1,7 +1,19 @@
 import os
 from os.path import join
+import re
+import yaml
+from enum import Enum, auto
+from numbers import Integral
+
 from waflib.extras.test_base import summary
 from waflib.extras.symwaf2ic import get_toplevel_path
+from waflib.Errors import BuildError
+
+
+class TestTarget(Enum):
+    SOFTWARE_ONLY = auto()
+    HARDWARE = auto()
+    SIMULATION = auto()
 
 
 def depends(ctx):
@@ -22,29 +34,43 @@ def configure(conf):
 
 
 def build(bld):
-    bld.env.DLSvx_HARDWARE_AVAILABLE = "cube" == os.environ.get("SLURM_JOB_PARTITION")
-    bld.env.DLSvx_SIM_AVAILABLE = "FLANGE_SIMULATION_RCF_PORT" in os.environ
+    if "FLANGE_SIMULATION_RCF_PORT" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.SIMULATION
 
-    chip_revision_list = ["vx"]
-    chip_version_list = [["v1", "v2"]]
+        try:
+            chip_revision = int(os.environ.get("SIMULATED_CHIP_REVISION"))
+        except TypeError:
+            raise BuildError("Environment variable 'SIMULATED_CHIP_REVISION' "
+                             "not set or cannot be casted to integer.")
+        bld.env.CURRENT_SETUP = dict(chip_revision=chip_revision)
+    elif "SLURM_HWDB_ENTRIES" in os.environ:
+        bld.env.TEST_TARGET = TestTarget.HARDWARE
+        slurm_licenses = os.environ.get("SLURM_HARDWARE_LICENSES")
+        hwdb_entries = os.environ.get("SLURM_HWDB_ENTRIES")
+        fpga_id = int(re.match(r"W(?P<wafer>\d+)F(?P<fpga>\d+)",
+                               slurm_licenses)["fpga"])
+        bld.env.CURRENT_SETUP = yaml.full_load(hwdb_entries)["fpgas"][fpga_id]
+    else:
+        bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
+        bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
-    for chip_idx, chip_revision in enumerate(chip_revision_list):
-        for chip_version in chip_version_list[chip_idx]:
-            build_host_python(bld, chip_revision, chip_version)
-            build_ppu_cpp(bld, chip_revision, chip_version)
+    for chip_version_number in [1, 2]:
+        build_host_python(bld, chip_version_number)
+        build_ppu_cpp(bld, chip_version_number)
 
     bld.add_post_fun(summary)
 
 
-def build_host_python(bld, chip_revision, chip_version):
-    bld(name="libnux-simtest-log_access_pattern_" + chip_revision + "_" + chip_version,
-        tests="log_access_pattern_host_" + chip_revision + "_" + chip_version + ".py",
+def build_host_python(bld, chip_version: Integral):
+    bld(name=f"libnux-simtest-log_access_pattern_vx_v{chip_version}",
+        tests=f"log_access_pattern_host_vx_v{chip_version}.py",
         features="use pytest pylint pycodestyle",
-        use="dlens_" + chip_revision + "_" + chip_version,
+        use=f"dlens_vx_v{chip_version}",
         install_path="${PREFIX}/bin/tests/sim",
         pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
         pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-        skip_run=not bld.env.DLSvx_SIM_AVAILABLE,
+        skip_run=not (bld.env.TEST_TARGET == TestTarget.SIMULATION and
+                      int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
         test_environ=dict(
             TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
                                           "build",
@@ -60,17 +86,16 @@ def build_host_python(bld, chip_revision, chip_version):
         test_timeout=3600
         )
 
-    if chip_revision == "vx" and chip_version == "v1":
-        pass
-    else:
-        bld(name="libnux-test-neuron_reset_vector_" + chip_revision + "_" + chip_version,
-            tests="neuron_reset_vector_" + chip_revision + "_" + chip_version + ".py",
+    if chip_version == 2:  # Test runner only exists for HXv2
+        bld(name=f"libnux-test-neuron_reset_vector_vx_v{chip_version}",
+            tests=f"neuron_reset_vector_vx_v{chip_version}.py",
             features="use pytest pylint pycodestyle",
-            use="dlens_" + chip_revision + "_" + chip_version,
+            use=f"dlens_vx_v{chip_version}",
             install_path="${PREFIX}/bin/tests/sim",
             pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
             pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-            skip_run=not bld.env.DLSvx_HARDWARE_AVAILABLE,
+            skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
+                          int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
             test_environ=dict(
                 TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
                                               "build",
@@ -81,41 +106,39 @@ def build_host_python(bld, chip_revision, chip_version):
             )
 
 
-def build_ppu_cpp(bld, chip_revision, chip_version):
-    bld.program(name="libnux-test-refgen_access_pattern-ppu_" + chip_revision + "_" + chip_version,
+def build_ppu_cpp(bld, chip_version: Integral):
+    bld.program(name=f"libnux-test-refgen_access_pattern-ppu_vx_v{chip_version}",
                 features="cxx",
-                target="refgen_access_pattern-ppu_" + chip_revision + "_" + chip_version + ".bin",
-                source=chip_revision + "/refgen_access_pattern-ppu.cpp",
-                use=["nux_runtime_" + chip_revision + "_" + chip_version],
-                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+                target=f"refgen_access_pattern-ppu_vx_v{chip_version}.bin",
+                source="vx/refgen_access_pattern-ppu.cpp",
+                use=[f"nux_runtime_vx_v{chip_version}"],
+                env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
-    bld.program(name="libnux-test-synram_access_pattern-ppu_" + chip_revision + "_" + chip_version,
+    bld.program(name=f"libnux-test-synram_access_pattern-ppu_vx_v{chip_version}",
                 features="cxx",
-                target="synram_access_pattern-ppu_" + chip_revision + "_" + chip_version + ".bin",
-                source=chip_revision + "/synram_access_pattern-ppu.cpp",
-                use=["nux_runtime_" + chip_revision + "_" + chip_version],
-                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+                target=f"synram_access_pattern-ppu_vx_v{chip_version}.bin",
+                source="vx/synram_access_pattern-ppu.cpp",
+                use=[f"nux_runtime_vx_v{chip_version}"],
+                env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
-    bld.program(name="libnux-test-correlation_reset_causal-ppu_" + chip_revision + "_" + chip_version,
+    bld.program(name=f"libnux-test-correlation_reset_causal-ppu_vx_v{chip_version}",
                 features="cxx",
-                target="correlation_reset_causal-ppu_" + chip_revision + "_" + chip_version + ".bin",
-                source=chip_revision + "/correlation_reset_causal-ppu.cpp",
-                use=["nux_runtime_" + chip_revision + "_" + chip_version],
-                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+                target=f"correlation_reset_causal-ppu_vx_v{chip_version}.bin",
+                source="vx/correlation_reset_causal-ppu.cpp",
+                use=[f"nux_runtime_vx_v{chip_version}"],
+                env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
-    bld.program(name="libnux-test-neuron_reset_global-ppu_" + chip_revision + "_" + chip_version,
+    bld.program(name=f"libnux-test-neuron_reset_global-ppu_vx_v{chip_version}",
                 features="cxx",
-                target="neuron_reset_global-ppu_" + chip_revision + "_" + chip_version + ".bin",
-                source=chip_revision + "/neuron_reset_global-ppu.cpp",
-                use=["nux_runtime_" + chip_revision + "_" + chip_version],
-                env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+                target=f"neuron_reset_global-ppu_vx_v{chip_version}.bin",
+                source="vx/neuron_reset_global-ppu.cpp",
+                use=[f"nux_runtime_vx_v{chip_version}"],
+                env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
-    if chip_revision == "vx" and chip_version == "v1":
-        pass
-    else:
-        bld.program(name="libnux-test-neuron_reset_vector-ppu_" + chip_revision + "_" + chip_version,
+    if chip_version == 2:  # Test runner only exists for HXv2
+        bld.program(name=f"libnux-test-neuron_reset_vector-ppu_vx_v{chip_version}",
                     features="cxx",
-                    target="neuron_reset_vector-ppu_" + chip_revision + "_" + chip_version + ".bin",
-                    source=chip_revision + "/neuron_reset_vector-ppu.cpp",
-                    use=["nux_runtime_" + chip_revision + "_" + chip_version],
-                    env=bld.all_envs["nux_" + chip_revision + "_" + chip_version])
+                    target=f"neuron_reset_vector-ppu_vx_v{chip_version}.bin",
+                    source="vx/neuron_reset_vector-ppu.cpp",
+                    use=[f"nux_runtime_vx_v{chip_version}"],
+                    env=bld.all_envs[f"nux_vx_v{chip_version}"])
