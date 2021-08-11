@@ -1,4 +1,5 @@
 #include "libnux/vx/dls.h"
+#include "libnux/vx/location.h"
 #include "libnux/vx/unittest.h"
 #include "libnux/vx/omnibus.h"
 #include "libnux/vx/syn.h"
@@ -31,16 +32,24 @@ void set_weights_vector_unit(uint32_t const value)
 void test_omnibus()
 {
 	testcase_begin("test_omnibus");
-	auto const omnibus_address = dls_synapse_array_base;
+
+	PPUOnDLS ppu;
+	bool const success = get_location(ppu);
+	if (!success) {
+		exit(1);
+	}
+
+	omnibus_address_t omnibus_address =
+	    (ppu == PPUOnDLS::top) ? synram_top_base_address : synram_bottom_base_address;
 
 	set_weights_vector_unit(0x20202020);
 	auto read_1 = omnibus_read(omnibus_address);
-	test_equal(read_1, 0x20202020);
+	test_equal(read_1, static_cast<uint32_t>(0x20202020));
 
 	omnibus_write(omnibus_address, 0x20);
 	auto read_2 = omnibus_read(omnibus_address);
-	test_equal(read_2, 0x20);
-	test_equal(get_weights_vector_unit(), 0x20);
+	test_equal(read_2, static_cast<uint32_t>(0x20));
+	test_equal(get_weights_vector_unit(), static_cast<uint32_t>(0x20));
 
 	testcase_end();
 }
