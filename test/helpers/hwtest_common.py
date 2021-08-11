@@ -12,6 +12,7 @@ TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
                                   join(_THIS_DIR,
                                        os.pardir,
                                        os.pardir,
+                                       os.pardir,
                                        "build",
                                        "libnux",
                                        "test")
@@ -68,10 +69,7 @@ class PpuHwTest(object):
         return hash(self.path)
 
 
-def find_binaries(chip_revision: str = None,
-                  chip_version: str = None,
-                  binary_path: str = TEST_BINARY_PATH
-                  ) -> Set[PpuHwTest]:
+def find_binaries(chip_revision: str, chip_version: str) -> Set[PpuHwTest]:
     """
     Find test-binaries matching `(?:\b|_)[Tt]est`.
 
@@ -79,14 +77,8 @@ def find_binaries(chip_revision: str = None,
     """
     ret = set()
 
-    if chip_revision is None:
-        test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + r"\.bin$")
-    elif chip_version is None:
-        test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"\.bin$")
-    else:
-        test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"_" + chip_version + r"\.bin$")
-
-    for path, directories, files in os.walk(binary_path):
+    test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"_" + chip_version + r"\.bin$")
+    for path, directories, files in os.walk(TEST_BINARY_PATH):
         for f in files:
             if test_regex.search(f):
                 binary_path = os.path.realpath(join(path, f))
@@ -95,10 +87,7 @@ def find_binaries(chip_revision: str = None,
     return ret
 
 
-def get_special_binaries(chip_revision: str,
-                         chip_version: str,
-                         binary_path: str = TEST_BINARY_PATH
-                         ) -> Set[PpuHwTest]:
+def get_special_binaries(chip_revision:str, chip_version: str) -> Set[PpuHwTest]:
     """
     Compile a set of "special" hardware tests. Tests are special, if the
     default constructor of :class:`PpuHwTest` does not apply.
@@ -111,27 +100,27 @@ def get_special_binaries(chip_revision: str,
 
     test_list = {
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_unittest_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_unittest_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=1),
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_returncode_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_returncode_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=-559038737),
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_stack_guard_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_stack_guard_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=stack_protection * -559038737),
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=12 if stack_redzone else 2)
     }
 
     simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
     test_list.update({
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_cadc_static_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_cadc_static_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=0 if simulation is not None else 1,
             supports_revision=lambda rev: rev >= 2),
         PpuHwTest(
-            join(binary_path, chip_revision, f"test_synram_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision, f"test_synram_{chip_revision}_{chip_version}.bin"),
             timeout=int(2e6),
             supports_revision=lambda rev: rev >= 2),
     })
