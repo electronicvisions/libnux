@@ -114,7 +114,8 @@ def build(bld):
                 name = "nux_runtime_obj_" + chip_revision + "_" + chip_version,
                 source = ["src/start.cpp",
                           "src/initdeinit.cpp",
-                          "src/cxa_pure_virtual.cpp"],
+                          "src/cxa_pure_virtual.cpp",
+                          "src/stack_guards.cpp"],
                 use = "nux_inc_" + chip_revision + "_" + chip_version,
                 env = env,
             )

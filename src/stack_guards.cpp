@@ -1,7 +1,5 @@
 #include <cstdint>
 
-namespace libnux::vx {
-
 #ifdef LIBNUX_STACK_PROTECTOR
 
 #define STACK_GUARD_MAGIC 0xdeadbeef
@@ -40,5 +38,3 @@ asm(".globl isr_program\n"
 // clang-format on
 
 #endif
-
-} // namespace libnux
