@@ -77,13 +77,15 @@ def configure(conf):
         conf.env.append_value('ASLINKFLAGS', '--defsym=mailbox_size=4096')
         conf.env.append_value('LINKFLAGS', '-Wl,--defsym=mailbox_size=4096')
 
-    # specialize for vx-v1
-    conf.setenv('nux_vx_v1', env=conf.all_envs['nux'])
+    # specialize for vx
+    conf.setenv('nux_vx', env=conf.all_envs['nux'])
     conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
 
+    # specialize for vx-v1
+    conf.setenv('nux_vx_v1', env=conf.all_envs['nux_vx'])
+
     # specialize for vx-v2
-    conf.setenv('nux_vx_v2', env=conf.all_envs['nux'])
-    conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
+    conf.setenv('nux_vx_v2', env=conf.all_envs['nux_vx'])
 
     # restore env
     conf.setenv('', env=env)
@@ -114,6 +116,21 @@ def build(bld):
         bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
         bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
+    env = bld.all_envs["nux_vx"]
+
+    bld(
+        target = "nux_inc_vx",
+        export_includes = ["."],
+        env = env,
+    )
+
+    bld.stlib(
+        target = "nux_vx",
+        source = bld.path.ant_glob("src/vx/*.cpp"),
+        use = ["nux_inc_vx"],
+        env = env,
+    )
+
     for chip_version_number in [1, 2]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
@@ -137,8 +154,8 @@ def build(bld):
             source = ["src/start.cpp",
                       "src/initdeinit.cpp",
                       "src/cxa_pure_virtual.cpp",
-                          "src/stack_guards.cpp"],
-                use = f"nux_inc_vx_v{chip_version_number}",
+                      "src/stack_guards.cpp"],
+            use = f"nux_inc_vx_v{chip_version_number}",
             env = env,
         )
 
