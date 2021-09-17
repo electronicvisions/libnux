@@ -52,4 +52,24 @@ inline void do_not_optimize_away(T const& p)
 	asm volatile("" : : "g"(&p) : "memory");
 }
 
+/**
+ *  Tell the compiler that all memory has been touched.
+ *
+ *  Example:
+ *    ```cpp
+ *    bool sth;
+ *    // enforce existence
+ *    do_not_optimize_away(sth);
+ *    sth = false;
+ *    // memory might have changed…
+ *    clobber();
+ *    // branch has to exist
+ *    if (sth) { ... }
+ *    ```
+ */
+inline void clobber()
+{
+	asm volatile("" : : : "memory");
+}
+
 } // namespace libnux::vx
