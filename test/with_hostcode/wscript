@@ -54,7 +54,7 @@ def build(bld):
         bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
         bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
-    for chip_version_number in [1, 2]:
+    for chip_version_number in [1, 2, 3]:
         build_host_python(bld, chip_version_number)
         build_ppu_cpp(bld, chip_version_number)
 
@@ -86,7 +86,7 @@ def build_host_python(bld, chip_version: Integral):
         test_timeout=3600
         )
 
-    if chip_version == 2:  # Test runner only exists for HXv2
+    if chip_version >= 2:
         bld(name=f"libnux-test-neuron_reset_vector_vx_v{chip_version}",
             tests=f"neuron_reset_vector_vx_v{chip_version}.py",
             features="use pytest pylint pycodestyle",
@@ -135,7 +135,7 @@ def build_ppu_cpp(bld, chip_version: Integral):
                 use=[f"nux_runtime_vx_v{chip_version}"],
                 env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
-    if chip_version == 2:  # Test runner only exists for HXv2
+    if chip_version >= 2:
         bld.program(name=f"libnux-test-neuron_reset_vector-ppu_vx_v{chip_version}",
                     features="cxx",
                     target=f"neuron_reset_vector-ppu_vx_v{chip_version}.bin",

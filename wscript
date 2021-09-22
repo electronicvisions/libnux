@@ -87,6 +87,9 @@ def configure(conf):
     # specialize for vx-v2
     conf.setenv('nux_vx_v2', env=conf.all_envs['nux_vx'])
 
+    # specialize for vx-v3
+    conf.setenv('nux_vx_v3', env=conf.all_envs['nux_vx'])
+
     # restore env
     conf.setenv('', env=env)
 
@@ -131,7 +134,7 @@ def build(bld):
         env = env,
     )
 
-    for chip_version_number in [1, 2]:
+    for chip_version_number in [1, 2, 3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
         bld(
