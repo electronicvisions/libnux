@@ -3,15 +3,13 @@
 
 namespace libnux::vx {
 
-/*
-	Idle for (approx.) `cycles` cycles.
-*/
 void __attribute__((optimize("O2"))) sleep_cycles(uint32_t cycles)
 {
-	static const uint8_t offset = 9;
+	static const int8_t offset = 9;
 	time_base_t start;
 	start = get_time_base();
-	while ((uint32_t)(get_time_base() - start) <= (cycles - offset));
+	while ((int32_t)(get_time_base() - start) <= (static_cast<int32_t>(cycles) - offset))
+		;
 }
 
 time_base_t now()

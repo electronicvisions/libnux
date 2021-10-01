@@ -12,6 +12,12 @@ namespace libnux::vx {
 
 constexpr static uint32_t default_ppu_cycles_per_us = 250;
 
+/*
+ * Idle for (approx.) `cycles` cycles.
+ *
+ * The current implementation uses a narrowing conversion of the user-supplied parameter to
+ * 'int32_t'. Values that don't fit in this data type will wrap.
+ */
 void sleep_cycles(uint32_t cycles) ATTRIB_LINK_TO_INTERNAL;
 
 /*
