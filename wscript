@@ -8,7 +8,7 @@ from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
 from waflib.extras.symwaf2ic import get_toplevel_path
-from waflib.Errors import BuildError
+from waflib.Errors import BuildError, ConfigurationError
 
 
 def depends(dep):
@@ -52,8 +52,12 @@ def configure(conf):
     # now configure for nux cross compiler
     env = conf.env
     conf.setenv('nux')
-    conf.load('nux_assembler')
-    conf.load('nux_compiler')
+    have_ppu_toolchain = True
+    try:
+        conf.load('nux_assembler')
+        conf.load('nux_compiler')
+    except ConfigurationError:
+        have_ppu_toolchain = False
     conf.load('test_base')
     conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
     conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
@@ -92,8 +96,12 @@ def configure(conf):
 
     # restore env
     conf.setenv('', env=env)
+    conf.env.have_ppu_toolchain = have_ppu_toolchain
 
 def build(bld):
+    if not bld.env.have_ppu_toolchain:
+        return
+
     class TestTarget(Enum):
         SOFTWARE_ONLY = auto()
         HARDWARE = auto()
