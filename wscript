@@ -126,9 +126,17 @@ def build(bld):
     for chip_version_number in [1, 2, 3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
+        bld.install_files(
+            dest = '${PREFIX}/include/',
+            files = bld.path.ant_glob('libnux/**/*.(h|tcc)'),
+            name = f"nux_vx_v{chip_version_number}_header",
+            relative_trick = True
+        )
+
         bld(
             target = f"nux_inc_vx_v{chip_version_number}",
             export_includes = ["."],
+            depends_on = f"nux_vx_v{chip_version_number}_header",
             env = env,
         )
 
