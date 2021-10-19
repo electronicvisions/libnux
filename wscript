@@ -133,10 +133,18 @@ def build(bld):
             relative_trick = True
         )
 
+        bld.install_files(
+            dest = '${PREFIX}/share/',
+            files = bld.path.ant_glob('libnux/**/*.(x)'),
+            name = f"nux_vx_v{chip_version_number}_linker_file",
+            relative_trick = True
+        )
+
         bld(
             target = f"nux_inc_vx_v{chip_version_number}",
             export_includes = ["."],
-            depends_on = f"nux_vx_v{chip_version_number}_header",
+            depends_on = [f"nux_vx_v{chip_version_number}_header",
+                          f"nux_vx_v{chip_version_number}_linker_file"],
             env = env,
         )
 
