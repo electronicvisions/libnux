@@ -137,6 +137,7 @@ def build(bld):
             source = bld.path.ant_glob("src/vx/*.cpp")
                      + bld.path.ant_glob(f"src/vx/v{chip_version_number}/*.cpp"),
             use = [f"nux_inc_vx_v{chip_version_number}", 'hate_inc'],
+            install_path = "${PREFIX}/lib",
             env = env,
         )
 
@@ -166,6 +167,18 @@ def build(bld):
             features = "use asm",
             use = [f"nux_runtime_obj_vx_v{chip_version_number}",
                    f"nux_runtime_shutdown_vx_v{chip_version_number}"],
+            env=env,
+        )
+
+        bld.stlib(
+            name = f"nux_runtime_vx_v{chip_version_number}.o",
+            target = f"nux_runtime_vx_v{chip_version_number}.o",
+            source = ["src/crt.s"],
+            features = "cxx",
+            use = [f"nux_inc_vx_v{chip_version_number}",
+                   f"nux_runtime_obj_vx_v{chip_version_number}",
+                   f"nux_runtime_shutdown_vx_v{chip_version_number}"],
+            install_path = "${PREFIX}/lib",
             env=env,
         )
 
