@@ -5,13 +5,13 @@ import unittest
 from typing import List, Iterator, ClassVar
 
 from dlens_vx_v1.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
-    SynapseOnSynapseRow, TimerOnDLS, JTAGIdCodeOnDLS
+    SynapseOnSynapseRow, JTAGIdCodeOnDLS, BarrierOnFPGA
 from dlens_vx_v1.hxcomm import ManagedConnection
 from dlens_vx_v1.sta import generate, DigitalInit, run
 from dlens_vx_v1 import logger
 from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
-from pyhaldls_vx_v1 import SynapseQuad, Timer
+from pyhaldls_vx_v1 import SynapseQuad, Barrier
 
 _THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
@@ -75,8 +75,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
-        init_builder.write(TimerOnDLS(), Timer(0))
-        init_builder.wait_until(TimerOnDLS(), 1000)
+        init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
         run(cls.CONNECTION, init_builder.done())
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
