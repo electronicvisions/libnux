@@ -12,11 +12,11 @@ from waflib.Errors import BuildError, ConfigurationError
 
 
 def depends(dep):
-    dep("haldls")
-    dep("hate")
+    # we can't build the full stack in the wafer app
+    if "wafer" not in os.environ["SINGULARITY_APPNAME"]:
+        dep("libnux", "test")
 
-    if getattr(dep.options, 'with_libnux_test_hostcode', True):
-        dep("libnux", "test/with_hostcode")
+    dep("hate")
 
 
 def options(opt):
@@ -103,31 +103,6 @@ def build(bld):
     if not bld.env.have_ppu_toolchain:
         return
 
-    class TestTarget(Enum):
-        SOFTWARE_ONLY = auto()
-        HARDWARE = auto()
-        SIMULATION = auto()
-
-    if "FLANGE_SIMULATION_RCF_PORT" in os.environ:
-        bld.env.TEST_TARGET = TestTarget.SIMULATION
-
-        try:
-            chip_revision = int(os.environ.get("SIMULATED_CHIP_REVISION"))
-        except TypeError:
-            raise BuildError("Environment variable 'SIMULATED_CHIP_REVISION' "
-                             "not set or cannot be casted to integer.")
-        bld.env.CURRENT_SETUP = dict(chip_revision=chip_revision)
-    elif "SLURM_HWDB_ENTRIES" in os.environ:
-        bld.env.TEST_TARGET = TestTarget.HARDWARE
-        slurm_licenses = os.environ.get("SLURM_HARDWARE_LICENSES")
-        hwdb_entries = os.environ.get("SLURM_HWDB_ENTRIES")
-        fpga_id = int(re.match(r"W(?P<wafer>\d+)F(?P<fpga>\d+)",
-                               slurm_licenses)["fpga"])
-        bld.env.CURRENT_SETUP = yaml.full_load(hwdb_entries)["fpgas"][fpga_id]
-    else:
-        bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
-        bld.env.CURRENT_SETUP = dict(chip_revision=None)
-
     env = bld.all_envs["nux_vx"]
 
     bld(
@@ -194,12 +169,7 @@ def build(bld):
             env=env,
         )
 
-        program_list = []
-        program_list += [f"test/vx/{os.path.basename(str(f))}"
-                         for f in bld.path.ant_glob("test/vx/*.cpp")]
-        program_list += [f"test/vx/v{chip_version_number}/{os.path.basename(str(f))}"
-                         for f in bld.path.ant_glob(f"test/vx/v{chip_version_number}/*.cpp")]
-        program_list += ["examples/stdp.cpp"]
+        program_list = ["examples/stdp.cpp"]
 
         for program in program_list:
             bld.program(
@@ -211,107 +181,4 @@ def build(bld):
                 env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
             )
 
-        def max_size_empty():
-            stack_protector = env.LIBNUX_STACK_PROTECTOR_ENABLED[0].lower() == "true"
-            stack_redzone = env.LIBNUX_STACK_REDZONE_ENABLED[0].lower() == "true"
-            build_profile = bld.options.build_profile
-
-            if not stack_protector and not stack_redzone:
-                if build_profile == 'release':
-                    return 400
-                else:
-                    return 544
-
-            if stack_protector and not stack_redzone:
-                if build_profile == 'release':
-                    return 816
-                else:
-                    return 864
-
-            if not stack_protector and stack_redzone:
-                if build_profile == 'release':
-                    return 496
-                else:
-                    return 608
-
-            if stack_protector and stack_redzone:
-                if build_profile == 'release':
-                    return 928
-                else:
-                    return 1008
-
-        bld.program(
-            features = "cxx check_size",
-            check_size_max = max_size_empty(),
-            target = f"test_empty_vx_v{chip_version_number}.bin",
-            source = ["test/helpers/test_empty.cpp"],
-            use = [f"nux_vx_v{chip_version_number}",
-                   f"nux_runtime_vx_v{chip_version_number}"],
-            env = env,
-        )
-
-        bld(
-            name = f"libnux_hwsimtests_vx_v{chip_version_number}",
-            tests = f"test/test_hwsimtests_vx_v{chip_version_number}.py",
-            features = "use pytest pylint pycodestyle",
-            use = f"dlens_vx_v{chip_version_number}",
-            install_path = "${PREFIX}/bin/tests",
-            skip_run = not (((bld.env.TEST_TARGET == TestTarget.HARDWARE) or
-                             (bld.env.TEST_TARGET == TestTarget.SIMULATION))
-                            and
-                            int(bld.env.CURRENT_SETUP["chip_revision"]) ==
-                            chip_version_number),
-            env = bld.all_envs[''],
-            test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
-                                STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                                TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "test")),
-            pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
-            test_timeout = 20000
-        )
-
-        bld.program(
-            features = 'cxx',
-            target = f"test/barrier_two_ppus_vx_v{chip_version_number}.bin",
-            source = ['test/barrier_two_ppus.cpp'],
-            use = [f"nux_vx_c{chip_version_number}", f"nux_runtime_vx_v{chip_version_number}"],
-            env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
-        )
-
-        bld(
-            name=f"libnux_barriertest_vx_v{chip_version_number}",
-            tests=f"test/test_barrier_vx_v{chip_version_number}.py",
-            features='use pytest pylint pycodestyle',
-            use='dlens_vx',
-            install_path='${PREFIX}/bin/tests',
-            skip_run=not bld.env.cube_partition,
-            env = bld.all_envs[''],
-            test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
-            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-            test_timeout = 2000
-        )
-
     bld.add_post_fun(summary)
-
-
-class check_size(test_base.TestBase):
-    def run(self):
-        test = self.inputs[0]
-        test_abspath = test.abspath()
-        xmlfile_abspath = self.getXMLFile(test).abspath()
-        max_size = self.generator.check_size_max
-        cmd = [f'python test/helpers/check_obj_size.py {test_abspath} '
-               f'{xmlfile_abspath} {max_size}']
-        self.runTest(test, cmd)
-
-
-@feature('check_size')
-@after_method('apply_link', 'process_use', 'propagate_uselib_vars')
-def check_size_run_test(self):
-    if self.testsDisabled():
-        return
-    if self.isTestExecutionEnabled() and getattr(self, 'link_task', None):
-        t = self.create_task('check_size', self.link_task.outputs)
-        self.bld.env = self.env
-        t.init(self)
