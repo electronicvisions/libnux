@@ -6,6 +6,7 @@ using namespace libnux::vx;
 void start()
 {
 	test_init();
+	testcase_begin("global address");
 
 	{
 		constexpr auto a = GlobalAddress::from_global(0, 3);
@@ -22,21 +23,23 @@ void start()
 		uint32_t volatile* ptr_scalar = a.to_extmem().to_scalar<uint32_t>();
 		*(ptr_scalar + 17) = 17 + 4;
 		*(ptr_scalar + 18) = 17 + 4;
-		test_equal(*ptr_scalar, 17ull + 4);
-
-		__vector uint8_t tmp;
-		__vector uint8_t mask;
-		tmp = vec_splat_u8(17 + 5);
-		mask = vec_splat_u8(0);
-		mask[17] = 1;
-		auto vector_addr = a.to_extmem().to_vector_addr();
-		asm volatile("fxvcmpb %[mask]\n"
-		             "fxvstax %[data], %[base], %[index]\n"
-		             "sync\n" ::[mask] "qv"(mask),
-		             [data] "qv"(tmp), [base] "b"(vector_addr), [index] "r"(0)
-		             : "memory");
-		test_equal(*(ptr_scalar + 17), 17ull + 5);
+		test_equal(*(ptr_scalar + 17), 17ull + 4);
 		test_equal(*(ptr_scalar + 18), 17ull + 4);
+
+		// TODO: Issue 3985
+		//__vector uint8_t tmp;
+		//__vector uint8_t mask;
+		// tmp = vec_splat_u8(17 + 5);
+		// mask = vec_splat_u8(0);
+		// mask[17] = 1;
+		// auto vector_addr = a.to_extmem().to_vector_addr();
+		// asm volatile("fxvcmpb %[mask]\n"
+		//             "fxvstax %[data], %[base], %[index]\n"
+		//             "sync\n" ::[mask] "qv"(mask),
+		//             [data] "qv"(tmp), [base] "b"(vector_addr), [index] "r"(0)
+		//             : "memory");
+		// test_equal(*(ptr_scalar + 17), 17ull + 5);
+		// test_equal(*(ptr_scalar + 18), 17ull + 4);
 	}
 
 	{
@@ -112,13 +115,9 @@ void start()
 	{
 		constexpr auto c =
 		    GlobalAddress::from_relative<GlobalAddress::SRAM>(0x123, PPUOnDLS::bottom);
-		test_equal(
-		    (intptr_t) c.to_sram().to_vector<__vector uint8_t>(),
-		    (1 << 27 | 1 << 26 | 1 << 25 | 0x123 << 2));
+		test_equal((intptr_t) c.to_sram().to_vector<__vector uint8_t>(), 0x123);
 		static_assert(c.to_sram().to_vector_addr() == 0x123);
-		test_equal(
-		    (intptr_t) c.to_sram().to_scalar<__vector uint8_t>(),
-		    (1 << 27 | 1 << 26 | 1 << 25 | 0x123 << 2));
+		test_equal((intptr_t) c.to_sram().to_scalar<__vector uint8_t>(), 0x123);
 		static_assert(c.to_sram().to_scalar_addr() == 0x123);
 		static_assert(c.to_sram().to_scalar_addr(PPUOnDLS::bottom) == 0x123);
 		static_assert(
@@ -186,6 +185,7 @@ void start()
 		static_assert(static_cast<bool>(e.to_vecgen()) == false);
 		static_assert(static_cast<bool>(m.to_vecgen()) == true);
 	}
+	testcase_end();
 
 	test_summary();
 	test_shutdown();
