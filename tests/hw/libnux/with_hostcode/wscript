@@ -96,6 +96,26 @@ def build_host_python(bld, chip_version: Integral):
         test_timeout=3600
         )
 
+    bld(name=f"libnux-test-extmem_vx_v{chip_version}",
+        tests=f"extmem_vx_v{chip_version}.py",
+        features="use pytest pylint pycodestyle",
+        use=f"dlens_vx_v{chip_version}",
+        install_path="${PREFIX}/bin/tests/sim",
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+        skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
+                      int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
+        test_environ=dict(
+            TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
+                                          "build",
+                                          "libnux",
+                                          "tests",
+                                          "hw",
+                                          "libnux",
+                                          "with_hostcode")),
+        test_timeout=30
+        )
+
     if chip_version >= 2:
         bld(name=f"libnux-test-neuron_reset_vector_vx_v{chip_version}",
             tests=f"neuron_reset_vector_vx_v{chip_version}.py",
@@ -163,6 +183,13 @@ def build_ppu_cpp(bld, chip_version: Integral):
                 source="vx/neuron_reset_global-ppu.cpp",
                 use=[f"nux_runtime_vx_v{chip_version}"],
                 env=env)
+
+    bld.program(name=f"libnux-test-extmem-ppu_vx_v{chip_version}",
+                features="cxx",
+                target=f"extmem-ppu_vx_v{chip_version}.bin",
+                source="vx/extmem-ppu.cpp",
+                use=[f"nux_runtime_vx_v{chip_version}"],
+                env=bld.all_envs[f"nux_vx_v{chip_version}"])
 
     if chip_version >= 2:
         bld.program(name=f"libnux-test-neuron_reset_vector-ppu_vx_v{chip_version}",
