@@ -1,6 +1,7 @@
 MEMORY {
 	int_mem(rwx) : ORIGIN = 0x00000000, LENGTH = 16K
 	ext_mem(rwx) : ORIGIN = 0x80000000, LENGTH = 128K
+	ext_mem_data(rw) : ORIGIN = 0x40000000, LENGTH = 128K /* Same memory as ext_mem */
 }
 
 /* ECM(2017-12-04): We should provide this numbers from waf configure step FIXME */
@@ -48,7 +49,7 @@ SECTIONS {
 		PROVIDE(isr_dec = _isr_undefined);
 	} > int_mem
 
-	/* All data is placed in SRAM */
+	/* All data is placed in SRAM by default */
 	int.data : {
 		*(.data*);
 		*(.rodata*);
@@ -57,21 +58,6 @@ SECTIONS {
 	int.bss : {
 		*(.bss*);
 		*(.sbss*);
-	} > int_mem
-
-	int.init_array : {
-		PROVIDE_HIDDEN (__init_array_start = .);
-		*(.init_array*);
-		KEEP(*(SORT_BY_INIT_PRIORITY(.ctors*)));
-		PROVIDE_HIDDEN (__init_array_end = .);
-	} > int_mem
-
-	int.fini_array :
-	{
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		*(.fini_array*);
-		KEEP(*(SORT_BY_INIT_PRIORITY(.dtors*)));
-		PROVIDE_HIDDEN (__fini_array_end = .);
 	} > int_mem
 
 	_int_end = .;
@@ -99,8 +85,39 @@ SECTIONS {
 		*(.debug_*) /* live fast die young */
 	}
 
-	/* global symbol marking the end */
+	/* global symbol marking the end of ext_mem text sections */
 	_ext_end = .;
+
+	/* all extmem data is placed after text sections */
+	ext_data_offset = . - ORIGIN(ext_mem);
+	. = ORIGIN(ext_mem_data) + ext_data_offset;
+	_ext_data_begin = .;
+
+	ext.init_array (ORIGIN(ext_mem_data) + ext_data_offset) : {
+		PROVIDE_HIDDEN (__init_array_start = .);
+		*(.init_array*);
+		KEEP(*(SORT_BY_INIT_PRIORITY(.ctors*)));
+		PROVIDE_HIDDEN (__init_array_end = .);
+	} > ext_mem_data
+	ext_data_offset = ext_data_offset + SIZEOF(ext.init_array);
+
+	ext.fini_array (ORIGIN(ext_mem_data) + ext_data_offset) :
+	{
+		PROVIDE_HIDDEN (__fini_array_start = .);
+		*(.fini_array*);
+		KEEP(*(SORT_BY_INIT_PRIORITY(.dtors*)));
+		PROVIDE_HIDDEN (__fini_array_end = .);
+	} > ext_mem_data
+	ext_data_offset = ext_data_offset + SIZEOF(ext.fini_array);
+
+	ext.data (ORIGIN(ext_mem_data) + ext_data_offset) :
+	{
+		*(ext.data*);
+	} > ext_mem_data
+	ext_data_offset = ext_data_offset + SIZEOF(ext.data);
+
+	/* global symbol marking the end of ext_mem_data data sections */
+	_ext_end_data = .;
 }
 . = _int_end;
 . = ALIGN(16);
