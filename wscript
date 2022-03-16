@@ -123,20 +123,28 @@ def build(bld):
         env = env,
     )
 
+    bld.install_files(
+        dest = '${PREFIX}/include/',
+        files = bld.path.ant_glob('libnux/{,vx/}*.(h|tcc)'),
+        name = f"nux_vx_header",
+        relative_trick = True
+    )
+
+    bld.install_files(
+        dest = '${PREFIX}/share/',
+        files = bld.path.ant_glob('libnux/*.x'),
+        name = f"nux_vx_linker_file",
+        relative_trick = True
+    )
+
     for chip_version_number in [1, 2, 3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
         bld.install_files(
             dest = '${PREFIX}/include/',
-            files = bld.path.ant_glob('libnux/**/*.(h|tcc)'),
+            files = bld.path.ant_glob(f'libnux/vx/v{chip_version_number}/**/*.(h|tcc)'),
             name = f"nux_vx_v{chip_version_number}_header",
-            relative_trick = True
-        )
-
-        bld.install_files(
-            dest = '${PREFIX}/share/',
-            files = bld.path.ant_glob('libnux/**/*.(x)'),
-            name = f"nux_vx_v{chip_version_number}_linker_file",
+            depends_on = ["nux_vx_header"],
             relative_trick = True
         )
 
@@ -144,7 +152,7 @@ def build(bld):
             target = f"nux_inc_vx_v{chip_version_number}",
             export_includes = ["."],
             depends_on = [f"nux_vx_v{chip_version_number}_header",
-                          f"nux_vx_v{chip_version_number}_linker_file"],
+                          f"nux_vx_linker_file"],
             env = env,
         )
 
