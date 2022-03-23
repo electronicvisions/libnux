@@ -23,7 +23,7 @@ int32_t start(void)
 		: [stack_ptr] "=r" (stack_ptr) ::
 	);
 	// clang-format on
-	if (stack_ptr < uintptr_t(&stack_redzone)) {
+	if (stack_ptr <= uintptr_t(&stack_redzone)) {
 		return 2;
 	}
 	int x = 5;
