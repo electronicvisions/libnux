@@ -82,9 +82,11 @@ SECTIONS {
 
 /*
     With -fstack-limit-symbol=stack_redzone, function entries get checked, if
-    stack pointer is below stack_redzone + 48 bytes.
-    This offset maybe subject to change with a different compiler version.
+    stack pointer is below stack_redzone + 32 bytes.
+    This offset may be subject to change with a different compiler version.
+    We add another 16 bytes on top of the last section as margin for error.
 */
+. += 16;
 stack_redzone = .;
 
 ASSERT( . < mailbox_base, "Filled mailbox ram region, aborting.");

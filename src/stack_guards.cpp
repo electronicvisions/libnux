@@ -23,10 +23,10 @@ extern uint32_t stack_redzone;
 // "naked" function
 asm(".globl isr_program\n"
 	"isr_program:\n"
-	// fstack-limit-symbol=sym limits at sym+48
+	// fstack-limit-symbol=sym limits at sym+32
 	"lis 9, stack_redzone@h\n"
 	"addi 9, 9, stack_redzone@l\n"
-	"addi 9, 9, 48\n"
+	"addi 9, 9, 32\n"
 	"cmplw cr7, 1, 9\n"
 	// return ENOMEM=12 on stack overflow
 	"li 3, 12\n"
