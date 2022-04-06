@@ -15,7 +15,7 @@ int32_t start(void)
 {
 	uintptr_t stack_ptr;
 	// return 2 if stack redzone does not work, which is defined here as the stack pointer is
-	// smaller equal than the stack_redzone symbol location.
+	// smaller equal than the stack_redzone symbol location (minus a margin for error of 64 bytes).
 	// clang-format off
 	asm volatile (
 		// load stack pointer
@@ -23,7 +23,7 @@ int32_t start(void)
 		: [stack_ptr] "=r" (stack_ptr) ::
 	);
 	// clang-format on
-	if (stack_ptr <= uintptr_t(&stack_redzone)) {
+	if (stack_ptr <= uintptr_t(&stack_redzone) - 64) {
 		return 2;
 	}
 	int x = 5;

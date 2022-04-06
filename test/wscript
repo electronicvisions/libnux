@@ -95,27 +95,27 @@ def build(bld):
 
             if not stack_protector and not stack_redzone:
                 if build_profile == 'release':
-                    return 400
-                else:
-                    return 544
-
-            if stack_protector and not stack_redzone:
-                if build_profile == 'release':
-                    return 816
-                else:
-                    return 864
-
-            if not stack_protector and stack_redzone:
-                if build_profile == 'release':
-                    return 496
+                    return 528
                 else:
                     return 608
 
+            if stack_protector and not stack_redzone:
+                if build_profile == 'release':
+                    return 944
+                else:
+                    return 992
+
+            if not stack_protector and stack_redzone:
+                if build_profile == 'release':
+                    return 560
+                else:
+                    return 672
+
             if stack_protector and stack_redzone:
                 if build_profile == 'release':
-                    return 928
+                    return 992
                 else:
-                    return 1008
+                    return 1072
 
         bld.program(
             features = "cxx check_size",
