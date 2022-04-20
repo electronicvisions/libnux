@@ -13,7 +13,7 @@ from waflib.Errors import BuildError, ConfigurationError
 
 def depends(dep):
     # we can't build the full stack in the wafer app
-    if "wafer" not in os.environ["SINGULARITY_APPNAME"]:
+    if (os.environ.get("SINGULARITY_APPNAME") is None) or ("wafer" not in os.environ.get("SINGULARITY_APPNAME")):
         dep("libnux", "test")
 
     dep("hate")
