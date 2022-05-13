@@ -194,7 +194,7 @@ inline vector_row_t get_row_via_omnibus(size_t const row, uint32_t const base)
 }
 
 
-vector_type get_vector(uint32_t base, uint32_t index)
+inline vector_type get_vector(uint32_t base, uint32_t index)
 {
 	uint32_t zero = 0;
 	vector_type values;
@@ -214,7 +214,7 @@ vector_type get_vector(uint32_t base, uint32_t index)
 	return values;
 }
 
-void set_vector(vector_type const& values, uint32_t base, uint32_t index)
+inline void set_vector(vector_type const& values, uint32_t base, uint32_t index)
 {
 	uint32_t zero = 0;
 	asm volatile(
