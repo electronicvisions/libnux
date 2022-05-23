@@ -3,15 +3,15 @@ import unittest
 from numbers import Integral
 from typing import Set, ClassVar
 
-from dlens_vx_v1.hxcomm import ManagedConnection
-from dlens_vx_v1.sta import generate, DigitalInit, run
-from dlens_vx_v1.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
-from dlens_vx_v1.tools.run_ppu_program import load_and_start_program, \
+from dlens_vx_v2.hxcomm import ManagedConnection
+from dlens_vx_v2.sta import generate, DigitalInit, run
+from dlens_vx_v2.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS
+from dlens_vx_v2.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
-from dlens_vx_v1 import logger
-from pyhaldls_vx_v1 import Timer
-from helpers.hwtest_common import get_special_binaries, find_binaries, \
-    PpuHwTest
+from dlens_vx_v2 import logger
+from pyhaldls_vx_v2 import Timer
+from libnux_test_helpers.hwtest_common import get_special_binaries, \
+    find_binaries, PpuHwTest
 
 
 class LibnuxHwSimTestsVx(unittest.TestCase):
@@ -80,8 +80,8 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
             setattr(LibnuxHwSimTestsVx, test.name, test_method)
 
 
-LibnuxHwSimTestsVx.TESTS.update(get_special_binaries("vx", "v1"))
-LibnuxHwSimTestsVx.TESTS.update(find_binaries("vx", "v1"))
+LibnuxHwSimTestsVx.TESTS.update(get_special_binaries("vx", "v2"))
+LibnuxHwSimTestsVx.TESTS.update(find_binaries("vx", "v2"))
 LibnuxHwSimTestsVx.generate_cases()
 
 if __name__ == '__main__':

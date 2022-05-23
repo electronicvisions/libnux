@@ -15,7 +15,9 @@ TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
                                        os.pardir,
                                        "build",
                                        "libnux",
-                                       "test")
+                                       "tests",
+                                       "hw",
+                                       "libnux")
                                   )
 
 if not os.path.isdir(TEST_BINARY_PATH):
@@ -23,12 +25,12 @@ if not os.path.isdir(TEST_BINARY_PATH):
                        f"does not exist!")
 
 
-class PpuHwTest(object):
+class PpuHwTest:
     """
     Encapsulation for a PPU hardware test. Tests are single programs to be run
     on hardware.
     """
-
+    # pylint: disable=too-many-arguments
     def __init__(self, binary_path: str,
                  expected_exit_code: int = 0,
                  expect_timeout: bool = False,
@@ -77,17 +79,19 @@ def find_binaries(chip_revision: str, chip_version: str) -> Set[PpuHwTest]:
     """
     ret = set()
 
-    test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"_" + chip_version + r"\.bin$")
-    for path, directories, files in os.walk(TEST_BINARY_PATH):
-        for f in files:
-            if test_regex.search(f):
-                binary_path = os.path.realpath(join(path, f))
+    test_regex = re.compile(r"(?:\b|_)[Tt]est.*" + chip_revision + r"_"
+                            + chip_version + r"\.bin$")
+    for path, _, files in os.walk(TEST_BINARY_PATH):
+        for value in files:
+            if test_regex.search(value):
+                binary_path = os.path.realpath(join(path, value))
                 ret.add(PpuHwTest(binary_path))
 
     return ret
 
 
-def get_special_binaries(chip_revision:str, chip_version: str) -> Set[PpuHwTest]:
+def get_special_binaries(chip_revision: str, chip_version: str) \
+        -> Set[PpuHwTest]:
     """
     Compile a set of "special" hardware tests. Tests are special, if the
     default constructor of :class:`PpuHwTest` does not apply.
@@ -100,27 +104,33 @@ def get_special_binaries(chip_revision:str, chip_version: str) -> Set[PpuHwTest]
 
     test_list = {
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_unittest_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_unittest_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=1),
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_returncode_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_returncode_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=-559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_stack_guard_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_stack_guard_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=stack_protection * -559038737),
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=12 if stack_redzone else 2)
     }
 
     simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
     test_list.update({
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_cadc_static_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_cadc_static_{chip_revision}_{chip_version}.bin"),
             expected_exit_code=0 if simulation is not None else 1,
             supports_revision=lambda rev: rev >= 2),
         PpuHwTest(
-            join(TEST_BINARY_PATH, chip_revision, f"test_synram_{chip_revision}_{chip_version}.bin"),
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_synram_{chip_revision}_{chip_version}.bin"),
             timeout=int(2e6),
             supports_revision=lambda rev: rev >= 2),
     })

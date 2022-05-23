@@ -16,7 +16,7 @@ def depends(dep):
     dep("libnux")
 
     if getattr(dep.options, 'with_libnux_test_hostcode', True):
-        dep("libnux", "test/with_hostcode")
+        dep("libnux", "tests/hw/libnux/with_hostcode")
 
 
 def options(opt):
@@ -69,14 +69,25 @@ def build(bld):
         bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
         bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
+    bld(name='libnux_test_helpers',
+        features='py pylint pycodestyle',
+        source=bld.path.ant_glob('common/libnux_test_helpers/*.py'),
+        install_path='${PREFIX}/lib',
+        install_from='common',
+        relative_trick=True,
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+        test_timeout=120,
+        )
+
     for chip_version_number in [1, 2, 3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
         program_list = []
-        program_list += [f"vx/{os.path.basename(str(f))}"
-                         for f in bld.path.ant_glob("vx/*.cpp")]
-        program_list += [f"vx/v{chip_version_number}/{os.path.basename(str(f))}"
-                         for f in bld.path.ant_glob(f"vx/v{chip_version_number}/*.cpp")]
+        program_list += [f"hw/libnux/vx/{os.path.basename(str(f))}"
+                         for f in bld.path.ant_glob("hw/libnux/vx/*.cpp")]
+        program_list += [f"hw/libnux/vx/v{chip_version_number}/{os.path.basename(str(f))}"
+                         for f in bld.path.ant_glob(f"hw/libnux/vx/v{chip_version_number}/*.cpp")]
 
         for program in program_list:
             bld.program(
@@ -121,7 +132,7 @@ def build(bld):
             features = "cxx check_size",
             check_size_max = max_size_empty(),
             target = f"test_empty_vx_v{chip_version_number}.bin",
-            source = ["helpers/test_empty.cpp"],
+            source = ["sw/libnux/test_empty.cpp"],
             use = [f"nux_vx_v{chip_version_number}",
                    f"nux_runtime_vx_v{chip_version_number}"],
             env = env,
@@ -129,9 +140,9 @@ def build(bld):
 
         bld(
             name = f"libnux_hwsimtests_vx_v{chip_version_number}",
-            tests = f"test_hwsimtests_vx_v{chip_version_number}.py",
+            tests = f"hw/libnux/test_hwsimtests_vx_v{chip_version_number}.py",
             features = "use pytest pylint pycodestyle",
-            use = f"dlens_vx_v{chip_version_number}",
+            use = [f"dlens_vx_v{chip_version_number}", "libnux_test_helpers"],
             install_path = "${PREFIX}/bin/tests",
             skip_run = not (((bld.env.TEST_TARGET == TestTarget.HARDWARE) or
                              (bld.env.TEST_TARGET == TestTarget.SIMULATION))
@@ -141,32 +152,10 @@ def build(bld):
             env = bld.all_envs[''],
             test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                                 STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
-                                TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "test")),
+                                TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "tests", "hw", "libnux")),
             pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
             pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
             test_timeout = 20000
-        )
-
-        bld.program(
-            features = 'cxx',
-            target = f"barrier_two_ppus_vx_v{chip_version_number}.bin",
-            source = ['barrier_two_ppus.cpp'],
-            use = [f"nux_vx_v{chip_version_number}", f"nux_runtime_vx_v{chip_version_number}"],
-            env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
-        )
-
-        bld(
-            name=f"libnux_barriertest_vx_v{chip_version_number}",
-            tests=f"test_barrier_vx_v{chip_version_number}.py",
-            features='use pytest pylint pycodestyle',
-            use='dlens_vx',
-            install_path='${PREFIX}/bin/tests',
-            skip_run=not bld.env.cube_partition,
-            env = bld.all_envs[''],
-            test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'test')),
-            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
-            test_timeout = 2000
         )
 
 
@@ -176,7 +165,7 @@ class check_size(test_base.TestBase):
         test_abspath = test.abspath()
         xmlfile_abspath = self.getXMLFile(test).abspath()
         max_size = self.generator.check_size_max
-        cmd = [f'python helpers/check_obj_size.py {test_abspath} '
+        cmd = [f'python sw/libnux/check_obj_size.py {test_abspath} '
                f'{xmlfile_abspath} {max_size}']
         self.runTest(test, cmd)
 

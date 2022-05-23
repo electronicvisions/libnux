@@ -83,7 +83,9 @@ def build_host_python(bld, chip_version: Integral):
             TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
                                           "build",
                                           "libnux",
-                                          "test",
+                                          "tests",
+                                          "hw",
+                                          "libnux",
                                           "with_hostcode"),
             FLANGE_LOG_PATH=os.path.join(get_toplevel_path(),
                                          "hxfpga",
@@ -108,10 +110,26 @@ def build_host_python(bld, chip_version: Integral):
                 TEST_BINARY_PATH=os.path.join(get_toplevel_path(),
                                               "build",
                                               "libnux",
-                                              "test",
+                                              "tests",
+                                              "hw",
+                                              "libnux",
                                               "with_hostcode")),
             test_timeout=30
             )
+
+        bld(
+            name=f"libnux_barriertest_vx_v{chip_version}",
+            tests=f"test_barrier_vx_v{chip_version}.py",
+            features='use pytest pylint pycodestyle',
+            use='dlens_vx',
+            install_path='${PREFIX}/bin/tests',
+            skip_run=not bld.env.cube_partition,
+            env = bld.all_envs[''],
+            test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'tests', 'hw', 'libnux', 'with_hostcode')),
+            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
+            test_timeout = 2000
+        )
 
 
 def build_ppu_cpp(bld, chip_version: Integral):
@@ -150,3 +168,11 @@ def build_ppu_cpp(bld, chip_version: Integral):
                     source="vx/neuron_reset_vector-ppu.cpp",
                     use=[f"nux_runtime_vx_v{chip_version}"],
                     env=bld.all_envs[f"nux_vx_v{chip_version}"])
+
+    bld.program(
+        features = 'cxx',
+        target = f"barrier_two_ppus_vx_v{chip_version}.bin",
+        source = ['vx/barrier_two_ppus.cpp'],
+        use = [f"nux_vx_v{chip_version}", f"nux_runtime_vx_v{chip_version}"],
+        env = bld.all_envs[f"nux_vx_v{chip_version}"],
+    )

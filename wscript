@@ -14,7 +14,7 @@ from waflib.Errors import BuildError, ConfigurationError
 def depends(dep):
     # we can't build the full stack in the wafer app
     if (os.environ.get("SINGULARITY_APPNAME") is None) or ("wafer" not in os.environ.get("SINGULARITY_APPNAME")):
-        dep("libnux", "test")
+        dep("libnux", "tests")
 
     dep("hate")
 
@@ -67,8 +67,8 @@ def configure(conf):
     except ConfigurationError:
         have_ppu_toolchain = False
     conf.load('test_base')
-    conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
-    conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('libnux/elf32nux.x').abspath())
+    conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('share/libnux/elf32nux.x').abspath())
+    conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('share/libnux/elf32nux.x').abspath())
     if(conf.options.stack_protector):
         conf.define("LIBNUX_STACK_PROTECTOR", True)
         conf.env.append_value('LIBNUX_STACK_PROTECTOR_ENABLED', 'True')
@@ -117,24 +117,24 @@ def build(bld):
 
     bld(
         target = 'nux_inc_host_vx',
-        export_includes = ['.']
+        export_includes = ['include']
     )
 
     bld(
         target = "nux_inc_vx",
-        export_includes = ["."],
+        export_includes = ["include"],
         env = env,
     )
 
     bld.stlib(
         target = "nux_vx",
-        source = bld.path.ant_glob("src/vx/*.cpp"),
+        source = bld.path.ant_glob("src/libnux/vx/*.cpp"),
         use = ["nux_inc_vx"],
         env = env,
     )
 
     bld.install_files(
-        dest = '${PREFIX}/include/',
+        dest = '${PREFIX}/',
         files = bld.path.ant_glob('libnux/*.(h|tcc|hpp)')
                 + bld.path.ant_glob('libnux/vx/*.(h|tcc|hpp)')
                 + bld.path.ant_glob('libnux/scheduling/*.(h|tcc|hpp)'),
@@ -143,8 +143,8 @@ def build(bld):
     )
 
     bld.install_files(
-        dest = '${PREFIX}/share/',
-        files = bld.path.ant_glob('libnux/*.x'),
+        dest = '${PREFIX}/',
+        files = bld.path.ant_glob('share/libnux/*.x'),
         name = f"nux_vx_linker_file",
         relative_trick = True
     )
@@ -153,8 +153,8 @@ def build(bld):
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
         bld.install_files(
-            dest = '${PREFIX}/include/',
-            files = bld.path.ant_glob(f'libnux/vx/v{chip_version_number}/**/*.(h|tcc|hpp)'),
+            dest = '${PREFIX}/',
+            files = bld.path.ant_glob(f'include/libnux/vx/v{chip_version_number}/**/*.(h|tcc|hpp)'),
             name = f"nux_vx_v{chip_version_number}_header",
             depends_on = ["nux_vx_header"],
             relative_trick = True
@@ -162,7 +162,7 @@ def build(bld):
 
         bld(
             target = f"nux_inc_vx_v{chip_version_number}",
-            export_includes = ["."],
+            export_includes = ["include"],
             depends_on = [f"nux_vx_v{chip_version_number}_header",
                           f"nux_vx_linker_file"],
             env = env,
@@ -170,8 +170,8 @@ def build(bld):
 
         bld.stlib(
             target = f"nux_vx_v{chip_version_number}",
-            source = bld.path.ant_glob("src/vx/*.cpp")
-                     + bld.path.ant_glob(f"src/vx/v{chip_version_number}/*.cpp"),
+            source = bld.path.ant_glob("src/libnux/vx/*.cpp")
+                     + bld.path.ant_glob(f"src/libnux/vx/v{chip_version_number}/*.cpp"),
             use = [f"nux_inc_vx_v{chip_version_number}", 'hate_inc'],
             install_path = "${PREFIX}/lib",
             env = env,
@@ -180,10 +180,10 @@ def build(bld):
         bld(
             features = "cxx",
             name = f"nux_runtime_obj_vx_v{chip_version_number}",
-            source = ["src/start.cpp",
-                      "src/initdeinit.cpp",
-                      "src/cxa_pure_virtual.cpp",
-                      "src/stack_guards.cpp"],
+            source = ["src/nux_runtime/start.cpp",
+                      "src/nux_runtime/initdeinit.cpp",
+                      "src/nux_runtime/cxa_pure_virtual.cpp",
+                      "src/nux_runtime/stack_guards.cpp"],
             use = f"nux_inc_vx_v{chip_version_number}",
             env = env,
         )
@@ -191,7 +191,7 @@ def build(bld):
         bld(
             name = f"nux_runtime_shutdown_vx_v{chip_version_number}",
             target = "crt_shutdown.o",
-            source = ["src/crt_shutdown.s"],
+            source = ["src/nux_runtime/crt_shutdown.s"],
             features = "use asm",
             env = env,
         )
@@ -199,7 +199,7 @@ def build(bld):
         bld(
             name = f"nux_runtime_vx_v{chip_version_number}",
             target = "crt.o",
-            source = ["src/crt.s"],
+            source = ["src/nux_runtime/crt.s"],
             features = "use asm",
             use = [f"nux_runtime_obj_vx_v{chip_version_number}",
                    f"nux_runtime_shutdown_vx_v{chip_version_number}"],
@@ -209,7 +209,7 @@ def build(bld):
         bld.stlib(
             name = f"nux_runtime_vx_v{chip_version_number}.o",
             target = f"nux_runtime_vx_v{chip_version_number}.o",
-            source = ["src/crt.s"],
+            source = ["src/nux_runtime/crt.s"],
             features = "cxx",
             use = [f"nux_inc_vx_v{chip_version_number}",
                    f"nux_runtime_obj_vx_v{chip_version_number}",
