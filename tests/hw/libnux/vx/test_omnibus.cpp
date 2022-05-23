@@ -1,3 +1,4 @@
+#include "libnux/system.h"
 #include "libnux/vx/dls.h"
 #include "libnux/vx/location.h"
 #include "libnux/vx/omnibus.h"

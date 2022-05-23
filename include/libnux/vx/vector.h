@@ -1,10 +1,10 @@
 #pragma once
 
-#include <array>
-#include <cstddef>
-#include <cstdint>
 #include "libnux/vx/dls.h"
 #include "libnux/vx/omnibus.h"
+#include <cstddef>
+#include <cstdint>
+#include <s2pp.h>
 
 namespace libnux::vx {
 
@@ -12,10 +12,8 @@ namespace libnux::vx {
  * One vector as processed by the PPU's vector unit.
  * A row in the chip's synapse memory or CADC may be composed by multiple of these.
  *
- * Empirical results show that these vectors need to be 32bit-word aligned for usage as
- * inputs/outputs in fxvinx/fxvoutx.
  */
-typedef std::array<uint8_t, dls_vector_size> __attribute__((aligned(4))) vector_type;
+typedef __vector uint8_t vector_type;
 
 /**
  * A single row in the chip's synapse memory or CADC.
@@ -29,10 +27,7 @@ struct vector_row_t
 
 	bool operator==(vector_row_t const& rhs) const
 	{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-attributes"
-		for (size_t i = 0; i < std::tuple_size<vector_type>::value; ++i) {
-#pragma GCC diagnostic pop
+		for (size_t i = 0; i < sizeof(vector_type); ++i) {
 			if (even_columns[i] != rhs.even_columns[i]) {
 				return false;
 			}
@@ -47,10 +42,8 @@ struct vector_row_t
 
 	void fill(uint8_t const value)
 	{
-		for (size_t i = 0; i < dls_vector_size; ++i) {
-			even_columns[i] = value;
-			odd_columns[i] = value;
-		}
+		even_columns = vec_splat_u8(value);
+		odd_columns = vec_splat_u8(value);
 	}
 
 	uint8_t const& operator[](size_t const i) const
@@ -73,23 +66,17 @@ struct vector_row_t
  */
 inline vector_row_t get_row_via_vector(size_t const row_id, uint32_t const base)
 {
-	static constexpr uint32_t zero = 0;
 	vector_row_t values;
 	asm volatile(
 	    // clang-format off
-		"fxvinx 1, %[base], %[first_index]\n"
-		"fxvinx 2, %[base], %[second_index]\n"
-		"fxvstax 1, %[slindex], %[zero]\n"
-		"fxvstax 2, %[srindex], %[zero]\n"
+		"fxvinx %[even], %[base], %[first_index]\n"
+		"fxvinx %[odd], %[base], %[second_index]\n"
 		"sync\n"
-		: "+m"(const_cast<vector_type &>(values.even_columns)),
-		"+m"(const_cast<vector_type &>(values.odd_columns))
+		: [even] "=qv" (values.even_columns),
+		  [odd] "=qv" (values.odd_columns)
 		: [base] "b"(base),
 		[first_index] "r"(row_id * 2),
-		[second_index] "r"(row_id * 2 + 1),
-		[slindex] "r"(values.even_columns.data()),
-		[srindex] "r"(values.odd_columns.data()),
-		[zero] "r"(zero)
+		[second_index] "r"(row_id * 2 + 1)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -105,23 +92,17 @@ inline vector_row_t get_row_via_vector(size_t const row_id, uint32_t const base)
  */
 inline void set_row_via_vector(vector_row_t const& values, size_t const row_id, uint32_t const base)
 {
-	static constexpr uint32_t zero = 0;
 	asm volatile(
 	    // clang-format off
-		"fxvlax 1, %[slindex], %[zero]\n"
-		"fxvlax 2, %[srindex], %[zero]\n"
-		"fxvoutx 1, %[base], %[first_index]\n"
-		"fxvoutx 2, %[base], %[second_index]\n"
+		"fxvoutx %[even], %[base], %[first_index]\n"
+		"fxvoutx %[odd], %[base], %[second_index]\n"
 		"sync\n"
 		:
 		: [base] "b"(base),
 		[first_index] "r"(row_id * 2),
 		[second_index] "r"(row_id * 2 + 1),
-		[zero] "r"(zero),
-				"m"(const_cast<vector_type &>(values.even_columns)),
-				"m"(const_cast<vector_type &>(values.odd_columns)),
-		[slindex] "r"(values.even_columns.data()),
-		[srindex] "r"(values.odd_columns.data())
+		[even] "qv" (values.even_columns),
+		[odd] "qv" (values.odd_columns)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -137,31 +118,21 @@ inline void set_row_via_vector(vector_row_t const& values, size_t const row_id, 
 inline void set_row_via_vector_masked(
     vector_row_t const& values, vector_row_t const& mask, size_t const row_id, uint32_t const base)
 {
-	static constexpr uint32_t zero = 0;
 	asm volatile(
 	    // clang-format off
-		"fxvlax %3, %[mlindex], %[zero]\n"
-		"fxvlax %4, %[mrindex], %[zero]\n"
-		"fxvlax %1, %[slindex], %[zero]\n"
-		"fxvlax %2, %[srindex], %[zero]\n"
-		"fxvcmpb %3\n"
-		"fxvoutx %1, %[base], %[first_index], 1\n"
-		"fxvcmpb %4\n"
-		"fxvoutx %2, %[base], %[second_index], 1\n"
+		"fxvcmpb %[mask_even]\n"
+		"fxvoutx %[even], %[base], %[first_index], 1\n"
+		"fxvcmpb %[mask_odd]\n"
+		"fxvoutx %[odd], %[base], %[second_index], 1\n"
 		"sync\n"
 		:
 		: [base] "b" (base),
 		  [first_index] "r" (row_id*2),
 		  [second_index] "r" (row_id*2+1),
-		  [slindex] "r" (values.even_columns.data()),
-		  [srindex] "r" (values.odd_columns.data()),
-		  [mlindex] "r" (mask.even_columns.data()),
-		  [mrindex] "r" (mask.odd_columns.data()),
-		  [zero] "r" (zero),
-		  "m"(const_cast<vector_type &>(values.even_columns)),
-		  "m"(const_cast<vector_type &>(values.odd_columns)),
-		  "m"(const_cast<vector_type &>(mask.even_columns)),
-		  "m"(const_cast<vector_type &>(mask.odd_columns))
+		  [even] "qv"(values.even_columns),
+		  [odd] "qv"(values.odd_columns),
+		  [mask_even] "qv"(mask.even_columns),
+		  [mask_odd] "qv"(mask.odd_columns)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -196,18 +167,14 @@ inline vector_row_t get_row_via_omnibus(size_t const row, uint32_t const base)
 
 inline vector_type get_vector(uint32_t base, uint32_t index)
 {
-	uint32_t zero = 0;
 	vector_type values;
 	asm volatile(
 	    // clang-format off
-		"fxvinx %1, %[base], %[index]\n"
-		"fxvstax %1, %[sindex], %[zero]\n"
+		"fxvinx %[values], %[base], %[index]\n"
 		"sync\n"
-		: "+m"(const_cast<vector_type &>(values))
+		: [values] "=qv" (values)
 		: [base] "b" (base),
-		  [index] "r" (index),
-		  [sindex] "r" (values.data()),
-		  [zero] "r" (zero)
+		  [index] "r" (index)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -216,18 +183,14 @@ inline vector_type get_vector(uint32_t base, uint32_t index)
 
 inline void set_vector(vector_type const& values, uint32_t base, uint32_t index)
 {
-	uint32_t zero = 0;
 	asm volatile(
 	    // clang-format off
-		"fxvlax %1, %[sindex], %[zero]\n"
-		"fxvoutx %1, %[base], %[index]\n"
+		"fxvoutx %[values], %[base], %[index]\n"
 		"sync\n"
 		:
 		: [base] "b" (base),
 		  [index] "r" (index),
-		  [sindex] "r" (values.data()),
-		  [zero] "r" (zero),
-		  "m"(const_cast<vector_type &>(values))
+		  [values] "qv" (values)
 		: /* no clobber */
 	    // clang-format on
 	);
