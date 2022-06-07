@@ -4,6 +4,7 @@ import re
 import yaml
 from enum import Enum, auto
 
+from waflib import Logs
 from waflib.TaskGen import feature, after_method
 from waflib.extras import test_base
 from waflib.extras.test_base import summary
@@ -66,6 +67,7 @@ def configure(conf):
         conf.load('nux_compiler')
     except ConfigurationError:
         have_ppu_toolchain = False
+        Logs.warn("ppu-toolchain not found, disabling PPU support")
     conf.load('test_base')
     conf.env.append_value('LINKFLAGS', '-T%s' % conf.path.find_node('share/libnux/elf32nux.x').abspath())
     conf.env.append_value('ASLINKFLAGS', '-T%s' % conf.path.find_node('share/libnux/elf32nux.x').abspath())
