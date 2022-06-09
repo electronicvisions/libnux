@@ -74,6 +74,7 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             builder.write(nrn, config)
         config = hal.NeuronBackendConfig()
         config.enable_spike_out = True
+        config.refractory_time = 10
         for nrn in iter_all(halco.NeuronBackendConfigOnDLS):
             builder.write(nrn, config)
         config = hal.CommonNeuronBackendConfig()
