@@ -134,9 +134,9 @@ def build(bld):
 
     bld.install_files(
         dest = '${PREFIX}/',
-        files = bld.path.ant_glob('libnux/*.(h|tcc|hpp)')
-                + bld.path.ant_glob('libnux/vx/*.(h|tcc|hpp)')
-                + bld.path.ant_glob('libnux/scheduling/*.(h|tcc|hpp)'),
+        files = bld.path.ant_glob('include/libnux/*.(h|tcc|hpp)')
+                + bld.path.ant_glob('include/libnux/vx/*.(h|tcc|hpp)')
+                + bld.path.ant_glob('include/libnux/scheduling/*.(h|tcc|hpp)'),
         name = f"nux_vx_header",
         relative_trick = True
     )
