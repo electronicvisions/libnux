@@ -98,9 +98,6 @@ def configure(conf):
     conf.setenv('nux_vx', env=conf.all_envs['nux'])
     conf.env.append_value('CXXFLAGS', '-mcpu=s2pp_hx')
 
-    # specialize for vx-v1
-    conf.setenv('nux_vx_v1', env=conf.all_envs['nux_vx'])
-
     # specialize for vx-v2
     conf.setenv('nux_vx_v2', env=conf.all_envs['nux_vx'])
 
@@ -151,7 +148,7 @@ def build(bld):
         relative_trick = True
     )
 
-    for chip_version_number in [1, 2, 3]:
+    for chip_version_number in [2, 3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
 
         bld.install_files(
