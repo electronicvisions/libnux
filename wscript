@@ -112,7 +112,8 @@ def build(bld):
     if not bld.env.have_ppu_toolchain:
         return
 
-    env = bld.all_envs["nux_vx"]
+    env = bld.all_envs["nux_vx"].derive()
+    env.detach()
 
     bld(
         target = 'nux_inc_host_vx',
@@ -149,7 +150,8 @@ def build(bld):
     )
 
     for chip_version_number in [2, 3]:
-        env = bld.all_envs[f"nux_vx_v{chip_version_number}"]
+        env = bld.all_envs[f"nux_vx_v{chip_version_number}"].derive()
+        env.detach()
 
         bld.install_files(
             dest = '${PREFIX}/',
@@ -226,7 +228,7 @@ def build(bld):
                 source = [program],
                 use = [f"nux_vx_v{chip_version_number}",
                        f"nux_runtime_vx_v{chip_version_number}"],
-                env = bld.all_envs[f"nux_vx_v{chip_version_number}"],
+                env = env,
             )
 
     bld.add_post_fun(summary)

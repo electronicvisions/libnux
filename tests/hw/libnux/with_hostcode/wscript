@@ -133,33 +133,36 @@ def build_host_python(bld, chip_version: Integral):
 
 
 def build_ppu_cpp(bld, chip_version: Integral):
+    env = bld.all_envs[f"nux_vx_v{chip_version}"].derive()
+    env.detach()
+
     bld.program(name=f"libnux-test-refgen_access_pattern-ppu_vx_v{chip_version}",
                 features="cxx",
                 target=f"refgen_access_pattern-ppu_vx_v{chip_version}.bin",
                 source="vx/refgen_access_pattern-ppu.cpp",
                 use=[f"nux_runtime_vx_v{chip_version}"],
-                env=bld.all_envs[f"nux_vx_v{chip_version}"])
+                env=env)
 
     bld.program(name=f"libnux-test-synram_access_pattern-ppu_vx_v{chip_version}",
                 features="cxx",
                 target=f"synram_access_pattern-ppu_vx_v{chip_version}.bin",
                 source="vx/synram_access_pattern-ppu.cpp",
                 use=[f"nux_runtime_vx_v{chip_version}"],
-                env=bld.all_envs[f"nux_vx_v{chip_version}"])
+                env=env)
 
     bld.program(name=f"libnux-test-correlation_reset_causal-ppu_vx_v{chip_version}",
                 features="cxx",
                 target=f"correlation_reset_causal-ppu_vx_v{chip_version}.bin",
                 source="vx/correlation_reset_causal-ppu.cpp",
                 use=[f"nux_runtime_vx_v{chip_version}"],
-                env=bld.all_envs[f"nux_vx_v{chip_version}"])
+                env=env)
 
     bld.program(name=f"libnux-test-neuron_reset_global-ppu_vx_v{chip_version}",
                 features="cxx",
                 target=f"neuron_reset_global-ppu_vx_v{chip_version}.bin",
                 source="vx/neuron_reset_global-ppu.cpp",
                 use=[f"nux_runtime_vx_v{chip_version}"],
-                env=bld.all_envs[f"nux_vx_v{chip_version}"])
+                env=env)
 
     if chip_version >= 2:
         bld.program(name=f"libnux-test-neuron_reset_vector-ppu_vx_v{chip_version}",
@@ -167,12 +170,12 @@ def build_ppu_cpp(bld, chip_version: Integral):
                     target=f"neuron_reset_vector-ppu_vx_v{chip_version}.bin",
                     source="vx/neuron_reset_vector-ppu.cpp",
                     use=[f"nux_runtime_vx_v{chip_version}"],
-                    env=bld.all_envs[f"nux_vx_v{chip_version}"])
+                    env=env)
 
     bld.program(
         features = 'cxx',
         target = f"barrier_two_ppus_vx_v{chip_version}.bin",
         source = ['vx/barrier_two_ppus.cpp'],
         use = [f"nux_vx_v{chip_version}", f"nux_runtime_vx_v{chip_version}"],
-        env = bld.all_envs[f"nux_vx_v{chip_version}"],
+        env = env,
     )
