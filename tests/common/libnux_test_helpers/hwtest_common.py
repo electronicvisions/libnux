@@ -118,7 +118,11 @@ def get_special_binaries(chip_revision: str, chip_version: str) \
         PpuHwTest(
             join(TEST_BINARY_PATH, chip_revision,
                  f"test_stack_redzone_{chip_revision}_{chip_version}.bin"),
-            expected_exit_code=12 if stack_redzone else 2)
+            expected_exit_code=12 if stack_redzone else 2),
+        PpuHwTest(
+            join(TEST_BINARY_PATH, chip_revision,
+                 f"test_frac_{chip_revision}_{chip_version}.bin"),
+            timeout=int(1e6))
     }
 
     simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")

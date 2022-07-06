@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+
+def configure(cfg):
+    cfg.load('compiler_cxx')
+    cfg.load('python')
+    cfg.check_python_version()
+    cfg.check_python_headers()
+    cfg.load('genpybind')
+
+def build(bld):
+    if not bld.env.with_pybind:
+        bld.fatal('building pylibnux requires pybind')
+
+    bld(
+        target='pylibnux_vx',
+        source='../include/libnux/vx/pylibnux.h',
+        use='nux_inc_host_vx',
+        genpybind_tags=['libnux_vx'],
+        features='genpybind cxx cxxshlib pyext',
+        install_path='${PREFIX}/lib',
+    )

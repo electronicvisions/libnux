@@ -27,6 +27,8 @@ def options(opt):
     opt.load('pytest')
 
     hopts = opt.add_option_group('libnux options')
+    hopts.add_withoption('libnux-python-bindings', default=True,
+                         help='Toggle the generation and build of libnux python bindings')
     hopts.add_option("--enable-stack-protector",
                      default=False,
                      action='store_true',
@@ -57,6 +59,9 @@ def configure(conf):
     if getattr(conf.options, 'with_libnux_test_hostcode', True):
         # host-based python stuff also needed for cross-env tests
         conf.load('pytest')
+
+    if getattr(conf.options, 'with_libnux_python_bindings', True):
+        conf.recurse("pylibnux")
 
     # now configure for nux cross compiler
     env = conf.env
@@ -230,5 +235,8 @@ def build(bld):
                        f"nux_runtime_vx_v{chip_version_number}"],
                 env = env,
             )
+
+    if getattr(bld.options, 'with_libnux_python_bindings', True):
+        bld.recurse("pylibnux")
 
     bld.add_post_fun(summary)
