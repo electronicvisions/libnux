@@ -171,6 +171,64 @@ VectorRowFracSat16::operator VectorRowMod16() const
 	    static_cast<VectorHalfRowMod16>(even), static_cast<VectorHalfRowMod16>(odd));
 }
 
+template <>
+template <>
+VectorRowMod8::operator VectorRowMod16() const
+{
+	VectorRowMod16 ret;
+	VectorRowMod8::HalfRow zero(0);
+	asm volatile("fxvupckbl %[left_even], %[zero], %[even]\n"
+	             "fxvupckbl %[left_odd], %[zero], %[odd]\n"
+	             "fxvupckbr %[right_even], %[zero], %[even]\n"
+	             "fxvupckbr %[right_odd], %[zero], %[odd]\n"
+	             : [left_even] "=&qv"(ret.even.left.data), [left_odd] "=&qv"(ret.odd.left.data),
+	               [right_even] "=&qv"(ret.even.right.data), [right_odd] "=qv"(ret.odd.right.data)
+	             : [even] "qv"(even.data), [odd] "qv"(odd.data), [zero] "qv"(zero.data));
+	return ret;
+}
+
+template <>
+template <>
+VectorRowMod16::operator VectorRowMod8() const
+{
+	VectorRowMod8 ret;
+	asm volatile("fxvpckbl %[even], %[left_even], %[right_even]\n"
+	             "fxvpckbl %[odd], %[left_odd], %[right_odd]\n"
+	             : [even] "=&qv"(ret.even.data), [odd] "=qv"(ret.odd.data)
+	             : [left_even] "qv"(even.left.data), [left_odd] "qv"(odd.left.data),
+	               [right_even] "qv"(even.right.data), [right_odd] "qv"(odd.right.data));
+	return ret;
+}
+
+template <>
+template <>
+VectorRowFracSat8::operator VectorRowFracSat16() const
+{
+	VectorRowFracSat16 ret;
+	VectorRowFracSat8::HalfRow zero(0);
+	asm volatile("fxvupckbl %[left_even], %[even], %[zero]\n"
+	             "fxvupckbl %[left_odd], %[odd], %[zero]\n"
+	             "fxvupckbr %[right_even], %[even], %[zero]\n"
+	             "fxvupckbr %[right_odd], %[odd], %[zero]\n"
+	             : [left_even] "=&qv"(ret.even.left.data), [left_odd] "=&qv"(ret.odd.left.data),
+	               [right_even] "=&qv"(ret.even.right.data), [right_odd] "=qv"(ret.odd.right.data)
+	             : [even] "qv"(even.data), [odd] "qv"(odd.data), [zero] "qv"(zero.data));
+	return ret;
+}
+
+template <>
+template <>
+VectorRowFracSat16::operator VectorRowFracSat8() const
+{
+	VectorRowFracSat8 ret;
+	asm volatile("fxvpckbu %[even], %[left_even], %[right_even]\n"
+	             "fxvpckbu %[odd], %[left_odd], %[right_odd]\n"
+	             : [even] "=&qv"(ret.even.data), [odd] "=qv"(ret.odd.data)
+	             : [left_even] "qv"(even.left.data), [left_odd] "qv"(odd.left.data),
+	               [right_even] "qv"(even.right.data), [right_odd] "qv"(odd.right.data));
+	return ret;
+}
+
 template <typename HalfRow>
 VectorRow<HalfRow> operator+(
     typename VectorRow<HalfRow>::Element const lhs, VectorRow<HalfRow> const& rhs)

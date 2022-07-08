@@ -260,6 +260,54 @@ template <> template <> ATTRIB_ALWAYS_INLINE VectorRowMod8::operator VectorRowFr
  */
 template <> template <> ATTRIB_ALWAYS_INLINE VectorRowMod16::operator VectorRowFracSat16() const;
 
+/**
+ * Convert unsigned vector row with modulo arithmetic from 8-bit to 16-bit.
+ * The conversion sets the lower 8 bits of the 16-bit values and therefore is an identity because
+ * all shifts can be achieved by a followed multiplication (or shift).
+ * @param value Vector row to convert
+ * @return Converted Vector row
+ */
+template <>
+template <>
+ATTRIB_ALWAYS_INLINE VectorRowMod8::operator VectorRowMod16() const;
+
+/**
+ * Convert unsigned vector row with modulo arithmetic from 16-bit to 8-bit.
+ * The conversion uses the lower 8 bits of the 16-bit values ignores the upper 8 bits and therefore
+ * is identical to a static_cast. All shifts can be achieved by previously.
+ * @param value Vector row to convert
+ * @return Converted Vector row
+ */
+template <>
+template <>
+ATTRIB_ALWAYS_INLINE VectorRowMod16::operator VectorRowMod8() const;
+
+/**
+ * Convert signed vector row with fractional saturating arithmetic from 8-bit to 16-bit.
+ * The conversion sets the higher 8 bits of the 16-bit values and therefore preserves the sign and
+ * is an identity when identifying the values with the interval [0,1), but is multiplied by 256 when
+ * comparing the raw integer values. Like this all shifts or divisions can be achieved by a followed
+ * multiplication.
+ * @param value Vector row to convert
+ * @return Converted Vector row
+ */
+template <>
+template <>
+ATTRIB_ALWAYS_INLINE VectorRowFracSat8::operator VectorRowFracSat16() const;
+
+/**
+ * Convert signed vector row with fractional saturating arithmetic from 16-bit to 8-bit.
+ * The conversion uses the higher 8 bits of the 16-bit values and therefore preserves the sign and
+ * is an identity when identifying the values with the interval [0,1), but is divided by 256 when
+ * comparing the raw integer values. The lower 8 bits are ignored.
+ * @param value Vector row to convert
+ * @return Converted Vector row
+ */
+template <>
+template <>
+ATTRIB_ALWAYS_INLINE VectorRowFracSat16::operator VectorRowFracSat8() const;
+
+
 } // namespace libnux::vx
 
 #include "libnux/vx/vector_row.tcc"
