@@ -122,7 +122,7 @@ def get_special_binaries(chip_revision: str, chip_version: str) \
         PpuHwTest(
             join(TEST_BINARY_PATH, chip_revision,
                  f"test_frac_{chip_revision}_{chip_version}.bin"),
-            timeout=int(1e6))
+            timeout=int(1e6)),
     }
 
     simulation = os.environ.get("FLANGE_SIMULATION_RCF_PORT")
