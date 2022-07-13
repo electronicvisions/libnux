@@ -17,17 +17,17 @@ inline bool get_location(PPUOnDLS& ppu)
 	constexpr size_t row = 0;
 	auto working = get_row_via_vector(row, dls_weight_base);
 
-	auto const before = working.even_columns[0];
+	auto const before = working.even[0];
 
-	working.even_columns[0] = 0;
+	working.even[0] = 0;
 	set_row_via_vector(working, row, dls_weight_base);
-	auto const top_read_0 = get_row_via_omnibus(row, synram_top_base_address).even_columns[0];
-	auto const bottom_read_0 = get_row_via_omnibus(row, synram_bottom_base_address).even_columns[0];
+	auto const top_read_0 = get_row_via_omnibus(row, synram_top_base_address).even[0];
+	auto const bottom_read_0 = get_row_via_omnibus(row, synram_bottom_base_address).even[0];
 
-	working.even_columns[0] = 32;
+	working.even[0] = 32;
 	set_row_via_vector(working, row, dls_weight_base);
-	auto const top_read_1 = get_row_via_omnibus(row, synram_top_base_address).even_columns[0];
-	auto const bottom_read_1 = get_row_via_omnibus(row, synram_bottom_base_address).even_columns[0];
+	auto const top_read_1 = get_row_via_omnibus(row, synram_top_base_address).even[0];
+	auto const bottom_read_1 = get_row_via_omnibus(row, synram_bottom_base_address).even[0];
 
 	bool valid = false;
 	if ((top_read_0 == 0) && (top_read_1 == 32)) {
@@ -37,7 +37,7 @@ inline bool get_location(PPUOnDLS& ppu)
 		ppu = PPUOnDLS::bottom;
 		valid = true;
 	}
-	working.even_columns[0] = before;
+	working.even[0] = before;
 	set_row_via_vector(working, row, dls_weight_base);
 	return valid;
 }

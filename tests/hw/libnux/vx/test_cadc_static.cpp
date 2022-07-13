@@ -15,9 +15,9 @@ vector_row_t get_expectation()
 
 	for (size_t col = 0; col < dls_num_columns; ++col) {
 		if (col % 2 == 0) {
-			ret.even_columns[col / 2] = 1 << 7 | ((col % 64) << 1);
+			ret.even[col / 2] = 1 << 7 | ((col % 64) << 1);
 		} else {
-			ret.odd_columns[col / 2] = 1 << 7 | ((col % 64) << 1);
+			ret.odd[col / 2] = 1 << 7 | ((col % 64) << 1);
 		}
 	}
 	return ret;

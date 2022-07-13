@@ -2,6 +2,7 @@
 
 #include "libnux/vx/dls.h"
 #include "libnux/vx/omnibus.h"
+#include "libnux/vx/vector_row.h"
 #include <cstddef>
 #include <cstdint>
 #include <s2pp.h>
@@ -20,42 +21,7 @@ typedef __vector uint8_t vector_type;
  * On HICANN-Xv2, the vector unit can concurrently process half of all columns, divided in odd
  * columns and even columns.
  */
-struct vector_row_t
-{
-	vector_type even_columns;
-	vector_type odd_columns;
-
-	bool operator==(vector_row_t const& rhs) const
-	{
-		for (size_t i = 0; i < sizeof(vector_type); ++i) {
-			if (even_columns[i] != rhs.even_columns[i]) {
-				return false;
-			}
-			if (odd_columns[i] != rhs.odd_columns[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	bool operator!=(vector_row_t const& rhs) const { return !operator==(rhs); }
-
-	void fill(uint8_t const value)
-	{
-		even_columns = vec_splat_u8(value);
-		odd_columns = vec_splat_u8(value);
-	}
-
-	uint8_t const& operator[](size_t const i) const
-	{
-		return (i % 2) ? odd_columns[i / 2] : even_columns[i / 2];
-	}
-
-	uint8_t& operator[](size_t const i)
-	{
-		return (i % 2) ? odd_columns[i / 2] : even_columns[i / 2];
-	}
-};
+typedef VectorRowMod8 vector_row_t;
 
 
 /**
@@ -72,8 +38,8 @@ inline vector_row_t get_row_via_vector(size_t const row_id, uint32_t const base)
 		"fxvinx %[even], %[base], %[first_index]\n"
 		"fxvinx %[odd], %[base], %[second_index]\n"
 		"sync\n"
-		: [even] "=qv" (values.even_columns),
-		  [odd] "=qv" (values.odd_columns)
+		: [even] "=qv" (values.even.data),
+		  [odd] "=qv" (values.odd.data)
 		: [base] "b"(base),
 		[first_index] "r"(row_id * 2),
 		[second_index] "r"(row_id * 2 + 1)
@@ -101,8 +67,8 @@ inline void set_row_via_vector(vector_row_t const& values, size_t const row_id, 
 		: [base] "b"(base),
 		[first_index] "r"(row_id * 2),
 		[second_index] "r"(row_id * 2 + 1),
-		[even] "qv" (values.even_columns),
-		[odd] "qv" (values.odd_columns)
+		[even] "qv" (values.even.data),
+		[odd] "qv" (values.odd.data)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -129,10 +95,10 @@ inline void set_row_via_vector_masked(
 		: [base] "b" (base),
 		  [first_index] "r" (row_id*2),
 		  [second_index] "r" (row_id*2+1),
-		  [even] "qv"(values.even_columns),
-		  [odd] "qv"(values.odd_columns),
-		  [mask_even] "qv"(mask.even_columns),
-		  [mask_odd] "qv"(mask.odd_columns)
+		  [even] "qv"(values.even.data),
+		  [odd] "qv"(values.odd.data),
+		  [mask_even] "qv"(mask.even.data),
+		  [mask_odd] "qv"(mask.odd.data)
 		: /* no clobber */
 	    // clang-format on
 	);
@@ -159,8 +125,8 @@ inline vector_row_t get_row_via_omnibus(size_t const row, uint32_t const base)
 			}
 		}
 	};
-	get_vector_via_omnibus(row, base, ret.even_columns);
-	get_vector_via_omnibus(row, base + num_words_per_vector, ret.odd_columns);
+	get_vector_via_omnibus(row, base, ret.even.data);
+	get_vector_via_omnibus(row, base + num_words_per_vector, ret.odd.data);
 	return ret;
 }
 
