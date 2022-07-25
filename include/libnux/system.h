@@ -2,4 +2,4 @@
 
 #include <cstdint>
 
-extern "C" void exit(int32_t code);
+extern "C" [[noreturn]] void exit(int code);
