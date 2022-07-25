@@ -57,6 +57,24 @@ static inline void get_causal_correlation(
 	);
 }
 
+static inline void get_acausal_correlation(
+    __vector uint8_t* first_half, __vector uint8_t* second_half, uint8_t row)
+{
+	asm volatile(
+		// clang-format off
+		"fxvinx %[first_ac], %[ac_base], %[first_index]\n"
+		"fxvinx %[second_ac], %[acb_base], %[second_index]\n"
+		: [first_ac] "=qv" (*first_half),
+		  [second_ac] "=qv" (*second_half)
+		: [ac_base] "r" (dls_acausal_base),
+		  [acb_base] "r" (dls_acausal_base|dls_buffer_enable_mask),
+		  [first_index] "r" (row*2),
+		  [second_index] "r" (row*2+1)
+		: /* no clobber */
+		// clang-format on
+	);
+}
+
 static inline void reset_correlation(uint8_t row)
 {
 	__vector uint8_t reset_vec;
