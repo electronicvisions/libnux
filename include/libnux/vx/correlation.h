@@ -22,14 +22,13 @@ static inline void get_correlation(
 		// clang-format off
 		"fxvinx %[first_ca], %[ca_base], %[first_index]\n"
 		"fxvinx %[second_ca], %[cab_base], %[second_index]\n"
-		"fxvinx %[first_ac], %[ac_base], %[first_index]\n"
+		"fxvinx %[first_ac], %[acb_base], %[first_index]\n"
 		"fxvinx %[second_ac], %[acb_base], %[second_index]\n"
 		: [first_ca] "=qv" (*first_causal_half),
 		  [second_ca] "=qv" (*second_causal_half),
 		  [first_ac] "=qv" (*first_acausal_half),
 		  [second_ac] "=qv" (*second_acausal_half)
 		: [ca_base] "r" (dls_causal_base),
-		  [ac_base] "r" (dls_acausal_base),
 		  [cab_base] "r" (dls_causal_base|dls_buffer_enable_mask),
 		  [acb_base] "r" (dls_acausal_base|dls_buffer_enable_mask),
 		  [first_index] "r" (row*2),
