@@ -169,7 +169,7 @@ def build_ppu_cpp(bld, chip_version: Integral):
                     features="cxx",
                     target=f"neuron_reset_vector-ppu_vx_v{chip_version}.bin",
                     source="vx/neuron_reset_vector-ppu.cpp",
-                    use=[f"nux_runtime_vx_v{chip_version}"],
+                    use=[f"nux_vx_v{chip_version}", f"nux_runtime_vx_v{chip_version}"],
                     env=env)
 
     bld.program(
