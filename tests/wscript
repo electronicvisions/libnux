@@ -107,7 +107,7 @@ def build(bld):
 
             if not stack_protector and not stack_redzone:
                 if build_profile == 'release':
-                    return 528
+                    return 560
                 else:
                     return 608
 
@@ -119,7 +119,7 @@ def build(bld):
 
             if not stack_protector and stack_redzone:
                 if build_profile == 'release':
-                    return 560
+                    return 592
                 else:
                     return 672
 
