@@ -113,6 +113,7 @@ SECTIONS {
 	ext.data (ORIGIN(ext_mem_data) + ext_data_offset) :
 	{
 		*(ext.data*);
+		KEEP(*(ext.data.keep*));
 	} > ext_mem_data
 	ext_data_offset = ext_data_offset + SIZEOF(ext.data);
 
