@@ -165,7 +165,7 @@ void measure_intmem_store_fxvstax(uint32_t& t_pre, uint32_t& t_post)
 		: [t_pre] "=&r" (t_pre),
 		  [t_post] "=&r" (t_post),
 		  "+m"(vec)
-		: [base] "r" (vec.data()),
+		: [base] "r" (&vec),
 		  [index] "r" (0)
 		:
 	);
@@ -183,7 +183,7 @@ void measure_intmem_load_fxvlax(uint32_t& t_pre, uint32_t& t_post)
 		"mfspr %[t_post], 284\n"
 		: [t_pre] "=&r" (t_pre),
 		  [t_post] "=&r" (t_post)
-		: [base] "r" (vec.data()),
+		: [base] "r" (&vec),
 		  "m"(vec),
 		  [index] "r" (0)
 		:
@@ -265,7 +265,7 @@ int start()
 {
 	test_init();
 	test("extmem store fxvoutx", 38, 4, measure_extmem_store_fxvoutx);
-	test("extmem store fxvoutx x2", 147, 18, measure_extmem_store_fxvoutx_2);
+	test("extmem store fxvoutx x2", 209, 18, measure_extmem_store_fxvoutx_2);
 	//  FIXME (Issue #4006): More successive stores break the simulation (crc errors on link)
 	//	test("extmem store fxvoutx x4", 306, 31, measure_extmem_store_fxvoutx_4);
 	//	test("extmem store fxvoutx x8", 684, 69, measure_extmem_store_fxvoutx_8);
