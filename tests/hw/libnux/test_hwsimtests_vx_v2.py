@@ -87,7 +87,8 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
             setattr(LibnuxHwSimTestsVx, test.name, test_method)
 
 
-LibnuxHwSimTestsVx.TESTS.update(get_special_binaries("vx", "v2"))
+LibnuxHwSimTestsVx.TESTS.update(
+    get_special_binaries("vx", "v2").intersection(find_binaries("vx", "v2")))
 LibnuxHwSimTestsVx.TESTS.update(find_binaries("vx", "v2"))
 LibnuxHwSimTestsVx.generate_cases()
 
