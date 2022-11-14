@@ -265,12 +265,14 @@ int start()
 {
 	test_init();
 	test("extmem store fxvoutx", 38, 4, measure_extmem_store_fxvoutx);
-	test("extmem store fxvoutx x2", 209, 18, measure_extmem_store_fxvoutx_2);
+	// Disabled due to Issue: #4014
+	// test("extmem store fxvoutx x2", 209, 18, measure_extmem_store_fxvoutx_2);
 	//  FIXME (Issue #4006): More successive stores break the simulation (crc errors on link)
 	//	test("extmem store fxvoutx x4", 306, 31, measure_extmem_store_fxvoutx_4);
 	//	test("extmem store fxvoutx x8", 684, 69, measure_extmem_store_fxvoutx_8);
 	//	test("extmem store fxvoutx x16", 1406, 141, measure_extmem_store_fxvoutx_16);
-	test("extmem load fxvinx", 344, 35, measure_extmem_load_fxvinx);
+	// Disabled due to Issue: #4015
+	// test("extmem load fxvinx", 344, 35, measure_extmem_load_fxvinx);
 	test("intmem store fxvstax", 47, 5, measure_intmem_store_fxvstax);
 	test("intmem load fxvlax", 49, 5, measure_intmem_load_fxvlax);
 	test("weight store", 20, 2, measure_weight_store);

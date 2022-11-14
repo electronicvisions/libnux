@@ -77,7 +77,8 @@ int start()
 
 	/* Measure sleep_cycles with different cycles. */
 	testcase_begin("sleep_cycles");
-	test_sleep_cycles("sleep_cycles 10", tentimes, 10, 600);
+	// Disabled due to Issue: #4013
+	// test_sleep_cycles("sleep_cycles 10", tentimes, 10, 600);
 	test_sleep_cycles("sleep_cycles 100", onetime, 100, 600);
 	test_sleep_cycles("sleep_cycles 1000", onetime, 1000, 1600);
 	testcase_end();
