@@ -56,11 +56,11 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
                 def test_func(self: LibnuxHwSimTestsVx):
                     if not ppu_test.supports_revision(self.CHIP_REVISION):
                         self.skipTest("Incompatible chip rev. "
-                                      "{self.CHIP_REVISION}")
+                                      f"{self.CHIP_REVISION}")
 
-                    log = logger.get("LibnuxHwSimTestsVx.%s" % ppu_test.name)
+                    log = logger.get(f"LibnuxHwSimTestsVx.{ppu_test.name}")
                     ppu = random.choice(list(iter_all(PPUOnDLS)))
-                    log.info("Running test on %s." % ppu)
+                    log.info(f"Running test on {ppu}.")
 
                     load_and_start_program(cls.CONNECTION, ppu_test.path, ppu)
                     try:
