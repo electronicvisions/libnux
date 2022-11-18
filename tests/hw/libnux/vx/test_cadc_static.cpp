@@ -13,12 +13,11 @@ vector_row_t get_expectation()
 {
 	vector_row_t ret;
 
-	for (size_t col = 0; col < dls_num_columns; ++col) {
-		if (col % 2 == 0) {
-			ret.even[col / 2] = 1 << 7 | ((col % 64) << 1);
-		} else {
-			ret.odd[col / 2] = 1 << 7 | ((col % 64) << 1);
-		}
+	for (size_t double_col = 0; double_col < sizeof(ret.even); ++double_col) {
+		size_t const even_col = double_col * 2;
+		ret.even[double_col] = 1 << 7 | ((even_col % 64) << 1);
+		size_t const odd_col = even_col + 1;
+		ret.odd[double_col] = 1 << 7 | ((odd_col % 64) << 1);
 	}
 	return ret;
 }
