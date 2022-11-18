@@ -29,10 +29,7 @@ TEST(VectorIf, VectorMod8_VectorMod8)
 	{
 		auto const condition = VectorIfCondition::lesser;
 		VectorMod8 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_false[i]);
-		}
+		EXPECT_EQ(result, value_false);
 	}
 	{
 		auto const condition = VectorIfCondition::equal;
@@ -49,10 +46,7 @@ TEST(VectorIf, VectorMod8_VectorMod8)
 	{
 		auto const condition = VectorIfCondition::greater_equal;
 		VectorMod8 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_true[i]);
-		}
+		EXPECT_EQ(result, value_true);
 	}
 	{
 		auto const condition = VectorIfCondition::lesser_equal;
@@ -187,10 +181,7 @@ TEST(VectorIf, VectorRowMod8_VectorRowMod8)
 	{
 		auto const condition = VectorIfCondition::lesser;
 		VectorRowMod8 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_false[i]);
-		}
+		EXPECT_EQ(result, value_false);
 	}
 	{
 		auto const condition = VectorIfCondition::equal;
@@ -207,10 +198,7 @@ TEST(VectorIf, VectorRowMod8_VectorRowMod8)
 	{
 		auto const condition = VectorIfCondition::greater_equal;
 		VectorRowMod8 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_true[i]);
-		}
+		EXPECT_EQ(result, value_true);
 	}
 	{
 		auto const condition = VectorIfCondition::lesser_equal;

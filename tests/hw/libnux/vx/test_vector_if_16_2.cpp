@@ -28,10 +28,7 @@ TEST(VectorIf, VectorHalfRowMod16_VectorHalfRowMod16)
 	{
 		auto const condition = VectorIfCondition::lesser;
 		VectorHalfRowMod16 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_false[i]);
-		}
+		EXPECT_EQ(result, value_false);
 	}
 	{
 		auto const condition = VectorIfCondition::equal;
@@ -49,9 +46,7 @@ TEST(VectorIf, VectorHalfRowMod16_VectorHalfRowMod16)
 		auto const condition = VectorIfCondition::greater_equal;
 		VectorHalfRowMod16 const result = vector_if(mask, condition, value_true, value_false);
 
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_true[i]);
-		}
+		EXPECT_EQ(result, value_true);
 	}
 	{
 		auto const condition = VectorIfCondition::lesser_equal;
@@ -104,9 +99,7 @@ TEST(VectorIf, VectorRowMod16_VectorRowMod16)
 		auto const condition = VectorIfCondition::lesser;
 		VectorRowMod16 const result = vector_if(mask, condition, value_true, value_false);
 
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_false[i]);
-		}
+		EXPECT_EQ(result, value_false);
 	}
 	{
 		auto const condition = VectorIfCondition::equal;
@@ -123,10 +116,7 @@ TEST(VectorIf, VectorRowMod16_VectorRowMod16)
 	{
 		auto const condition = VectorIfCondition::greater_equal;
 		VectorRowMod16 const result = vector_if(mask, condition, value_true, value_false);
-
-		for (size_t i = 0; i < result.size; ++i) {
-			EXPECT_EQ(result[i], value_true[i]);
-		}
+		EXPECT_EQ(result, value_true);
 	}
 	{
 		auto const condition = VectorIfCondition::lesser_equal;
