@@ -11,18 +11,18 @@ int start()
 
 	barrier.initialize(barrier_locations, 0);
 
-	for (size_t counter = 0; counter < 1000; ++counter) {
+	for (size_t counter = 0; counter < 100; ++counter) {
 		barrier.wait();
 	}
 
 	libnux::vx::times<1> t;
 	for (auto& p : t) {
 		p.first = libnux::vx::now();
-		for (size_t i = 0; i < 1000; ++i) {
+		for (size_t i = 0; i < 100; ++i) {
 			barrier.wait();
 		}
 		p.second = libnux::vx::now();
 	}
-	libnux::vx::print_measurement("1000x barrier.wait()", t);
+	libnux::vx::print_measurement("100x barrier.wait()", t);
 	return 0;
 }
