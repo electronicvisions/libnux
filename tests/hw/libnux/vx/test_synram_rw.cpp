@@ -5,10 +5,10 @@
 
 using namespace libnux::vx;
 
-// Use 8 of 32 vectors on HX fitting in the vector registers
+// Use 2 of 32 vectors on HX fitting in the vector registers
 // For more than 32 there is not enough memory
-// 8 is used in order to reduce the runtime in simulation
-#define SYNAPSE_ROW_ITERATIONS 8
+// 2 is used in order to reduce the runtime in simulation
+#define SYNAPSE_ROW_ITERATIONS 2
 
 void set_synram_random(uint32_t const base_address, uint32_t const mask, uint32_t seed) {
 	/* Initialize data in the synram */
