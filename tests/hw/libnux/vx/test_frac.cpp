@@ -23,7 +23,7 @@ T random_typed(uint32_t* seed)
 #define TEST(Op, Type, VecSplat, Name, VecOp)                                                      \
 	void test_##Name(uint32_t* seed, size_t num)                                                   \
 	{                                                                                              \
-		testcase_begin(#Type " " #Op);                                                      \
+		testcase_begin(#Type " " #Op);                                                             \
 		Type f_a, f_b;                                                                             \
 		__vector Type::data_type v_a;                                                              \
 		__vector Type::data_type v_b;                                                              \
@@ -42,12 +42,12 @@ T random_typed(uint32_t* seed)
                                                                                                    \
 			f_ret = f_a Op f_b;                                                                    \
                                                                                                    \
-			for (size_t j = 0; j < sizeof(decltype(v_ret)) / sizeof(decltype(v_ret[0])); ++j) {    \
-				test_true(f_ret.data() == v_ret[j]);                                        \
-			}                                                                                      \
+			size_t const j =                                                                       \
+			    xorshift32(seed) % sizeof(decltype(v_ret)) / sizeof(decltype(v_ret[0]));           \
+			test_true(f_ret.data() == v_ret[j]);                                                   \
 		}                                                                                          \
                                                                                                    \
-		testcase_end();                                                                     \
+		testcase_end();                                                                            \
 	}
 
 TEST(+,frac8_t,vec_splat_s8,frac8_add,"fxvaddbfs")
@@ -105,7 +105,7 @@ void test_frac16_scale()
 void start()
 {
 	uint32_t seed = 1234;
-	size_t num = 100;
+	size_t num = 10;
 	test_init();
 	test_frac8_add(&seed, num);
 	test_frac8_mul(&seed, num);
