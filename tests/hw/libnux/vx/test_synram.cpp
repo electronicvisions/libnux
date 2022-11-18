@@ -47,14 +47,14 @@ void start(void)
 	set_row_via_vector(zero, row, dls_weight_base);
 
 	testcase_begin("synram fill linear");
-	// write one weight at ascending index via byte-enables with a stride of 13,
+	// write one weight at ascending index via byte-enables with a stride of 43,
 	// which should essentially lead to filling up of the weight matrix like
 	// t
 	// | 32 0 ... 0  0  0 ...
 	// v 32 0 ... 0 32  0 ...
 	// ...
 	vector_row_t expectation(0);
-	for (size_t column = 0; column < dls_num_columns; column += 13) {
+	for (size_t column = 0; column < dls_num_columns; column += 43) {
 		write_byte_vector_unit(row, column, invariant_weight);
 
 		expectation[column] = invariant_weight;
