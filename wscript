@@ -140,9 +140,7 @@ def build(bld):
 
     bld.install_files(
         dest = '${PREFIX}/',
-        files = bld.path.ant_glob('include/libnux/*.(h|tcc|hpp)')
-                + bld.path.ant_glob('include/libnux/vx/*.(h|tcc|hpp)')
-                + bld.path.ant_glob('include/libnux/scheduling/*.(h|tcc|hpp)'),
+        files = bld.path.ant_glob('include/libnux/**/*.(h|tcc|hpp)'),
         name = f"nux_vx_header",
         relative_trick = True
     )
@@ -158,18 +156,10 @@ def build(bld):
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"].derive()
         env.detach()
 
-        bld.install_files(
-            dest = '${PREFIX}/',
-            files = bld.path.ant_glob(f'include/libnux/vx/v{chip_version_number}/**/*.(h|tcc|hpp)'),
-            name = f"nux_vx_v{chip_version_number}_header",
-            depends_on = ["nux_vx_header"],
-            relative_trick = True
-        )
-
         bld(
             target = f"nux_inc_vx_v{chip_version_number}",
             export_includes = ["include"],
-            depends_on = [f"nux_vx_v{chip_version_number}_header",
+            depends_on = [f"nux_vx_header",
                           f"nux_vx_linker_file"],
             env = env,
         )
