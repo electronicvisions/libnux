@@ -49,7 +49,8 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         def __init__(self, pattern: str, offset_bytes: int):
             self.pattern = pattern
             self.offset_bytes = offset_bytes
-            self.logfile = open(FLANGE_LOG_PATH, "rt")
+            # pylint: disable=consider-using-with
+            self.logfile = open(FLANGE_LOG_PATH, "rt", encoding="utf-8")
 
         def __iter__(self):
             self.logfile.seek(self.offset_bytes)
@@ -102,11 +103,11 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         program = join(TEST_BINARY_PATH,
                        "refgen_access_pattern-ppu_vx_v3.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
-        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
-                                                    initial_logsize))
+        log.debug(f"Initial size of {FLANGE_LOG_PATH}: "
+                  f"{initial_logsize}bytes.")
 
         for ppu in iter_all(PPUOnDLS):
-            log.info("Running test on %s." % ppu)
+            log.info(f"Running test on {ppu}.")
             self.run_ppu_program(ppu, program, int(5e5))
 
         # Evaluate flange log
@@ -155,11 +156,11 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         program = join(TEST_BINARY_PATH,
                        "synram_access_pattern-ppu_vx_v3.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
-        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
-                                                    initial_logsize))
+        log.debug(f"Initial size of {FLANGE_LOG_PATH}: "
+                  f"{initial_logsize}bytes.")
 
         for ppu in iter_all(PPUOnDLS):
-            log.info("Running test on %s." % ppu)
+            log.info(f"Running test on {ppu}.")
             self.run_ppu_program(ppu, program, int(5e7))
 
         # Evaluate flange log
@@ -204,11 +205,11 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         program = join(TEST_BINARY_PATH,
                        "correlation_reset_causal-ppu_vx_v3.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
-        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
-                                                    initial_logsize))
+        log.debug(f"Initial size of {FLANGE_LOG_PATH}: "
+                  f"{initial_logsize}bytes.")
 
         for ppu in iter_all(PPUOnDLS):
-            log.info("Running test on %s." % ppu)
+            log.info(f"Running test on {ppu}.")
             self.run_ppu_program(ppu, program, int(5e5))
 
         # Evaluate flange log
@@ -258,11 +259,11 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         program = join(TEST_BINARY_PATH,
                        "neuron_reset_global-ppu_vx_v3.bin")
         initial_logsize = os.path.getsize(FLANGE_LOG_PATH)
-        log.debug("Initial size of %s: %dbytes." % (FLANGE_LOG_PATH,
-                                                    initial_logsize))
+        log.debug(f"Initial size of {FLANGE_LOG_PATH}: "
+                  f"{initial_logsize}bytes.")
 
         for ppu in iter_all(PPUOnDLS):
-            log.info("Running test on %s." % ppu)
+            log.info(f"Running test on {ppu}.")
             self.run_ppu_program(ppu, program, int(5e5))
 
         # Evaluate flange log
@@ -358,10 +359,10 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         expected_corenres_neuron = 0b1100 if (ppu == 0) else 0b0011
 
         # Events are only visible if C is actually pulled
-        parities = list()
-        if any([val for idx, val in enumerate(reset_mask) if (idx % 2) == 0]):
+        parities = []
+        if any((val for idx, val in enumerate(reset_mask) if (idx % 2) == 0)):
             parities.append(0)
-        if any([val for idx, val in enumerate(reset_mask) if (idx % 2) != 0]):
+        if any((val for idx, val in enumerate(reset_mask) if (idx % 2) != 0)):
             parities.append(1)
 
         for vector_parity in parities:

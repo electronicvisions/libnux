@@ -89,7 +89,7 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
         run(self.CONNECTION, builder.done())
 
         for ppu in iter_all(PPUOnDLS):
-            log.info("Running test on %s." % ppu)
+            log.info(f"Running test on {ppu}.")
             self.run_ppu_program(ppu, program, int(5e5))
 
         tickets = []
