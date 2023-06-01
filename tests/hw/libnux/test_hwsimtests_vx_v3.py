@@ -31,7 +31,7 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
         init_builder, _ = generate(DigitalInit())
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.write(TimerOnDLS(), Timer(0))
-        init_builder.block_until(TimerOnDLS(), 1000)
+        init_builder.block_until(TimerOnDLS(), Timer.Value(1000))
         for cadc in iter_all(CADCConfigOnDLS):
             cadc_config = CADCConfig()
             cadc_config.enable = True

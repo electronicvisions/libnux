@@ -96,7 +96,7 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
         for ctr in iter_all(SpikeCounterReadOnDLS):
             tickets.append(builder.read(ctr))
         builder.write(halco.TimerOnDLS(), hal.Timer(0))
-        builder.block_until(halco.TimerOnDLS(), 10000)
+        builder.block_until(halco.TimerOnDLS(), hal.Timer.Value(10000))
         run(self.CONNECTION, builder.done())
 
         for i, ticket in enumerate(tickets):

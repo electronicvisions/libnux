@@ -62,7 +62,7 @@ class LibnuxBarrierTest(unittest.TestCase):
 
         builder = PlaybackProgramBuilder()
         builder.write(halco.TimerOnDLS(), Timer())
-        builder.block_until(halco.TimerOnDLS(), int(1e8))
+        builder.block_until(halco.TimerOnDLS(), Timer.Value(int(1e8)))
         sta.run(self.CONNECTION, builder.done())
         for ppu in iter_all(PPUOnDLS):
             returncode.append(stop_program(self.CONNECTION, ppu=ppu,
@@ -70,7 +70,7 @@ class LibnuxBarrierTest(unittest.TestCase):
             ticket = builder.read(halco.PPUMemoryWordOnDLS(
                 counter_coord.toMin(), ppu))
             builder.write(halco.TimerOnDLS(), Timer())
-            builder.block_until(halco.TimerOnDLS(), 1000)
+            builder.block_until(halco.TimerOnDLS(), Timer.Value(1000))
             sta.run(self.CONNECTION, builder.done())
             counter.append(ticket.get().value.value())
 
