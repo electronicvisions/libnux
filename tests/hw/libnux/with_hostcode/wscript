@@ -62,7 +62,7 @@ def build(bld):
         bld.env.TEST_TARGET = TestTarget.SOFTWARE_ONLY
         bld.env.CURRENT_SETUP = dict(chip_revision=None)
 
-    for chip_version_number in [3]:
+    for chip_version_number in [3, 4]:
         build_host_python(bld, chip_version_number)
         build_ppu_cpp(bld, chip_version_number)
 

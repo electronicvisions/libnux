@@ -109,6 +109,9 @@ def configure(conf):
     # specialize for vx-v3
     conf.setenv('nux_vx_v3', env=conf.all_envs['nux_vx'])
 
+    # specialize for vx-v4
+    conf.setenv('nux_vx_v4', env=conf.all_envs['nux_vx'])
+
     # restore env
     conf.setenv('', env=env)
     conf.env.have_ppu_toolchain = have_ppu_toolchain
@@ -152,7 +155,7 @@ def build(bld):
         relative_trick = True
     )
 
-    for chip_version_number in [3]:
+    for chip_version_number in [3, 4]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"].derive()
         env.detach()
 

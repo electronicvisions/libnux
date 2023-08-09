@@ -80,7 +80,7 @@ def build(bld):
         test_timeout=120,
         )
 
-    for chip_version_number in [3]:
+    for chip_version_number in [3, 4]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"].derive()
         env.detach()
 
