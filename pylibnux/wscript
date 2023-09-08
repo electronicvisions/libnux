@@ -17,5 +17,4 @@ def build(bld):
         use='nux_inc_host_vx',
         genpybind_tags=['libnux_vx'],
         features='genpybind cxx cxxshlib pyext',
-        install_path='${PREFIX}/lib',
     )
