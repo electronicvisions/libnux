@@ -25,7 +25,7 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         # Initialize remote connection (to sim or hardware)
-        cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()
+        cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit())
