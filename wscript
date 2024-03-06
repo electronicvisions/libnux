@@ -1,7 +1,6 @@
 import os
 from os.path import join
 import re
-import yaml
 from enum import Enum, auto
 
 from waflib import Logs
