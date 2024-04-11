@@ -141,9 +141,10 @@ def build_host_python(bld, chip_version: Integral):
             name=f"libnux_barriertest_vx_v{chip_version}",
             tests=f"test_barrier_vx_v{chip_version}.py",
             features='use pytest pylint pycodestyle',
-            use='dlens_vx',
+            use=f'dlens_vx_v{chip_version}',
             install_path='${PREFIX}/bin/tests',
-            skip_run=not bld.env.cube_partition,
+            skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
+                          int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
             env = bld.all_envs[''],
             test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'tests', 'hw', 'libnux', 'with_hostcode')),
             pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),

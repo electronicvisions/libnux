@@ -1,4 +1,5 @@
 import unittest
+import os
 from os.path import join
 from dlens_vx_v3.hxcomm import ManagedConnection
 from dlens_vx_v3.sta import PlaybackProgramBuilder, \
@@ -7,10 +8,20 @@ from dlens_vx_v3.hal import PPUMemoryWord, Timer
 from dlens_vx_v3.halco import iter_all, PPUOnDLS
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
     stop_program
-import dlens_vx_v3.halco as halco
-import dlens_vx_v3.sta as sta
+from dlens_vx_v3 import halco, sta
 from pylola_vx_v3 import PPUElfFile
-from helpers.hwtest_common import TEST_BINARY_PATH
+
+_THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
+                                  join(_THIS_DIR,
+                                       os.pardir,
+                                       os.pardir,
+                                       os.pardir,
+                                       "build",
+                                       "libnux",
+                                       "test",
+                                       "with_hostcode")
+                                  )
 
 
 class LibnuxBarrierTest(unittest.TestCase):
