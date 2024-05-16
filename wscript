@@ -182,8 +182,7 @@ def build(bld):
             source = ["src/nux_runtime/start.cpp",
                       "src/nux_runtime/initdeinit.cpp",
                       "src/nux_runtime/cxa_pure_virtual.cpp",
-                      "src/nux_runtime/stack_guards.cpp",
-                      "src/nux_runtime/exception_handling.cpp"],
+                      "src/nux_runtime/stack_guards.cpp"],
             use = f"nux_inc_vx_v{chip_version_number}",
             env = env,
         )
