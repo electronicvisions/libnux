@@ -2,6 +2,8 @@ MEMORY {
 	int_mem(rwx) : ORIGIN = 0x00000000, LENGTH = 16K
 	ext_mem(rwx) : ORIGIN = 0x80000000, LENGTH = 128K
 	ext_mem_data(rw) : ORIGIN = 0x40000000, LENGTH = 128K /* Same memory as ext_mem */
+	ext_mem_dram(rwx) : ORIGIN = 0x90000000, LENGTH = 256M
+	ext_mem_dram_data(rw) : ORIGIN = 0x50000000, LENGTH = 256M /* Same memory as ext_mem_dram */
 }
 
 /* ECM(2017-12-04): We should provide this numbers from waf configure step FIXME */
@@ -119,6 +121,29 @@ SECTIONS {
 
 	/* global symbol marking the end of ext_mem_data data sections */
 	_ext_end_data = .;
+	. = ORIGIN(ext_mem_dram);
+
+	ext_dram.text : {
+		/* explicitly placed user code */
+		*(ext_dram.text*);
+	} > ext_mem_dram
+
+	/* global symbol marking the end of ext_mem text sections */
+	_ext_dram_end = .;
+
+	/* all extmem data is placed after text sections */
+	ext_dram_data_offset = . - ORIGIN(ext_mem_dram);
+	. = ORIGIN(ext_mem_dram_data) + ext_dram_data_offset;
+	_ext_dram_data_begin = .;
+
+	ext_dram.data (ORIGIN(ext_mem_dram_data) + ext_dram_data_offset) :
+	{
+		*(ext_dram.data*);
+		KEEP(*(ext_dram.data.keep*));
+	} > ext_mem_dram_data
+
+	/* global symbol marking the end of ext_mem_dram_data data sections */
+	_ext_dram_end_data = .;
 }
 . = _int_end;
 . = ALIGN(16);

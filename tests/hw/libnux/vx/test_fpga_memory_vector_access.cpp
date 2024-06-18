@@ -10,22 +10,43 @@ using namespace libnux::vx;
 void start(void) {
 	test_init();
 
-	testcase_begin("external memory write read via vector unit");
-	vector_type values;
-	for (size_t entry = 0; entry < dls_vector_size; ++entry) {
-		values[entry] = entry;
+	{
+		testcase_begin("external memory write read via vector unit");
+		vector_type values;
+		for (size_t entry = 0; entry < dls_vector_size; ++entry) {
+			values[entry] = entry;
+		}
+
+		uint32_t const index = 0;
+
+		set_vector(values, dls_extmem_base + (1 << 16), index);
+
+		auto const read = get_vector(dls_extmem_base, index);
+
+		for (size_t column = 0; column < 128; ++column) {
+			test_equal(read[column], values[column]);
+		}
+		testcase_end();
 	}
 
-	uint32_t const index = 0;
+	{
+		testcase_begin("external dram memory write read via vector unit");
+		vector_type values;
+		for (size_t entry = 0; entry < dls_vector_size; ++entry) {
+			values[entry] = entry;
+		}
 
-	set_vector(values, dls_extmem_base + (1 << 16), index);
+		uint32_t const index = 0;
 
-	auto const read = get_vector(dls_extmem_base, index);
+		set_vector(values, dls_extmem_dram_base + (1 << 16), index);
 
-	for (size_t column = 0; column < 128; ++column) {
-		test_equal(read[column], values[column]);
+		auto const read = get_vector(dls_extmem_dram_base, index);
+
+		for (size_t column = 0; column < 128; ++column) {
+			test_equal(read[column], values[column]);
+		}
+		testcase_end();
 	}
-	testcase_end();
 
 	test_summary();
 	test_shutdown();

@@ -158,20 +158,21 @@ public:
 
 
 	/** ExtMem address type representing a "external memory" address. */
-	class ExtMem
+	template <uint32_t ScalarBaseAddress, uint32_t VectorBaseAddress, size_t WordSize>
+	class ExtMemBase
 	{
 	public:
 		/** Convert to "vector unit" address. */
 		constexpr byte_address to_vector_addr() const
 		{
-			return (m_ptr >> 2) | dls_extmem_base;
+			return (m_ptr >> 2) | VectorBaseAddress;
 		}
 
 		/** Convert to "vector fxvoutx" address. */
 		constexpr byte_address to_fxviox_addr() const
 		{
 			// Whatever...
-			return (m_ptr >> 4) | dls_extmem_base;
+			return (m_ptr >> 4) | VectorBaseAddress;
 		}
 
 		/** Convert to "vector unit" pointer. */
@@ -193,7 +194,7 @@ public:
 		/** Convert to "scalar unit" address. */
 		constexpr byte_address to_scalar_addr() const
 		{
-			return m_ptr | extmem_data_base;
+			return m_ptr | ScalarBaseAddress;
 		}
 
 		/** Convert to "scalar unit" pointer. */
@@ -208,11 +209,13 @@ public:
 
 	private:
 		friend GlobalAddress;
-		inline constexpr ExtMem(omnibus_address address, byte_address offset);
+		inline constexpr ExtMemBase(omnibus_address address, byte_address offset);
 
 		byte_address m_ptr;
 	};
 
+	typedef ExtMemBase<extmem_data_base, dls_extmem_base, 1ull << 15> ExtMem;
+	typedef ExtMemBase<extmem_dram_data_base, dls_extmem_dram_base, 1ull << 26> ExtMemDRAM;
 
 	/** SRAM address type representing a "SRAM memory" address on each PPU. */
 	class SRAM
@@ -317,6 +320,16 @@ public:
 		return to_extmem();
 	}
 
+	/** Convert a GlobalAddress to an ExtMemDRAM address. */
+	constexpr ExtMemDRAM to_extmem_dram() const
+	{
+		return ExtMemDRAM(m_addr, m_offset);
+	}
+	constexpr explicit operator ExtMemDRAM() const
+	{
+		return to_extmem_dram();
+	}
+
 	/** Convert a GlobalAddress to an SRAM address. */
 	inline constexpr SRAM to_sram() const;
 	constexpr explicit operator SRAM() const
@@ -333,6 +346,9 @@ public:
 
 	/** Check if global address represents a valid address in extmem. */
 	inline constexpr bool is_extmem() const;
+
+	/** Check if global address represents a valid address in extmem dram. */
+	inline constexpr bool is_extmem_dram() const;
 
 	/** Check if global address represents a valid address in SRAMs. */
 	inline constexpr bool is_sram() const;
@@ -396,22 +412,31 @@ struct AddressSpace
 	static_assert(vecgen_top.to_global_omnibus() == 0x8400'0000);
 	static_assert(vecgen_bot.to_global_omnibus() == 0x8400'1000);
 
-	/** External memory (FPGA-connected DRAM). */
+	/** External memory (FPGA-connected SRAM). */
 	GlobalAddress static constexpr extmem =
 	    GlobalAddress::from_global(1ull << 31 | 0 << 27 | 0 << 26);
-	constexpr static uint32_t extmem_size{1 << 29}; // 128MWords (or 512MiB) of extmem
+	constexpr static uint32_t extmem_size{1 << 15}; // 32KWords (or 128KiB) of extmem
 	static_assert(extmem.to_global_omnibus() == 0x8000'0000);
+
+	/** External memory (FPGA-connected DRAM). */
+	GlobalAddress static constexpr extmem_dram =
+	    GlobalAddress::from_global(1ull << 31 | 1ull << 26 | 0 << 26);
+	constexpr static uint32_t extmem_dram_size{1ull << 26}; // 64MWords (or 256MiB) of extmem
+	static_assert(extmem_dram.to_global_omnibus() == 0x8400'0000);
 };
 
 
-constexpr GlobalAddress::ExtMem::ExtMem(
+template <uint32_t ScalarBaseAddress, uint32_t VectorBaseAddress, size_t WordSize>
+constexpr GlobalAddress::ExtMemBase<ScalarBaseAddress, VectorBaseAddress, WordSize>::ExtMemBase(
     GlobalAddress::omnibus_address const address, GlobalAddress::byte_address const offset) :
     m_ptr((address << 2) | offset)
 {}
 
-constexpr GlobalAddress::ExtMem::operator bool() const
+template <uint32_t ScalarBaseAddress, uint32_t VectorBaseAddress, size_t WordSize>
+constexpr GlobalAddress::ExtMemBase<ScalarBaseAddress, VectorBaseAddress, WordSize>::operator bool()
+    const
 {
-	return m_ptr < static_cast<byte_address>(AddressSpace::extmem_size << 2);
+	return m_ptr < static_cast<byte_address>(WordSize << 2);
 }
 
 constexpr GlobalAddress::SRAM::operator bool() const
@@ -512,6 +537,15 @@ constexpr GlobalAddress GlobalAddress::from_relative<GlobalAddress::ExtMem>(
 }
 
 template <>
+constexpr GlobalAddress GlobalAddress::from_relative<GlobalAddress::ExtMemDRAM>(
+    GlobalAddress::byte_address offset)
+{
+	omnibus_address const address = (offset >> 2) | AddressSpace::extmem_dram.to_global_omnibus();
+	byte_address const byte_offset = offset % 4;
+	return GlobalAddress(address, byte_offset);
+}
+
+template <>
 constexpr GlobalAddress GlobalAddress::from_relative<GlobalAddress::SRAM>(
     GlobalAddress::byte_address offset, PPUOnDLS me)
 {
@@ -539,6 +573,12 @@ constexpr bool GlobalAddress::is_extmem() const
 {
 	return (m_addr >= AddressSpace::extmem.to_global_omnibus()) &&
 	       (m_addr < (AddressSpace::extmem.to_global_omnibus() + AddressSpace::extmem_size));
+}
+
+constexpr bool GlobalAddress::is_extmem_dram() const
+{
+	return (m_addr >= AddressSpace::extmem_dram.to_global_omnibus()) &&
+	       (m_addr < (AddressSpace::extmem_dram.to_global_omnibus() + AddressSpace::extmem_size));
 }
 
 constexpr bool GlobalAddress::is_sram() const

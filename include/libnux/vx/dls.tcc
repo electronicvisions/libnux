@@ -30,6 +30,7 @@ static uint32_t const dls_config_odd_base     = 0x00020000;
 static uint32_t const dls_raw_base            = 0x000f0000;
 static uint32_t const dls_randgen_base        = 0x000e0000;
 static uint32_t const dls_extmem_base         = 0x80000000;
+static uint32_t const dls_extmem_dram_base    = 0x84000000;
 static uint32_t const dls_neuron_reset_base   = 0x00c90000 + dls_num_rows * dls_num_vectors_per_row;
 // clang-format on
 
@@ -81,6 +82,7 @@ static constexpr omnibus_address_t cadc_top_acausal_base_address =
 
 /* External memory base address for scalar data access */
 static constexpr uint32_t extmem_data_base = 1ul << 30;
+static constexpr uint32_t extmem_dram_data_base = 1ul << 30 | 1ul << 28;
 static constexpr uint32_t vecgen_top_base_address = extmem_data_base | (1ul << 28);
 static constexpr uint32_t vecgen_bottom_base_address = extmem_data_base | (1ul << 28) | 0x4000;
 
