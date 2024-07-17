@@ -1,8 +1,7 @@
 #pragma once
+#include "libnux/scheduling/Service.hpp"
 #include "libnux/vx/spr.h"
 #include <stdint.h>
-
-typedef uint8_t service_id;
 
 #ifdef LIBNUX_TIME64
 typedef uint64_t time_type;
@@ -17,7 +16,7 @@ inline time_type get_time()
 
 struct Event
 {
-	service_id id = 0;
+	Service const* service;
 	time_type deadline;
 };
 

@@ -25,15 +25,12 @@ public:
 	/**
 	 * Scheduler loop.
 	 * \tparam Signaller Scheduler loop control type
-	 * \tparam S Service types
 	 * \tparam E Event source types
 	 * \param signaller Scheduler loop control instance
-	 * \param services Tuple of references to services
 	 * \param event_sources Tuple of references to event sources
 	 */
-	template <typename Signaller, typename... S, typename... E>
-	void execute(
-	    Signaller& signaller, std::tuple<S&...>& services, std::tuple<E&...>& event_sources);
+	template <typename Signaller, typename... E>
+	void execute(Signaller& signaller, std::tuple<E&...>& event_sources);
 
 	/**
 	 * Get maximal number of elements stored in queue since creation.
@@ -67,11 +64,8 @@ public:
 
 	/**
 	 * Execute services task corresponding to earliest deadline event in queue.
-	 * \tparam S Service types
-	 * \param services Tuple of references to services to execute from
 	 */
-	template <typename... S>
-	void run_queue_service(std::tuple<S&...>& services);
+	void run_queue_service();
 
 private:
 	/**
@@ -98,27 +92,6 @@ private:
 	template <typename... E, size_t I>
 	void fetch_events_from_source(
 	    std::tuple<E...>& sources, std::index_sequence<I>, time_type t, Event& e);
-
-	/**
-	 * Execute by interating recursively over all services.
-	 * \tparam S Services types
-	 * \tparam I First index
-	 * \tparam Is Succeeding indices
-	 * \param sources Tuple of references to services
-	 * \param id Service ID of service to execute
-	 */
-	template <typename... S, size_t I, size_t... Is>
-	void run_service(std::tuple<S...>& services, std::index_sequence<I, Is...>, service_id id);
-
-	/**
-	 * End of execute by interating recursively over all services.
-	 * \tparam S Services types
-	 * \tparam I Index
-	 * \param sources Tuple of references to services
-	 * \param id Service ID of service to execute
-	 */
-	template <typename... S, size_t I>
-	void run_service(std::tuple<S...>& services, std::index_sequence<I>, service_id id);
 };
 
 template <size_t queue_size>
@@ -196,42 +169,17 @@ inline __attribute__((always_inline)) void Scheduler<queue_size>::sort_earliest_
 }
 
 template <size_t queue_size>
-template <typename... S>
-inline __attribute__((always_inline)) void Scheduler<queue_size>::run_queue_service(
-    std::tuple<S&...>& services)
+inline __attribute__((always_inline)) void Scheduler<queue_size>::run_queue_service()
 {
 	Event e;
 	if (m_queue.pop(e)) {
-		run_service(services, std::make_index_sequence<sizeof...(S)>(), e.id);
+		(*e.service)();
 	}
 }
 
 template <size_t queue_size>
-template <typename... S, size_t I, size_t... Is>
-inline __attribute__((always_inline)) void Scheduler<queue_size>::run_service(
-    std::tuple<S...>& services, std::index_sequence<I, Is...>, service_id id)
-{
-	if (std::get<sizeof...(Is)>(services).id == id) {
-		std::get<sizeof...(Is)>(services).exec();
-	} else {
-		run_service(services, std::make_index_sequence<sizeof...(Is)>(), id);
-	}
-}
-
-template <size_t queue_size>
-template <typename... S, size_t I>
-inline __attribute__((always_inline)) void Scheduler<queue_size>::run_service(
-    std::tuple<S...>& services, std::index_sequence<I>, service_id id)
-{
-	if (std::get<0>(services).id == id) {
-		std::get<0>(services).exec();
-	}
-}
-
-template <size_t queue_size>
-template <typename Signaller, typename... S, typename... E>
-void Scheduler<queue_size>::execute(
-    Signaller& signaller, std::tuple<S&...>& services, std::tuple<E&...>& event_sources)
+template <typename Signaller, typename... E>
+void Scheduler<queue_size>::execute(Signaller& signaller, std::tuple<E&...>& event_sources)
 {
 	scheduler_signal signal = signaller.signal();
 	while (not(signal == scheduler_exit)) {
@@ -241,7 +189,7 @@ void Scheduler<queue_size>::execute(
 					fetch_events_timed(event_sources, get_time());
 				}
 				sort_earliest_first();
-				run_queue_service(services);
+				run_queue_service();
 			}
 		}
 		signal = signaller.signal();

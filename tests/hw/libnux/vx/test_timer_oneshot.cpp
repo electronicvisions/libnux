@@ -3,10 +3,12 @@
 
 using namespace libnux::vx;
 
+void foo() {}
+
 void test_timer_oneshot_next_event()
 {
 	testcase_begin("test_timer_oneshot_wants_run");
-	auto timer = TimerOneshot();
+	auto timer = TimerOneshot(&foo);
 	Event e;
 	time_type runtime = 10;
 	time_type window = 5;

@@ -29,21 +29,9 @@ public:
 void test_service_function_exec()
 {
 	testcase_begin("test_service_function_exec");
-	auto service = Service_Function<0, &test_function>();
-	service.exec();
+	Service service = &test_function;
+	service();
 	test_equal(count_function, 1);
-	testcase_end();
-}
-
-void test_service_class_exec()
-{
-	testcase_begin("test_service_class_exec");
-	test_class test = test_class(1);
-	auto service = Service_Class<0, test_class, &test_class::member_function>(test);
-	// exec
-	service.exec();
-	// no third element to be fetched
-	test_equal(count_class_member_function, 1);
 	testcase_end();
 }
 
@@ -51,7 +39,6 @@ void start()
 {
 	test_init();
 	test_service_function_exec();
-	test_service_class_exec();
 	test_summary();
 	test_shutdown();
 }

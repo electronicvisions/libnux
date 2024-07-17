@@ -3,10 +3,12 @@
 
 using namespace libnux::vx;
 
+void foo() {}
+
 void test_timer_next_event()
 {
 	testcase_begin("timer.next_event");
-	auto timer = Timer();
+	auto timer = Timer(&foo);
 	Event e;
 	time_type start = 1;
 	time_type repeat = 2;
@@ -38,7 +40,7 @@ void test_timer_next_event()
 void test_timer_miss_run()
 {
 	testcase_begin("timer.missed_count");
-	auto timer = Timer();
+	auto timer = Timer(&foo);
 	time_type start = 1;
 	time_type repeat = 2;
 	time_type stop = 4;

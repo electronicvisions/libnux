@@ -11,7 +11,7 @@ class Timer
 	time_type m_period;
 	time_type m_start;
 	// Event to be run
-	service_id m_id;
+	Service m_service;
 	// debug
 	// count missed runs
 	time_type m_missed;
@@ -20,14 +20,11 @@ class Timer
 	time_type m_end_run;
 
 public:
-	Timer();
+	Timer(Service service);
 	// get next event, return true, if new event
 	bool next_event(Event& event, time_type t);
 	// set service id directly
-	void set_service_id(service_id id);
-	// set service id by service
-	template <class S>
-	void set_service(S& s);
+	void set_service(Service service);
 	// set timing
 	void set_first_deadline(time_type first);
 	time_type get_first_deadline() const;
@@ -38,26 +35,20 @@ public:
 	time_type get_missed_count();
 };
 
-inline Timer::Timer()
+inline Timer::Timer(Service service)
 {
-	this->m_id = 0;
 	this->m_start = 0;
 	this->m_num_periods = 0;
 	this->m_period = 0;
 	this->m_last_run = 0;
 	this->m_end_run = 0;
 	this->m_missed = 0;
+	this->m_service = service;
 }
 
-inline void Timer::set_service_id(service_id id)
+inline void Timer::set_service(Service service)
 {
-	this->m_id = id;
-}
-
-template <class T>
-void Timer::set_service(T& t)
-{
-	this->m_id = t.id;
+	this->m_service = service;
 }
 
 inline void Timer::set_first_deadline(time_type first)
@@ -92,7 +83,7 @@ inline bool Timer::next_event(Event& event, time_type t)
 			++this->m_missed;
 			this->m_last_run += this->m_period;
 		}
-		event.id = this->m_id;
+		event.service = &(this->m_service);
 		event.deadline = this->m_last_run;
 		return true;
 	}
