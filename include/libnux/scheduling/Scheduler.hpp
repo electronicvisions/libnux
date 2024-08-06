@@ -24,13 +24,12 @@ public:
 
 	/**
 	 * Scheduler loop.
-	 * \tparam Signaller Scheduler loop control type
 	 * \tparam E Event source types
-	 * \param signaller Scheduler loop control instance
+	 * \param stop_time Time at which to stop execution
 	 * \param event_sources Tuple of references to event sources
 	 */
-	template <typename Signaller, typename... E>
-	void execute(Signaller& signaller, std::tuple<E&...>& event_sources);
+	template <typename... E>
+	void execute(time_type stop_time, std::tuple<E&...>& event_sources);
 
 	/**
 	 * Get maximal number of elements stored in queue since creation.
@@ -178,20 +177,14 @@ inline __attribute__((always_inline)) void Scheduler<queue_size>::run_queue_serv
 }
 
 template <size_t queue_size>
-template <typename Signaller, typename... E>
-void Scheduler<queue_size>::execute(Signaller& signaller, std::tuple<E&...>& event_sources)
+template <typename... E>
+void Scheduler<queue_size>::execute(time_type const stop_time, std::tuple<E&...>& event_sources)
 {
-	scheduler_signal signal = signaller.signal();
-	while (not(signal == scheduler_exit)) {
-		if (not(signal == scheduler_wait)) {
-			if ((signal == scheduler_run) or (signal == scheduler_finish)) {
-				if (not(signal == scheduler_finish)) {
-					fetch_events_timed(event_sources, get_time());
-				}
-				sort_earliest_first();
-				run_queue_service();
-			}
-		}
-		signal = signaller.signal();
+	time_type current_time = get_time();
+	while (current_time < stop_time) {
+		fetch_events_timed(event_sources, current_time);
+		sort_earliest_first();
+		run_queue_service();
+		current_time = get_time();
 	}
 }

@@ -19,16 +19,3 @@ struct Event
 	Service const* service;
 	time_type deadline;
 };
-
-// scheduler signals
-enum scheduler_signal
-{
-	// don't do anything except staying alive
-	scheduler_wait = 0,
-	// run, i.e. fetch events and execute them
-	scheduler_run = 1,
-	// execute events in queue, but don't fetch new ones
-	scheduler_finish = 2,
-	// exit execution function
-	scheduler_exit = 3,
-};
