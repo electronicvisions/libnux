@@ -81,10 +81,11 @@ private:
 	 * \tparam Is Succeeding indices
 	 * \param sources Tuple of references to event sources
 	 * \param t Time to fetch events for
+	 * \param e Event object storage to use for fetching from timers
 	 */
 	template <typename... E, size_t I, size_t... Is>
 	void fetch_events_from_source(
-	    std::tuple<E...>& sources, std::index_sequence<I, Is...>, time_type t);
+	    std::tuple<E...>& sources, std::index_sequence<I, Is...>, time_type t, Event& e);
 
 	/**
 	 * End of fetch events iterating over recursively all event sources.
@@ -92,10 +93,11 @@ private:
 	 * \tparam I Index
 	 * \param sources Tuple of references to event sources
 	 * \param t Time to fetch events for
+	 * \param e Event object storage to use for fetching from timers
 	 */
 	template <typename... E, size_t I>
-	void fetch_events_from_source(std::tuple<E...>& sources, std::index_sequence<I>, time_type t);
-
+	void fetch_events_from_source(
+	    std::tuple<E...>& sources, std::index_sequence<I>, time_type t, Event& e);
 
 	/**
 	 * Execute by interating recursively over all services.
@@ -146,27 +148,26 @@ template <typename... E>
 inline __attribute__((always_inline)) void Scheduler<queue_size>::fetch_events_timed(
     std::tuple<E&...>& event_sources, time_type t)
 {
-	fetch_events_from_source(event_sources, std::make_index_sequence<sizeof...(E)>(), t);
+	Event e;
+	fetch_events_from_source(event_sources, std::make_index_sequence<sizeof...(E)>(), t, e);
 }
 
 template <size_t queue_size>
 template <typename... E, size_t I, size_t... Is>
 inline __attribute__((always_inline)) void Scheduler<queue_size>::fetch_events_from_source(
-    std::tuple<E...>& sources, std::index_sequence<I, Is...>, time_type t)
+    std::tuple<E...>& sources, std::index_sequence<I, Is...>, time_type t, Event& e)
 {
-	Event e;
 	while (std::get<sizeof...(E) - 1 - sizeof...(Is)>(sources).next_event(e, t)) {
 		m_queue.push(e);
 	}
-	fetch_events_from_source(sources, std::make_index_sequence<sizeof...(Is)>(), t);
+	fetch_events_from_source(sources, std::make_index_sequence<sizeof...(Is)>(), t, e);
 }
 
 template <size_t queue_size>
 template <typename... E, size_t I>
 inline __attribute__((always_inline)) void Scheduler<queue_size>::fetch_events_from_source(
-    std::tuple<E...>& sources, std::index_sequence<I>, time_type t)
+    std::tuple<E...>& sources, std::index_sequence<I>, time_type t, Event& e)
 {
-	Event e;
 	while (std::get<sizeof...(E) - 1>(sources).next_event(e, t)) {
 		m_queue.push(e);
 	}
