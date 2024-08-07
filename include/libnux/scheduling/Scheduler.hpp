@@ -176,19 +176,23 @@ inline __attribute__((always_inline)) void Scheduler<queue_size>::fetch_events_f
 template <size_t queue_size>
 inline __attribute__((always_inline)) void Scheduler<queue_size>::sort_earliest_first()
 {
-	// linear search for earliest deadline
-	time_type earliest = m_queue[0].deadline;
-	size_t min_index = 0;
-	for (size_t i = 1; i < m_queue.get_size(); ++i) {
-		if (m_queue[i].deadline < earliest) {
-			min_index = i;
-			earliest = m_queue[i].deadline;
+	size_t const current_queue_size = m_queue.get_size();
+	if (current_queue_size > 1) {
+		// linear search for earliest deadline
+		time_type earliest = m_queue[0].deadline;
+		size_t min_index = 0;
+		for (size_t i = 1; i < current_queue_size; ++i) {
+			time_type const local_deadline = m_queue[i].deadline;
+			if (local_deadline < earliest) {
+				min_index = i;
+				earliest = local_deadline;
+			}
+		}
+		// set earliest deadline event to start of queue
+		if (min_index != 0) {
+			std::swap(m_queue[0], m_queue[min_index]);
 		}
 	}
-	// set earliest deadline event to start of queue
-	Event tmp = m_queue[0];
-	m_queue[0] = m_queue[min_index];
-	m_queue[min_index] = tmp;
 }
 
 template <size_t queue_size>
