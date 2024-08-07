@@ -133,20 +133,12 @@ bool Queue<N, T>::pop(T& t)
 template <size_t N, class T>
 T& Queue<N, T>::operator[](size_t index)
 {
-	// range check and if overrange return last element
-	if (!(index < m_size_current)) {
-		index = m_size_current - 1;
-	}
 	return m_array[((N + m_write_addr) - m_size_current + index) % N];
 }
 
 template <size_t N, class T>
 T const& Queue<N, T>::operator[](size_t index) const
 {
-	// range check and if overrange return last element
-	if (!(index < m_size_current)) {
-		index = m_size_current - 1;
-	}
 	return m_array[((N + m_write_addr) - m_size_current + index) % N];
 }
 
