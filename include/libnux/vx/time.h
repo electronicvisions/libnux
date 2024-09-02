@@ -20,7 +20,7 @@ void sleep_cycles(uint32_t cycles);
 	because otherwise, mfsprs might get grouped together,
 	rendering measurement userless.
 */
-time_base_t now();
+time_base_t now() ATTRIB_LINK_TO_INTERNAL;
 
 /*
 	Pair of time values.
