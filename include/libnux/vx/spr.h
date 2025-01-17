@@ -36,7 +36,9 @@ SPR_GETTER(get_tbl, "mfspr %0, 284")
 
 typedef uint64_t time_base_t;
 
-ATTRIB_UNUSED static time_base_t get_time_base() {
+ATTRIB_UNUSED static time_base_t get_time_base() ATTRIB_LINK_TO_INTERNAL;
+static time_base_t get_time_base()
+{
 	time_base_t tbu, tbl;
 	tbu = get_tbu();
 	tbl = get_tbl();

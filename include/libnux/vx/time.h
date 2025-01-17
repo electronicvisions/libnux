@@ -12,7 +12,7 @@ namespace libnux::vx {
 
 constexpr static uint32_t default_ppu_cycles_per_us = 250;
 
-void sleep_cycles(uint32_t cycles);
+void sleep_cycles(uint32_t cycles) ATTRIB_LINK_TO_INTERNAL;
 
 /*
 	Get current absolute time in ppu cycles.
