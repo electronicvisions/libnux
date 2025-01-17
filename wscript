@@ -217,7 +217,7 @@ def build(bld):
             env=env,
         )
 
-        program_list = ["examples/stdp.cpp"]
+        program_list = ["examples/stdp.cpp", "examples/uart_tx.cpp"]
 
         for program in program_list:
             bld.program(
