@@ -7,7 +7,8 @@
 #include "libnux/vx/genpybind.h"
 #include <cstdint>
 
-namespace libnux::vx GENPYBIND_TAG_LIBNUX_VX {
+namespace libnux {
+namespace vx GENPYBIND_TAG_LIBNUX_VX {
 namespace detail {
 
 struct frac8_t_attributes
@@ -297,4 +298,5 @@ void mailbox_write_frac(frac<Attr> const& value)
 }
 #endif
 
-} // namespace libnux::vx
+} // namespace vx
+} // namespace libnux
