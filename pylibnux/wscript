@@ -1,11 +1,13 @@
 #!/usr/bin/env python
+import os
 
 def configure(cfg):
     cfg.load('compiler_cxx')
     cfg.load('python')
     cfg.check_python_version()
     cfg.check_python_headers()
-    cfg.load('genpybind')
+    if (os.environ.get("SINGULARITY_APPNAME") is None) or ("wafer" not in os.environ.get("SINGULARITY_APPNAME")):
+        cfg.load('genpybind')
 
 def build(bld):
     if not bld.env.with_pybind:
