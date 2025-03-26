@@ -6,8 +6,8 @@ from typing import Set, ClassVar
 from dlens_vx_v3.hal import CADCConfig
 from dlens_vx_v3.hxcomm import ManagedConnection
 from dlens_vx_v3.sta import generate, DigitalInit, run
-from dlens_vx_v3.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, TimerOnDLS,\
-    CADCConfigOnDLS
+from dlens_vx_v3.halco import PPUOnDLS, iter_all, JTAGIdCodeOnDLS, \
+    TimerOnDLS, CADCConfigOnDLS
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
     stop_program, wait_until_ppu_finished, PPUTimeoutError
 from dlens_vx_v3 import logger
