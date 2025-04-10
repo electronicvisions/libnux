@@ -101,7 +101,7 @@ uint32_t mailbox_write_signed_int(int32_t const n) {
 }
 
 #define LIBNUX_MAILBOX_WRITE_VECTOR(type, name, number_writer)                                     \
-	uint32_t libnux_mailbox_write_##name(__vector type const& vec)                                 \
+	uint32_t mailbox_write_##name(__vector type const& vec)                                        \
 	{                                                                                              \
 		uint32_t ret = 0;                                                                          \
 		ret += mailbox_write_string("{");                                                          \
