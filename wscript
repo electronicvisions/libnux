@@ -155,7 +155,7 @@ def build(bld):
         relative_trick = True
     )
 
-    for chip_version_number in [3, 4]:
+    for chip_version_number in [3]:
         env = bld.all_envs[f"nux_vx_v{chip_version_number}"].derive()
         env.detach()
 
