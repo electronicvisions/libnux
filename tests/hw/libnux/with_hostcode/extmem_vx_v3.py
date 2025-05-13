@@ -5,7 +5,9 @@ from typing import ClassVar
 
 from dlens_vx_v3.hal import Barrier
 from dlens_vx_v3.halco import iter_all, PPUOnDLS, BarrierOnFPGA, \
-    JTAGIdCodeOnDLS, ExternalPPUMemoryByteOnFPGA, ExternalPPUMemoryBlockOnFPGA
+    JTAGIdCodeOnDLS, ExternalPPUMemoryByteOnFPGA, \
+    ExternalPPUMemoryBlockOnFPGA, ExternalPPUDRAMMemoryByteOnFPGA, \
+    ExternalPPUDRAMMemoryBlockOnFPGA
 from dlens_vx_v3.hxcomm import ManagedConnection
 from dlens_vx_v3.sta import generate, SystemInit, run, \
     PlaybackProgramBuilder
@@ -67,15 +69,28 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             self.run_ppu_program(ppu, program, int(5e5))
 
         builder = PlaybackProgramBuilder()
-        ticket = builder.read(ExternalPPUMemoryBlockOnFPGA(
+        ticket_sram_scalar = builder.read(ExternalPPUMemoryBlockOnFPGA(
             ExternalPPUMemoryByteOnFPGA(1 << 16),
             ExternalPPUMemoryByteOnFPGA((1 << 16) + 255)))
+        ticket_sram_vector = builder.read(ExternalPPUMemoryBlockOnFPGA(
+            ExternalPPUMemoryByteOnFPGA((1 << 16) + 256),
+            ExternalPPUMemoryByteOnFPGA((1 << 16) + 256 + 127)))
+        ticket_dram_scalar = builder.read(ExternalPPUDRAMMemoryBlockOnFPGA(
+            ExternalPPUDRAMMemoryByteOnFPGA(1 << 16),
+            ExternalPPUDRAMMemoryByteOnFPGA((1 << 16) + 255)))
+        ticket_dram_vector = builder.read(ExternalPPUDRAMMemoryBlockOnFPGA(
+            ExternalPPUDRAMMemoryByteOnFPGA((1 << 16) + 256),
+            ExternalPPUDRAMMemoryByteOnFPGA((1 << 16) + 256 + 127)))
         builder.block_until(BarrierOnFPGA(), Barrier.omnibus)
         run(self.CONNECTION, builder.done())
 
-        block = ticket.get()
-        for i in range(256):
-            self.assertEqual(int(block.bytes[i].value), i)
+        for ticket in [
+                ticket_sram_scalar, ticket_dram_scalar,
+                ticket_sram_vector, ticket_dram_vector
+        ]:
+            block = ticket.get()
+            for i, byte in enumerate(block.bytes):
+                self.assertEqual(int(byte.value), i)
 
 
 if __name__ == '__main__':

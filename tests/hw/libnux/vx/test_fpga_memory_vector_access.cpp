@@ -19,9 +19,9 @@ void start(void) {
 
 		uint32_t const index = 0;
 
-		set_vector(values, dls_extmem_base + (1 << 16), index);
+		set_vector(values, dls_extmem_base + (1 << 12), index);
 
-		auto const read = get_vector(dls_extmem_base, index);
+		auto const read = get_vector(dls_extmem_base + (1 << 12), index);
 
 		for (size_t column = 0; column < 128; ++column) {
 			test_equal(read[column], values[column]);
@@ -38,9 +38,9 @@ void start(void) {
 
 		uint32_t const index = 0;
 
-		set_vector(values, dls_extmem_dram_base + (1 << 16), index);
+		set_vector(values, dls_extmem_dram_base + (1 << 12), index);
 
-		auto const read = get_vector(dls_extmem_dram_base, index);
+		auto const read = get_vector(dls_extmem_dram_base + (1 << 12), index);
 
 		for (size_t column = 0; column < 128; ++column) {
 			test_equal(read[column], values[column]);

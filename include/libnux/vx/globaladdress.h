@@ -162,34 +162,12 @@ public:
 	class ExtMemBase
 	{
 	public:
-		/** Convert to "vector unit" address. */
-		constexpr byte_address to_vector_addr() const
-		{
-			return (m_ptr >> 2) | VectorBaseAddress;
-		}
-
 		/** Convert to "vector fxvoutx" address. */
 		constexpr byte_address to_fxviox_addr() const
 		{
 			// Whatever...
 			return (m_ptr >> 4) | VectorBaseAddress;
 		}
-
-		/** Convert to "vector unit" pointer. */
-		template <typename T>
-		constexpr T* to_vector() const
-		{
-			// using `__vector T*` isn't possible, so it has to be provided by the caller
-			static_assert(
-			    std::is_same_v<__vector int8_t, T> || std::is_same_v<__vector uint8_t, T> ||
-			    std::is_same_v<__vector int16_t, T> || std::is_same_v<__vector uint16_t, T> ||
-			    std::is_same_v<__vector int8_t const, T> ||
-			    std::is_same_v<__vector uint8_t const, T> ||
-			    std::is_same_v<__vector int16_t const, T> ||
-			    std::is_same_v<__vector uint16_t const, T>);
-			return reinterpret_cast<T*>(static_cast<ppu_uintptr_t>(to_vector_addr()));
-		}
-
 
 		/** Convert to "scalar unit" address. */
 		constexpr byte_address to_scalar_addr() const

@@ -21,39 +21,33 @@ void start()
 		// Write to 0x1234 in extmem
 		constexpr auto a = GlobalAddress::from_global(1ull << 31 | (0x1234 + (1 << 14)));
 
-		uint32_t volatile* ptr_scalar = a.to_extmem().to_scalar<uint32_t>();
+		uint8_t volatile* ptr_scalar = a.to_extmem().to_scalar<uint8_t>();
 		*(ptr_scalar + 17) = 17 + 4;
 		*(ptr_scalar + 18) = 17 + 4;
 		test_equal(*(ptr_scalar + 17), 17ull + 4);
 		test_equal(*(ptr_scalar + 18), 17ull + 4);
 
-		// TODO: Issue 3985
-		//__vector uint8_t tmp;
-		//__vector uint8_t mask;
-		// tmp = vec_splat_u8(17 + 5);
-		// mask = vec_splat_u8(0);
-		// mask[17] = 1;
-		// auto vector_addr = a.to_extmem().to_vector_addr();
-		// asm volatile("fxvcmpb %[mask]\n"
-		//             "fxvstax %[data], %[base], %[index]\n"
-		//             "sync\n" ::[mask] "qv"(mask),
-		//             [data] "qv"(tmp), [base] "b"(vector_addr), [index] "r"(0)
-		//             : "memory");
-		// test_equal(*(ptr_scalar + 17), 17ull + 5);
-		// test_equal(*(ptr_scalar + 18), 17ull + 4);
+		__vector uint8_t tmp;
+		tmp = vec_splat_u8(17 + 5);
+		auto vector_addr = a.to_extmem().to_scalar_addr() + sizeof(tmp);
+		asm volatile("fxvstax %[data], %[base], %[index]\n"
+		             "sync\n" ::[data] "qv"(tmp),
+		             [base] "b"(vector_addr), [index] "r"(0)
+		             : "memory");
+
+		test_equal(*(ptr_scalar + 17), 17ull + 4);
+		test_equal(*(ptr_scalar + 17 + sizeof(tmp)), 17ull + 5);
 	}
 	mailbox_write_string("a");
 
 	{
 		constexpr auto a = GlobalAddress::from_global(1ull << 31 | (0x1234 + (1 << 14)));
 		test_equal(
-		    (uintptr_t) a.to_extmem().to_vector<__vector uint16_t>(), (0x8000'0000ull | (0x1234 + (1 << 14))));
-		mailbox_write_string("b");
-		test_equal(
 		    (uintptr_t) a.to_extmem().to_scalar<__vector uint16_t>(),
 		    (0x4000'0000ull | ((0x1234 + (1 << 14)) << 2)));
 		mailbox_write_string("b");
-		static_assert(a.to_extmem().to_vector_addr() == (0x8000'0000ull | (0x1234 + (1 << 14))));
+		static_assert(
+		    a.to_extmem().to_fxviox_addr() == (0x8000'0000ull | ((0x1234 + (1 << 14)) >> 2)));
 		static_assert(a.to_extmem().to_scalar_addr() == (0x4000'0000ull | ((0x1234 + (1 << 14)) << 2)));
 
 		constexpr auto b = GlobalAddress::from_relative<GlobalAddress::ExtMem>((0x1234 + (1 << 14)) << 2);
