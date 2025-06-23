@@ -39,7 +39,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip and find chip version
-        init_builder, _ = generate(DigitalInit())
+        init_builder, _ = generate(DigitalInit(
+            cls.CONNECTION.get_hwdb_entry()))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
         run(cls.CONNECTION, init_builder.done())
