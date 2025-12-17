@@ -74,7 +74,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip and find chip version
-        init = DigitalInit(cls.CONNECTION.get_hwdb_entry())
+        init = DigitalInit(cls.CONNECTION.get_hwdb_entry()[0])
         init.chip.enable_capmem = False
         init_builder, _ = generate(init)
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())

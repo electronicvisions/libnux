@@ -35,7 +35,7 @@ class LibnuxBarrierTest(unittest.TestCase):
 
         # Initialize the chip
         init_builder, _ = generate(DigitalInit(
-            cls.CONNECTION.get_hwdb_entry()))
+            cls.CONNECTION.get_hwdb_entry()[0]))
         sta.run(cls.CONNECTION, init_builder.done())
 
     @classmethod

@@ -29,7 +29,7 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
 
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit(
-            cls.CONNECTION.get_hwdb_entry()))
+            cls.CONNECTION.get_hwdb_entry()[0]))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.write(TimerOnDLS(), Timer(0))
         init_builder.block_until(TimerOnDLS(), Timer.Value(1000))

@@ -39,7 +39,7 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
 
         # Initialize the chip and find chip version
         init_builder, _ = generate(DigitalInit(
-            cls.CONNECTION.get_hwdb_entry()))
+            cls.CONNECTION.get_hwdb_entry()[0]))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
         run(cls.CONNECTION, init_builder.done())
