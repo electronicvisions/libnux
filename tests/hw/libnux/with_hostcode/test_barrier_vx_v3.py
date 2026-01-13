@@ -3,7 +3,7 @@ import os
 from os.path import join
 from dlens_vx_v3.hxcomm import ManagedConnection
 from dlens_vx_v3.sta import PlaybackProgramBuilder, \
-    generate, DigitalInit
+    generate, SystemInit
 from dlens_vx_v3.hal import PPUMemoryWord, Timer
 from dlens_vx_v3.halco import iter_all, PPUOnDLS
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
@@ -34,7 +34,7 @@ class LibnuxBarrierTest(unittest.TestCase):
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip
-        init_builder, _ = generate(DigitalInit(
+        init_builder, _ = generate(SystemInit(
             cls.CONNECTION.get_hwdb_entry()[0]))
         sta.run(cls.CONNECTION, init_builder.done())
 

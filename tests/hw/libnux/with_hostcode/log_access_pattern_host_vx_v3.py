@@ -7,7 +7,7 @@ from typing import List, Iterator, ClassVar
 from dlens_vx_v3.halco import iter_all, PPUOnDLS, SynapseRowOnSynram, \
     SynapseOnSynapseRow, JTAGIdCodeOnDLS, BarrierOnFPGA
 from dlens_vx_v3.hxcomm import ManagedConnection
-from dlens_vx_v3.sta import generate, DigitalInit, run
+from dlens_vx_v3.sta import generate, SystemInit, run
 from dlens_vx_v3 import logger
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
     wait_until_ppu_finished, stop_program
@@ -74,7 +74,7 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip and find chip version
-        init = DigitalInit(cls.CONNECTION.get_hwdb_entry()[0])
+        init = SystemInit(cls.CONNECTION.get_hwdb_entry()[0])
         init.chip.enable_capmem = False
         init_builder, _ = generate(init)
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())

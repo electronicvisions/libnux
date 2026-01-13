@@ -8,7 +8,7 @@ from dlens_vx_v3.halco import iter_all, PPUOnDLS, BarrierOnFPGA, \
     JTAGIdCodeOnDLS, NeuronConfigOnDLS, SpikeCounterReadOnDLS, \
     SpikeCounterResetOnDLS
 from dlens_vx_v3.hxcomm import ManagedConnection
-from dlens_vx_v3.sta import generate, DigitalInit, run, \
+from dlens_vx_v3.sta import generate, SystemInit, run, \
     PlaybackProgramBuilder
 from dlens_vx_v3 import logger
 from dlens_vx_v3.tools.run_ppu_program import load_and_start_program, \
@@ -39,7 +39,7 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
         cls.CONNECTION = cls.MANAGED_CONNECTION.__enter__()  # pylint: disable=unnecessary-dunder-call
 
         # Initialize the chip and find chip version
-        init_builder, _ = generate(DigitalInit(
+        init_builder, _ = generate(SystemInit(
             cls.CONNECTION.get_hwdb_entry()[0]))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
