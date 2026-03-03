@@ -142,7 +142,7 @@ def build(bld):
         bld(
             name = f"libnux_hwsimtests_vx_v{chip_version_number}",
             tests = f"hw/libnux/test_hwsimtests_vx_v{chip_version_number}.py",
-            features = "use pytest pylint pycodestyle",
+            features = "use pytest",
             use = [f"dlens_vx_v{chip_version_number}", "libnux_test_helpers"],
             install_path = "${PREFIX}/bin/tests",
             skip_run = not (((bld.env.TEST_TARGET == TestTarget.HARDWARE) or
@@ -154,9 +154,17 @@ def build(bld):
             test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                                 STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
                                 TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "tests", "hw", "libnux")),
-            pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle"),
             test_timeout = 30000
+        )
+
+        bld(
+            name = f"libnux_hwsimtests_vx_v{chip_version_number}_python_code_analysis",
+            tests = f"hw/libnux/test_hwsimtests_vx_v{chip_version_number}.py",
+            features = "use pylint pycodestyle",
+            use = [f"dlens_vx_v{chip_version_number}", "libnux_test_helpers"],
+            env = bld.all_envs[''],
+            pylint_config = join(get_toplevel_path(), "code-format", "pylintrc"),
+            pycodestyle_config = join(get_toplevel_path(), "code-format", "pycodestyle")
         )
 
         bld.program(

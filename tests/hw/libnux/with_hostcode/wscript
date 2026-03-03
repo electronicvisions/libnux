@@ -72,11 +72,9 @@ def build(bld):
 def build_host_python(bld, chip_version: Integral):
     bld(name=f"libnux-simtest-log_access_pattern_vx_v{chip_version}",
         tests=f"log_access_pattern_host_vx_v{chip_version}.py",
-        features="use pytest pylint pycodestyle",
+        features="use pytest",
         use=f"dlens_vx_v{chip_version}",
         install_path="${PREFIX}/bin/tests/sim",
-        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
         skip_run=not (bld.env.TEST_TARGET == TestTarget.SIMULATION and
                       int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
         test_environ=dict(
@@ -98,11 +96,9 @@ def build_host_python(bld, chip_version: Integral):
 
     bld(name=f"libnux-test-extmem_vx_v{chip_version}",
         tests=f"extmem_vx_v{chip_version}.py",
-        features="use pytest pylint pycodestyle",
+        features="use pytest",
         use=f"dlens_vx_v{chip_version}",
         install_path="${PREFIX}/bin/tests/sim",
-        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
         skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
                       int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
         test_environ=dict(
@@ -119,11 +115,9 @@ def build_host_python(bld, chip_version: Integral):
     if chip_version >= 2:
         bld(name=f"libnux-test-neuron_reset_vector_vx_v{chip_version}",
             tests=f"neuron_reset_vector_vx_v{chip_version}.py",
-            features="use pytest pylint pycodestyle",
+            features="use pytest",
             use=f"dlens_vx_v{chip_version}",
             install_path="${PREFIX}/bin/tests/sim",
-            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
             skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
                           int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
             test_environ=dict(
@@ -140,17 +134,26 @@ def build_host_python(bld, chip_version: Integral):
         bld(
             name=f"libnux_barriertest_vx_v{chip_version}",
             tests=f"test_barrier_vx_v{chip_version}.py",
-            features='use pytest pylint pycodestyle',
+            features='use pytest',
             use=f'dlens_vx_v{chip_version}',
             install_path='${PREFIX}/bin/tests',
             skip_run=not (bld.env.TEST_TARGET == TestTarget.HARDWARE and
                           int(bld.env.CURRENT_SETUP["chip_revision"]) == chip_version),
             env = bld.all_envs[''],
             test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'tests', 'hw', 'libnux', 'with_hostcode')),
-            pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
-            pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle"),
             test_timeout = 2000
         )
+
+    bld(
+        name=f"libnux_tests_with_hostcode_vx_v{chip_version}_python_code_analysis",
+        tests=bld.path.ant_glob(f"*_vx_v{chip_version}.py"),
+        features='use pylint pycodestyle',
+        use=f'dlens_vx_v{chip_version}',
+        env = bld.all_envs[''],
+        test_environ = dict(TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, 'build', 'libnux', 'tests', 'hw', 'libnux', 'with_hostcode')),
+        pylint_config=join(get_toplevel_path(), "code-format", "pylintrc"),
+        pycodestyle_config=join(get_toplevel_path(), "code-format", "pycodestyle")
+    )
 
 
 def build_ppu_cpp(bld, chip_version: Integral):
