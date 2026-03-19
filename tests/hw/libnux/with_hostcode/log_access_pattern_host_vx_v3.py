@@ -79,7 +79,8 @@ class LibnuxAccessPatternTestVx(unittest.TestCase):
         init_builder, _ = generate(init)
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
-        run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        run(cls.CONNECTION, [init_program])
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 

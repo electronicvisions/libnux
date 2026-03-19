@@ -44,7 +44,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             cls.CONNECTION.get_hwdb_entry()[0]))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
-        run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        run(cls.CONNECTION, [init_program])
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 
@@ -82,7 +83,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             ExternalPPUDRAMMemoryByteOnFPGA((1 << 16) + 256),
             ExternalPPUDRAMMemoryByteOnFPGA((1 << 16) + 256 + 127)))
         builder.block_until(BarrierOnFPGA(), Barrier.omnibus)
-        run(self.CONNECTION, builder.done())
+        program = builder.done()
+        run(self.CONNECTION, [program])
 
         for ticket in [
                 ticket_sram_scalar, ticket_dram_scalar,

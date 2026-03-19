@@ -43,7 +43,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             cls.CONNECTION.get_hwdb_entry()[0]))
         jtag_id_ticket = init_builder.read(JTAGIdCodeOnDLS())
         init_builder.block_until(BarrierOnFPGA(), Barrier.jtag)
-        run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        run(cls.CONNECTION, [init_program])
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 
@@ -87,7 +88,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             builder.write(coord, hal.CommonCorrelationConfig())
         for ctr in iter_all(SpikeCounterResetOnDLS):
             builder.write(ctr, SpikeCounterReset())
-        run(self.CONNECTION, builder.done())
+        program = builder.done()
+        run(self.CONNECTION, [program])
 
         for ppu in iter_all(PPUOnDLS):
             log.info(f"Running test on {ppu}.")
@@ -98,7 +100,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             tickets.append(builder.read(ctr))
         builder.write(halco.TimerOnDLS(), hal.Timer(0))
         builder.block_until(halco.TimerOnDLS(), hal.Timer.Value(10000))
-        run(self.CONNECTION, builder.done())
+        program = builder.done()
+        run(self.CONNECTION, [program])
 
         for i, ticket in enumerate(tickets):
             # in the PPU program we reset all odd columns once

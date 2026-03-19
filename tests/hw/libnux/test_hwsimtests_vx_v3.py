@@ -37,8 +37,8 @@ class LibnuxHwSimTestsVx(unittest.TestCase):
             cadc_config = CADCConfig()
             cadc_config.enable = True
             init_builder.write(cadc, cadc_config)
-
-        run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        run(cls.CONNECTION, [init_program])
         jtag_id = jtag_id_ticket.get()
         cls.CHIP_REVISION = jtag_id.version
 

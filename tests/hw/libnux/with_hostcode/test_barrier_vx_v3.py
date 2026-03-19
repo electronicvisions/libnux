@@ -36,7 +36,8 @@ class LibnuxBarrierTest(unittest.TestCase):
         # Initialize the chip
         init_builder, _ = generate(SystemInit(
             cls.CONNECTION.get_hwdb_entry()[0]))
-        sta.run(cls.CONNECTION, init_builder.done())
+        init_program = init_builder.done()
+        sta.run(cls.CONNECTION, [init_program])
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -70,12 +71,14 @@ class LibnuxBarrierTest(unittest.TestCase):
             builder.write(
                 halco.PPUMemoryWordOnDLS(begin_coord.toMin(), ppu),
                 PPUMemoryWord(PPUMemoryWord.Value(1)))
-            sta.run(self.CONNECTION, builder.done())
+            program = builder.done()
+            sta.run(self.CONNECTION, [program])
 
         builder = PlaybackProgramBuilder()
         builder.write(halco.TimerOnDLS(), Timer())
         builder.block_until(halco.TimerOnDLS(), Timer.Value(int(1e8)))
-        sta.run(self.CONNECTION, builder.done())
+        program = builder.done()
+        sta.run(self.CONNECTION, [program])
         for ppu in iter_all(PPUOnDLS):
             returncode.append(stop_program(self.CONNECTION, ppu=ppu,
                                            print_mailbox=True))
@@ -83,7 +86,8 @@ class LibnuxBarrierTest(unittest.TestCase):
                 counter_coord.toMin(), ppu))
             builder.write(halco.TimerOnDLS(), Timer())
             builder.block_until(halco.TimerOnDLS(), Timer.Value(1000))
-            sta.run(self.CONNECTION, builder.done())
+            program = builder.done()
+            sta.run(self.CONNECTION, [program])
             counter.append(ticket.get().value.value())
 
         for ret in returncode:
