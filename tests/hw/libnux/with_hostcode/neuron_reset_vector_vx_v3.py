@@ -88,8 +88,8 @@ class LibnuxNeuronResetVectorTestVx(unittest.TestCase):
             builder.write(coord, hal.CommonCorrelationConfig())
         for ctr in iter_all(SpikeCounterResetOnDLS):
             builder.write(ctr, SpikeCounterReset())
-        program = builder.done()
-        run(self.CONNECTION, [program])
+        playback_program = builder.done()
+        run(self.CONNECTION, [playback_program])
 
         for ppu in iter_all(PPUOnDLS):
             log.info(f"Running test on {ppu}.")
