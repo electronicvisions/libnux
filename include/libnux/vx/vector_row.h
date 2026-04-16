@@ -234,28 +234,36 @@ typedef VectorRow<VectorHalfRowMod16> VectorRowMod16;
 
 /**
  * Convert signed vector row with fractional arithmetic to unsigned vector row with modulo
- * arithmetic. The conversion is contiguous such that -128 -> 0 and 127 -> 255.
+ * arithmetic. The conversion is identical to a static_cast such that the most significant
+ * bit is no longer interpreted as a signed weight. This yields the following ranges:
+ * (0, 127) --> (0, 127) and (-128, -1) --> (128, 255).
  * @return Converted Vector row
  */
 template <> template <> ATTRIB_ALWAYS_INLINE VectorRowFracSat8::operator VectorRowMod8() const;
 
 /**
  * Convert signed vector row with fractional arithmetic to unsigned vector row with modulo
- * arithmetic. The conversion is contiguous such that -32768 -> 0 and 32767 -> 65535.
+ * arithmetic. The conversion is identical to a static_cast such that the most significant
+ * bit is no longer interpreted as a signed weight. This yields the following ranges:
+ * (0, 32767) --> (0, 32767) and (-32768, -1) --> (32768, 65535).
  * @return Converted Vector row
  */
 template <> template <> ATTRIB_ALWAYS_INLINE VectorRowFracSat16::operator VectorRowMod16() const;
 
 /**
  * Convert unsigned vector row with modulo arithmetic to signed vector row with fractional
- * arithmetic. The conversion is contiguous such that 0 -> -128 and 255 -> 127.
+ * arithmetic. The conversion is identical to a static_cast such that the most significant
+ * bit is interpreted as a signed weight. This yields the following ranges:
+ * (0, 127) --> (0, 127) and (128, 255) --> (-128, -1).
  * @return Converted Vector row
  */
 template <> template <> ATTRIB_ALWAYS_INLINE VectorRowMod8::operator VectorRowFracSat8() const;
 
 /**
  * Convert unsigned vector row with modulo arithmetic to signed vector row with fractional
- * arithmetic. The conversion is contiguous such that 0-> -32768 and 65535 -> 32767.
+ * arithmetic. The conversion is identical to a static_cast such that the most significant
+ * bit is interpreted as a signed weight. This yields the following ranges:
+ * (0, 32767) --> (0, 32767) and (32768, 65535) --> (-32768, -1).
  * @return Converted Vector row
  */
 template <> template <> ATTRIB_ALWAYS_INLINE VectorRowMod16::operator VectorRowFracSat16() const;
