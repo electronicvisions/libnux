@@ -249,45 +249,6 @@ public:
 		PPUOnDLS m_me;
 	};
 
-
-	/** VectorGenerator address type representing a "vector generator" address. */
-	class VectorGenerator
-	{
-	public:
-		/** Convert to "vector unit" address. */
-		inline constexpr byte_address to_vector_addr() const;
-
-		/** Convert to "vector fxvoutx" address. */
-		inline constexpr byte_address to_fxviox_addr() const;
-
-		/** Convert to "vector unit" pointer. */
-		template <typename T>
-		constexpr __vector T* to_vector() const
-		{
-			return reinterpret_cast<__vector T*>(to_vector_addr());
-		}
-
-		/** Convert to "scalar unit" address. */
-		inline constexpr byte_address to_scalar_addr() const;
-
-		/** Convert to "scalar unit" pointer. */
-		template <typename T>
-		constexpr T* to_scalar() const
-		{
-			return reinterpret_cast<T*>(to_scalar_addr());
-		}
-
-		/** Check validity of pointer (i.e. address range). */
-		inline constexpr operator bool() const;
-
-	private:
-		friend GlobalAddress;
-		inline constexpr VectorGenerator(omnibus_address address, byte_address offset);
-
-		byte_address m_ptr;
-	};
-
-
 	/** Convert a GlobalAddress to an ExtMem address. */
 	constexpr ExtMem to_extmem() const
 	{
@@ -315,13 +276,6 @@ public:
 		return to_sram();
 	}
 
-	/** Convert a GlobalAddress to an VectorGenerator address. */
-	inline constexpr VectorGenerator to_vecgen() const;
-	constexpr explicit operator VectorGenerator() const
-	{
-		return to_vecgen();
-	}
-
 	/** Check if global address represents a valid address in extmem. */
 	inline constexpr bool is_extmem() const;
 
@@ -330,9 +284,6 @@ public:
 
 	/** Check if global address represents a valid address in SRAMs. */
 	inline constexpr bool is_sram() const;
-
-	/** Check if global address represents a valid address in vector generators. */
-	inline constexpr bool is_vecgen() const;
 
 	/** Manual serialization to network byte order. */
 	std::array<typename std::common_type<omnibus_address, byte_address>::type, 2> serialize() const
@@ -378,17 +329,6 @@ struct AddressSpace
 	static constexpr uint32_t sram_size{1 << 12}; // 4kWords (or 16kiB) of SRAM
 	static_assert(sram_top.to_global_omnibus() == sram_top_base_address);
 	static_assert(sram_bot.to_global_omnibus() == sram_bot_base_address);
-
-	/** Vector generator on FPGA. */
-	/* FIXME: There seems to be some confusion about changesets in-flight
-	 * currently... using what seemed to have worked at some point in time. */
-	GlobalAddress static constexpr vecgen_top =
-	    GlobalAddress::from_global(1ull << 31 | 0 << 27 | 1 << 26 | 0 << 12);
-	GlobalAddress static constexpr vecgen_bot =
-	    GlobalAddress::from_global(1ull << 31 | 0 << 27 | 1 << 26 | 1 << 12);
-	constexpr static uint32_t vecgen_size{1}; // FIFO-like, not mmapped.
-	static_assert(vecgen_top.to_global_omnibus() == 0x8400'0000);
-	static_assert(vecgen_bot.to_global_omnibus() == 0x8400'1000);
 
 	/** External memory (FPGA-connected SRAM). */
 	GlobalAddress static constexpr extmem =
@@ -457,52 +397,11 @@ constexpr GlobalAddress::byte_address GlobalAddress::SRAM::to_scalar_addr(PPUOnD
 	}
 }
 
-constexpr GlobalAddress::VectorGenerator::VectorGenerator(
-    GlobalAddress::omnibus_address const address, GlobalAddress::byte_address const offset) :
-    m_ptr((address << 2) | offset)
-{}
-
-constexpr GlobalAddress::byte_address GlobalAddress::VectorGenerator::to_vector_addr() const
-{
-	return m_ptr | extmem_data_base;
-}
-
-constexpr GlobalAddress::byte_address GlobalAddress::VectorGenerator::to_fxviox_addr() const
-{
-	// add the bit for access to vector-external world
-	return (m_ptr >> 4) | dls_extmem_base;
-}
-
-constexpr GlobalAddress::byte_address GlobalAddress::VectorGenerator::to_scalar_addr() const
-{
-	return m_ptr | extmem_data_base;
-}
-
-constexpr GlobalAddress::VectorGenerator::operator bool() const
-{
-	bool const is_top =
-	    (m_ptr >= static_cast<byte_address>(AddressSpace::vecgen_top.to_global_omnibus() << 2)) &&
-	    (m_ptr <
-	     static_cast<byte_address>(
-	         (AddressSpace::vecgen_top.to_global_omnibus() + AddressSpace::vecgen_size) << 2));
-	bool const is_bot =
-	    (m_ptr >= static_cast<byte_address>(AddressSpace::vecgen_bot.to_global_omnibus() << 2)) &&
-	    (m_ptr <
-	     static_cast<byte_address>(
-	         (AddressSpace::vecgen_bot.to_global_omnibus() + AddressSpace::vecgen_size) << 2));
-	return is_top || is_bot;
-}
-
 constexpr GlobalAddress::SRAM GlobalAddress::to_sram() const
 {
 	return SRAM(
 	    m_addr, m_offset,
 	    (m_addr < AddressSpace::sram_bot.to_global_omnibus()) ? PPUOnDLS::top : PPUOnDLS::bottom);
-}
-
-constexpr GlobalAddress::VectorGenerator GlobalAddress::to_vecgen() const
-{
-	return VectorGenerator(m_addr, m_offset);
 }
 
 template <>
@@ -535,18 +434,6 @@ constexpr GlobalAddress GlobalAddress::from_relative<GlobalAddress::SRAM>(
 	return GlobalAddress(address, byte_offset);
 }
 
-template <>
-constexpr GlobalAddress GlobalAddress::from_relative<GlobalAddress::VectorGenerator>(
-    GlobalAddress::byte_address const offset, PPUOnDLS const ppu)
-{
-	omnibus_address const base = (ppu == PPUOnDLS::top)
-	                                 ? AddressSpace::vecgen_top.to_global_omnibus()
-	                                 : AddressSpace::vecgen_bot.to_global_omnibus();
-	omnibus_address const address = (offset >> 2) | base;
-	byte_address const byte_offset = offset % 4;
-	return GlobalAddress(address, byte_offset);
-}
-
 constexpr bool GlobalAddress::is_extmem() const
 {
 	return (m_addr >= AddressSpace::extmem.to_global_omnibus()) &&
@@ -563,12 +450,6 @@ constexpr bool GlobalAddress::is_sram() const
 {
 	return (m_addr >= AddressSpace::sram_top.to_global_omnibus()) &&
 	       (m_addr < (AddressSpace::sram_bot.to_global_omnibus() + AddressSpace::sram_size));
-}
-
-constexpr bool GlobalAddress::is_vecgen() const
-{
-	return (m_addr > AddressSpace::vecgen_top.to_global_omnibus()) &&
-	       (m_addr < (AddressSpace::vecgen_bot.to_global_omnibus() + AddressSpace::vecgen_size));
 }
 
 } // namespace libnux::vx

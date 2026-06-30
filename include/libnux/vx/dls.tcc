@@ -83,8 +83,6 @@ static constexpr omnibus_address_t cadc_top_acausal_base_address =
 /* External memory base address for scalar data access */
 static constexpr uint32_t extmem_data_base = 1ul << 30;
 static constexpr uint32_t extmem_dram_data_base = 1ul << 30 | 1ul << 28;
-static constexpr uint32_t vecgen_top_base_address = extmem_data_base | (1ul << 28);
-static constexpr uint32_t vecgen_bottom_base_address = extmem_data_base | (1ul << 28) | 0x4000;
 
 
 /*

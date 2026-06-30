@@ -134,65 +134,6 @@ void start()
 	}
 	mailbox_write_string("a");
 
-	{
-		constexpr auto d =
-		    GlobalAddress::from_relative<GlobalAddress::VectorGenerator>(0x0, PPUOnDLS::top);
-		test_equal((intptr_t) d.to_vecgen().to_scalar<uint32_t>(), (1 << 30 | 1 << 28 | 0 << 14));
-		static_assert(d.to_vecgen().to_scalar_addr() == (1 << 30 | 1 << 28 | 0 << 12));
-		static_assert(d.to_vecgen().to_vector_addr() == (1 << 30 | 1 << 28 | 0 << 14));
-		test_equal(static_cast<bool>(d.to_vecgen()), true);
-		static_assert(static_cast<bool>(d.to_vecgen()) == true);
-	}
-	mailbox_write_string("a");
-
-	{
-		constexpr auto d =
-		    GlobalAddress::from_relative<GlobalAddress::VectorGenerator>(0x0, PPUOnDLS::bottom);
-		test_equal((intptr_t) d.to_vecgen().to_scalar<uint32_t>(), (1 << 30 | 1 << 28 | 1 << 14));
-		static_assert(d.to_vecgen().to_scalar_addr() == (1 << 30 | 1 << 28 | 1 << 14));
-		static_assert(d.to_vecgen().to_vector_addr() == (1 << 30 | 1 << 28 | 1 << 14));
-		test_equal(static_cast<bool>(d.to_vecgen()), true);
-		static_assert(static_cast<bool>(d.to_vecgen()) == true);
-	}
-	mailbox_write_string("a");
-
-	{
-		constexpr auto b =
-		    GlobalAddress::from_global(AddressSpace::vecgen_top.to_global_omnibus() - 1);
-		constexpr auto s = GlobalAddress{AddressSpace::vecgen_top};
-		constexpr auto e = GlobalAddress::from_global(
-		    AddressSpace::vecgen_top.to_global_omnibus() + AddressSpace::vecgen_size);
-		constexpr auto m = GlobalAddress::from_global(
-		    AddressSpace::vecgen_top.to_global_omnibus() + AddressSpace::vecgen_size - 1);
-		test_equal(static_cast<bool>(b.to_vecgen()), false);
-		test_equal(static_cast<bool>(s.to_vecgen()), true);
-		test_equal(static_cast<bool>(e.to_vecgen()), false);
-		test_equal(static_cast<bool>(m.to_vecgen()), true);
-		static_assert(static_cast<bool>(b.to_vecgen()) == false);
-		static_assert(static_cast<bool>(s.to_vecgen()) == true);
-		static_assert(static_cast<bool>(e.to_vecgen()) == false);
-		static_assert(static_cast<bool>(m.to_vecgen()) == true);
-	}
-	mailbox_write_string("a");
-
-	{
-		constexpr auto b =
-		    GlobalAddress::from_global(AddressSpace::vecgen_bot.to_global_omnibus() - 1);
-		constexpr auto s = GlobalAddress{AddressSpace::vecgen_bot};
-		constexpr auto e = GlobalAddress::from_global(
-		    AddressSpace::vecgen_bot.to_global_omnibus() + AddressSpace::vecgen_size);
-		constexpr auto m = GlobalAddress::from_global(
-		    AddressSpace::vecgen_bot.to_global_omnibus() + AddressSpace::vecgen_size - 1);
-		test_equal(static_cast<bool>(b.to_vecgen()), false);
-		test_equal(static_cast<bool>(s.to_vecgen()), true);
-		test_equal(static_cast<bool>(e.to_vecgen()), false);
-		test_equal(static_cast<bool>(m.to_vecgen()), true);
-		static_assert(static_cast<bool>(b.to_vecgen()) == false);
-		static_assert(static_cast<bool>(s.to_vecgen()) == true);
-		static_assert(static_cast<bool>(e.to_vecgen()) == false);
-		static_assert(static_cast<bool>(m.to_vecgen()) == true);
-	}
-	mailbox_write_string("a");
 	testcase_end();
 
 	test_summary();
