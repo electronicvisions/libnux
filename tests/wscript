@@ -139,6 +139,13 @@ def build(bld):
             env = env,
         )
 
+        test_timeout = 30000
+        test_reduce_coverage = False
+        if not bld.options.disable_coverage_reduction:  # option defined in 'haldls'
+            if bld.env.TEST_TARGET == TestTarget.SIMULATION:
+                test_timeout = 3600
+                test_reduce_coverage = True
+
         bld(
             name = f"libnux_hwsimtests_vx_v{chip_version_number}",
             tests = f"hw/libnux/test_hwsimtests_vx_v{chip_version_number}.py",
@@ -153,8 +160,9 @@ def build(bld):
             env = bld.all_envs[''],
             test_environ = dict(STACK_PROTECTION=env.LIBNUX_STACK_PROTECTOR_ENABLED[0],
                                 STACK_REDZONE=env.LIBNUX_STACK_REDZONE_ENABLED[0],
+                                TEST_REDUCE_COVERAGE=str(test_reduce_coverage),
                                 TEST_BINARY_PATH=os.path.join(bld.env.PREFIX, "build", "libnux", "tests", "hw", "libnux")),
-            test_timeout = 30000
+            test_timeout = test_timeout
         )
 
         bld(

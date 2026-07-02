@@ -1,3 +1,4 @@
+import os
 import random
 import unittest
 from numbers import Integral
@@ -92,6 +93,30 @@ LibnuxHwSimTestsVx.TESTS.update(
     get_special_binaries("vx", "v3").intersection(find_binaries("vx", "v3")))
 LibnuxHwSimTestsVx.TESTS.update(find_binaries("vx", "v3"))
 LibnuxHwSimTestsVx.generate_cases()
+
+reduced_coverage_whitelist = [
+    "test_fpga_memory_scalar_access_vx_v3",
+    "test_fpga_memory_vector_access_vx_v3",
+    "test_fpga_omnibus_executor",
+    "test_speed_memory",
+]
+if os.environ.get("TEST_REDUCE_COVERAGE", "").lower() == "true":
+    for name, member in vars(LibnuxHwSimTestsVx).items():
+        if not name.startswith("test"):
+            continue
+
+        if not callable(member):
+            continue
+
+        if name in reduced_coverage_whitelist:
+            continue
+
+        setattr(
+            LibnuxHwSimTestsVx,
+            name,
+            unittest.skip("Test coverage reduced.")(member),
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
