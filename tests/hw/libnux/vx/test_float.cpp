@@ -33,6 +33,14 @@ time_base_t measure_##Name() \
 	}\
 	ATTRIB_UNUSED float c = {};\
 \
+	/* cache warmup */\
+	{\
+		do_not_optimize_away(a[0]);\
+		do_not_optimize_away(b[0]);\
+		do_not_optimize_away(c);\
+		c = a[0] OP b[0];\
+	}\
+\
 	time_base_t const begin = now();\
 \
 	for (size_t i = 0; i < num; ++i) {\
