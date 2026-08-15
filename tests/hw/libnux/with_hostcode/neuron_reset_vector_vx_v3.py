@@ -23,7 +23,9 @@ TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
                                        os.pardir,
                                        "build",
                                        "libnux",
-                                       "test",
+                                       "tests",
+                                       "hw",
+                                       "libnux",
                                        "with_hostcode")
                                   )
 

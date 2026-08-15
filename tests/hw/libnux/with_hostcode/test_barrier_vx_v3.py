@@ -16,10 +16,11 @@ TEST_BINARY_PATH = os.environ.get("TEST_BINARY_PATH",
                                   join(_THIS_DIR,
                                        os.pardir,
                                        os.pardir,
-                                       os.pardir,
                                        "build",
                                        "libnux",
-                                       "test",
+                                       "tests",
+                                       "hw",
+                                       "libnux",
                                        "with_hostcode")
                                   )
 
