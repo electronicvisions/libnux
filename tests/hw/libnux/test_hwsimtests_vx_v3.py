@@ -99,8 +99,8 @@ LibnuxHwSimTestsVx.generate_cases()
 reduced_coverage_whitelist = [
     "test_fpga_memory_scalar_access_vx_v3",
     "test_fpga_memory_vector_access_vx_v3",
-    "test_fpga_omnibus_executor",
-    "test_speed_memory",
+    "test_fpga_omnibus_executor_vx_v3",
+    "test_speed_memory_vx_v3",
 ]
 if os.environ.get("TEST_REDUCE_COVERAGE", "").lower() == "true":
     for name, member in vars(LibnuxHwSimTestsVx).items():
