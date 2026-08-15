@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import json
 import os
 from os.path import join
